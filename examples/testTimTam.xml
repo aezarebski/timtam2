@@ -1,0 +1,55 @@
+<?xml version="1.0" standalone="yes"?>
+<beast version='2.0' namespace='beast.evolution.speciation:beast.core:beast.evolution.tree.coalescent:beast.core.util:beast.util:beast.evolution.nuc:beast.evolution.operators:beast.evolution.sitemodel:beast.evolution.substitutionmodel:beast.evolution.likelihood:beast.core.parameter'>
+
+    <data id="alignment" dataType="nucleotide">
+        <sequence taxon="A">A</sequence>
+        <sequence taxon="B">A</sequence>
+        <sequence taxon="C">A</sequence>
+        <sequence taxon="D">A</sequence>
+        <sequence taxon="E">A</sequence>
+        <sequence taxon="F">A</sequence>
+        <sequence taxon="G">A</sequence>
+        <sequence taxon="H">A</sequence>
+        <sequence taxon="I">A</sequence>
+        <sequence taxon="J">A</sequence>
+    </data>
+
+    <input spec='beast.util.ClusterTree' id='tree' clusterType='upgma'>
+    <taxa idref='alignment' />
+    </input>
+
+
+    <input spec='TimTam' id="myTimTam" mu="0.5" psi="0.5" p="0.5" hasFinalSample="true" >
+    <lambda idref="lambda" />
+    <origin idref="origin" />
+    <tree idref='tree' />
+    </input>
+
+    <parameter id="lambda" value="2.0" lower="0.0" upper="1000000.0" />
+    <parameter id="origin" value="10.0" lower="0.0" upper="100.0" />
+
+    <run spec='MCMC' chainLength="20">
+        <state>
+            <stateNode idref='lambda' />
+            <stateNode idref='tree' />
+            <stateNode idref="origin" />
+        </state>
+
+        <distribution id="myTimTam.prior" idref='myTimTam' />
+
+        <operator spec='SubtreeSlide' weight="1" gaussian="true" size="1.0" tree="@tree" />
+        <operator spec="RealRandomWalkOperator" windowSize="0.1" useGaussian="true" weight="1.0" parameter="@lambda" />
+        <operator spec="RealRandomWalkOperator" windowSize="0.1" useGaussian="true" weight="1.0" parameter="@origin" />
+
+        <logger logEvery="1" fileName="test.$(seed).log">
+            <log idref='lambda' />
+            <log idref='origin' />
+            <log spec='beast.evolution.tree.TreeHeightLogger' tree='@tree' />
+        </logger>
+
+        <logger logEvery="10">
+            <log idref='lambda' />
+        </logger>
+    </run>
+
+</beast>
