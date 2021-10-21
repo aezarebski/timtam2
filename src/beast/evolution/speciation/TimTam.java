@@ -6,6 +6,7 @@ import beast.core.parameter.RealParameter;
 import beast.evolution.tree.Node;
 import beast.evolution.tree.Tree;
 import beast.evolution.tree.TreeDistribution;
+import beast.evolution.tree.coalescent.TreeIntervals;
 
 /**
  * Tree prior for birth-death-sampling while tracking the distribution of hidden lineages. This used
@@ -200,13 +201,16 @@ public class TimTam extends TreeDistribution {
     public final double calculateTreeLogLikelihood(Tree tree) {
     	System.out.println("\tthe calculateTreeLogLikelihood method has been called...");
 
-      int total_num_nodes = tree.getNodeCount();
-      System.out.println("\tthe number of nodes from getNodeCount is " + total_num_nodes);
+        TreeIntervals ti = new TreeIntervals(tree);
 
-      for (int i = 0; i < total_num_nodes; i++) {
-          final Node node = tree.getNode(i);
-          System.out.println("\t\tnode " + i + " is leaf(?) " + node.isLeaf() + " and has height " + node.getHeight());
-      }
+        int num_intervals = ti.getIntervalCount();
+        // traverse the intervals backwards to move from root to tip because this is the way that the likelihood
+        // processes.
+        for (int i = num_intervals-1; i >= 0; i--) {
+             System.out.println("----------------");
+             System.out.println(ti.getIntervalType(i));
+             System.out.println(ti.getInterval(i));
+        }
 
     	// it is impossible for the origin to be closer to the present than the
     	// depth of the tree so if this is the case we can return negative
