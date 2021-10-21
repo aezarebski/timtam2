@@ -8,7 +8,8 @@ import beast.evolution.tree.Tree;
 import beast.evolution.tree.TreeDistribution;
 
 /**
- * Tree prior for birth-death-sampling while tracking the distribution of hidden lineages.
+ * Tree prior for birth-death-sampling while tracking the distribution of hidden lineages. This used
+ * BirthDeathSerialSampling.java as a starting point.
  *
  * @author Alexander Zarebski
  *
