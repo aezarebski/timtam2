@@ -6,9 +6,17 @@ easier and is still useful.
 
 * Remaining tasks and open problems
 
-1. [ ] Implement a negative binomial distribution class. This is not included in
-   Apache Commons so it needs to extend their discrete distribution rather than
-   use something already implemented in BEAST2.
+1. [ ] Implement a negative binomial distribution class: =NegativeBinomial=.
+   - Since this is not a "distribution" in the sense meant by
+     =beast.math.distributions= it should not be implemented as such a class.
+   - Since it is only going to be used by the =TimTam= class it should be made
+     as a subclass.
+   - It needs to implement the special case of a degenerate distribution
+     concentrated on zero.
+   - Need to store both the mean/variance and r/p parameters. Probably wise to
+     use logarithms here to avoid potential numerical errors.
+   - Need the PGF and its partial derivatives (again in logarithmic values for
+     safety).
 2. [ ] Finish the implementation of the likelihood which is currently blocked
    because there isn't a negative binomial distribution.
 3. [ ] Move the code in =Demo.java= to a proper testing framework and sketch out
@@ -41,9 +49,3 @@ likelihood.
 This class extends the =CalculationNode= and provides functionality for
 computing the times between observed events. This requires a tree, the origin
 time and a =TraitSet= which is what we use to describe unsequenced observations.
-
-** =org.apache.commons.math.distribution=
-
-*** =NegativeBinomialDistribution=
-
-*** =NegativeBinomialDistributionImpl=
