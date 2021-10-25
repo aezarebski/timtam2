@@ -6,12 +6,11 @@ import beast.evolution.speciation.TimTam;
 import beast.evolution.tree.TraitSet;
 import beast.evolution.tree.Tree;
 import beast.evolution.tree.birthdeath.TreeWithPointProcess;
-import beast.evolution.tree.coalescent.TreeIntervals;
 import beast.util.TreeParser;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.function.DoubleFunction;
 
 public class Demo {
 
@@ -29,18 +28,39 @@ public class Demo {
         }
 
         Alignment alignment = new Alignment(seqList, "nucleotide");
-        TaxonSet taxonSet = new TaxonSet(alignment);
-        return taxonSet;
+        return new TaxonSet(alignment);
     }
 
     static void demoNegativeBinomial() {
 
         TimTam tt = new TimTam();
 
-        TimTam.NegativeBinomial foo = tt.getNegativeBinomial();
-        foo.sayHello();
+        TimTam.NegativeBinomial myNB = tt.getNegativeBinomial();
 
+        for (int i = 0; i < 4; i++) {
+            System.out.println("Pochammer(1.5," + i +") is " + TimTam.NegativeBinomial.lnPochhammer(1.5, i));
+        }
+        System.out.println("log(1.5) is " + Math.log(1.5));
+        System.out.println("log(1.5 * 2.5) is " + Math.log(1.5 * 2.5));
+        System.out.println("log(1.5 * 2.5 * 3.5) is " + Math.log(1.5 * 2.5 * 3.5));
 
+        myNB.setLnPAndLnR(Math.log(0.3), Math.log(5));
+
+        System.out.println("p=0.3, r=5 has mean " + myNB.getLnMean() + "it should be 0.7621401");
+        System.out.println("p=0.3, r=5 has variance " + myNB.getLnVariance() + "it should be 1.118815");
+
+        DoubleFunction<Double> f = (double z) -> myNB.lnPGF(z, 5, 0.3);
+        DoubleFunction<Double> fDash = (double z) -> myNB.lnPGFDash(1, z, 5, 0.3);
+        double z = 0.4;
+        double h = 1e-4;
+        double fFD = Math.log((Math.exp(f.apply(z + h)) - Math.exp(f.apply(z))) / h);
+
+        System.out.println("log-PGF for p=0.3, r=5 at z=0.4 is " +
+                f.apply(z) + "it should be -1.144208");
+        System.out.println("log-PGF for p=0.3, r=5 at z=0.4+h is " +
+                f.apply(z+h) + "it should be greater than -1.144208");
+        System.out.println("log-partial-z-PGF is " +
+                fDash.apply(z) + " and " + fFD);
     }
 
     static void demoTreeWithPointProcess() {
