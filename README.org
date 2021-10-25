@@ -6,16 +6,13 @@ easier and is still useful.
 
 * Remaining tasks and open problems
 
-1. [ ] Implement a negative binomial distribution class. This is not included in
-   Apache Commons so it needs to extend their discrete distribution rather than
-   use something already implemented in BEAST2.
-2. [ ] Finish the implementation of the likelihood which is currently blocked
+1. Finish the implementation of the likelihood which is currently blocked
    because there isn't a negative binomial distribution.
-3. [ ] Move the code in =Demo.java= to a proper testing framework and sketch out
+2. Move the code in =Demo.java= to a proper testing framework and sketch out
    some examples to test the likelihood with.
-4. [ ] Figure out how to return additional data from the [[*=TimTam=]] class when
+3. Figure out how to return additional data from the [[*=TimTam=]] class when
    running MCMC. This should be incorporated into an example too.
-5. [ ] Set up a BEAUTi template.
+4. Set up a BEAUTi template.
 
 * Classes
 
@@ -28,6 +25,9 @@ Here is a description of the classes that are provided by the package.
 This class extends the =TreeDistribution= and implements the tree prior that we
 care about. It uses the [[*=TreeWithPointProcess=]] class to help it navigate the
 data.
+
+TimTam has a nested class, =NegativeBinomial=, which is used to model the number
+of hidden lineages.
 
 ** =beast.evolution.tree.birthdeath=
 
@@ -42,8 +42,12 @@ This class extends the =CalculationNode= and provides functionality for
 computing the times between observed events. This requires a tree, the origin
 time and a =TraitSet= which is what we use to describe unsequenced observations.
 
-** =org.apache.commons.math.distribution=
+* Example
 
-*** =NegativeBinomialDistribution=
+Figure [[example-dag]] shows an example of how =TimTam= and =TreeWithPointProcess=
+nodes might be used in a model, ie the nodes represent =CalculationNode=
+objects. The darker blue nodes are from the classes provided by this package.
 
-*** =NegativeBinomialDistributionImpl=
+#+name: example-dag
+#+attr_org: :width 500
+[[./example-dag.png]]

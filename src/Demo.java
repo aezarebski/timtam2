@@ -6,12 +6,11 @@ import beast.evolution.speciation.TimTam;
 import beast.evolution.tree.TraitSet;
 import beast.evolution.tree.Tree;
 import beast.evolution.tree.birthdeath.TreeWithPointProcess;
-import beast.evolution.tree.coalescent.TreeIntervals;
 import beast.util.TreeParser;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.function.DoubleFunction;
 
 public class Demo {
 
@@ -29,17 +28,48 @@ public class Demo {
         }
 
         Alignment alignment = new Alignment(seqList, "nucleotide");
-        TaxonSet taxonSet = new TaxonSet(alignment);
-        return taxonSet;
+        return new TaxonSet(alignment);
     }
 
-    public static void main(String[] args) {
+    static void demoNegativeBinomial() {
 
+        TimTam tt = new TimTam();
+
+        TimTam.NegativeBinomial myNB = tt.getNegativeBinomial();
+
+        for (int i = 0; i < 4; i++) {
+            System.out.println("Pochammer(1.5," + i +") is " + TimTam.NegativeBinomial.lnPochhammer(1.5, i));
+        }
+        System.out.println("log(1.5) is " + Math.log(1.5));
+        System.out.println("log(1.5 * 2.5) is " + Math.log(1.5 * 2.5));
+        System.out.println("log(1.5 * 2.5 * 3.5) is " + Math.log(1.5 * 2.5 * 3.5));
+
+        myNB.setLnPAndLnR(Math.log(0.3), Math.log(5));
+
+        System.out.println("p=0.3, r=5 has mean " + myNB.getLnMean() + "it should be 0.7621401");
+        System.out.println("p=0.3, r=5 has variance " + myNB.getLnVariance() + "it should be 1.118815");
+
+        DoubleFunction<Double> f = (double z) -> myNB.lnPGF(z, 5, 0.3);
+        DoubleFunction<Double> fDash = (double z) -> myNB.lnPGFDash(1, z, 5, 0.3);
+        double z = 0.4;
+        double h = 1e-4;
+        double fFD = Math.log((Math.exp(f.apply(z + h)) - Math.exp(f.apply(z))) / h);
+
+        System.out.println("log-PGF for p=0.3, r=5 at z=0.4 is " +
+                f.apply(z) + "it should be -1.144208");
+        System.out.println("log-PGF for p=0.3, r=5 at z=0.4+h is " +
+                f.apply(z+h) + "it should be greater than -1.144208");
+        System.out.println("log-partial-z-PGF is " +
+                fDash.apply(z) + " and " + fFD);
+    }
+
+    static void demoTreeWithPointProcess() {
 
         // the false argument is so that the tips are not adjusted to make the tree ultrametric.
         Tree tree = new TreeParser("((1: 4.5, 2: 4.5):1,3:5.5);",false);
 
-//        TimTam tt = new TimTam();
+        TimTam tt = new TimTam();
+
 //        tt.setInputValue("tree", tree);
 //        tt.setInputValue("lambda", new RealParameter("1.5"));
 //        tt.setInputValue("mu", new RealParameter("0.3"));
@@ -50,7 +80,6 @@ public class Demo {
 //        tt.initAndValidate();
 //        double foo = tt.calculateLogP();
 //        System.out.println("Hello World" + foo);
-
 
         RealParameter origin = new RealParameter("0.0");
 
@@ -69,13 +98,13 @@ public class Demo {
             System.out.println(tpp.getIntervalType(i).toString());
             System.out.println(tpp.getIntervalDuration(i));
         }
+    }
 
-//        TreeIntervals ti = new TreeIntervals(tree);
-//        int num_intervals = ti.getIntervalCount();
-//        for (int i = num_intervals-1; i >= 0; i--) {
-//            System.out.println("----------------");
-//            System.out.println(ti.getIntervalType(i));
-//            System.out.println(ti.getInterval(i));
-//        }
+    public static void main(String[] args) {
+
+        demoNegativeBinomial();
+//        demoTreeWithPointProcess();
+
+
     }
 }
