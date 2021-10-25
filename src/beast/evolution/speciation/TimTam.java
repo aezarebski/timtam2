@@ -9,11 +9,12 @@ import beast.evolution.tree.TreeDistribution;
 import beast.evolution.tree.coalescent.TreeIntervals;
 
 /**
- * Tree prior for birth-death-sampling while tracking the distribution of hidden lineages. This used
- * BirthDeathSerialSampling.java as a starting point.
+ * Tree prior for birth-death-sampling while tracking the distribution of hidden
+ * lineages. This used BirthDeathSerialSampling.java as a starting point. There
+ * is a nested class, NegativeBinomial, which is the approximation used for the
+ * number of unobserved lineages in the likelihood.
  *
  * @author Alexander Zarebski
- *
  */
 public class TimTam extends TreeDistribution {
 
@@ -33,11 +34,11 @@ public class TimTam extends TreeDistribution {
 
     // the origin of the infection, x0 > tree.getRoot();
     RealParameter origin;
-    
+
     // Unclear why it is necessary, but BEAST expects there to be a zero-argument 
     // constructor and if there isn't one it freaks out.
     public TimTam() {
-    	
+
     }
 
     public TimTam(
@@ -47,22 +48,22 @@ public class TimTam extends TreeDistribution {
             RealParameter p,
             boolean hasFinalSample,
             RealParameter origin) {
-            //Type units) {
+        //Type units) {
 
         this("timTamModel", lambda, mu, psi, p, hasFinalSample, origin);
     }
 
-    final public Input<RealParameter> lambdaInput = new Input<>("lambda","the birth rate of new infections");
-    final public Input<RealParameter> muInput = new Input<>("mu","the death rate");
-    final public Input<RealParameter> psiInput = new Input<>("psi","the sampling rate");
-    final public Input<RealParameter> pInput = new Input<>("p","the probability of sampling extant lineages");
-    final public Input<Boolean> hasFinalSampleInput = new Input<>("hasFinalSample","boolean for if there was a scheduled sample at the present");
-    final public Input<RealParameter> originInput = new Input<>("origin","the origin time");
-    
+    final public Input<RealParameter> lambdaInput = new Input<>("lambda", "the birth rate of new infections");
+    final public Input<RealParameter> muInput = new Input<>("mu", "the death rate");
+    final public Input<RealParameter> psiInput = new Input<>("psi", "the sampling rate");
+    final public Input<RealParameter> pInput = new Input<>("p", "the probability of sampling extant lineages");
+    final public Input<Boolean> hasFinalSampleInput = new Input<>("hasFinalSample", "boolean for if there was a scheduled sample at the present");
+    final public Input<RealParameter> originInput = new Input<>("origin", "the origin time");
+
     @Override
     public void initAndValidate() {
-    	super.initAndValidate();
-    	
+        super.initAndValidate();
+
         this.lambda = lambdaInput.get();
         lambda.setBounds(0.0, Double.POSITIVE_INFINITY);
 
@@ -80,7 +81,7 @@ public class TimTam extends TreeDistribution {
         this.origin = originInput.get();
         origin.setBounds(0.0, Double.POSITIVE_INFINITY);
     }
-    
+
     public TimTam(
             String modelName,
             RealParameter lambda,
@@ -129,7 +130,7 @@ public class TimTam extends TreeDistribution {
         double c1 = c1(b, d, psi);
         double c2 = c2(b, d, p, psi);
 //        double res = 2.0 * (1.0 - c2 * c2) + Math.exp(-c1 * t) * (1.0 - c2) * (1.0 - c2) + Math.exp(c1 * t) * (1.0 + c2) * (1.0 + c2);
-        double res = c1 * t + 2.0 * Math.log( Math.exp(-c1 * t) * (1.0 - c2) + (1.0 + c2) ); // operate directly in logspace, c1 * t too big
+        double res = c1 * t + 2.0 * Math.log(Math.exp(-c1 * t) * (1.0 - c2) + (1.0 + c2)); // operate directly in logspace, c1 * t too big
         return res;
     }
 
@@ -163,7 +164,7 @@ public class TimTam extends TreeDistribution {
     }
 
     public double death() {
-    	return mu.getValue(0);
+        return mu.getValue(0);
     }
 
     public double psi() {
@@ -187,11 +188,11 @@ public class TimTam extends TreeDistribution {
 
     @Override
     public double calculateLogP() {
-    	System.out.println("the calculateLogP method has been called...");
-    	logP = calculateTreeLogLikelihood((Tree) treeInput.get());
-    	return logP;
+        System.out.println("the calculateLogP method has been called...");
+        logP = calculateTreeLogLikelihood((Tree) treeInput.get());
+        return logP;
     }
-    
+
     /**
      * Generic likelihood calculation
      *
@@ -199,22 +200,22 @@ public class TimTam extends TreeDistribution {
      * @return log-likelihood of density
      */
     public final double calculateTreeLogLikelihood(Tree tree) {
-    	System.out.println("\tthe calculateTreeLogLikelihood method has been called...");
+        System.out.println("\tthe calculateTreeLogLikelihood method has been called...");
 
         TreeIntervals ti = new TreeIntervals(tree);
 
         int num_intervals = ti.getIntervalCount();
         // traverse the intervals backwards to move from root to tip because this is the way that the likelihood
         // processes.
-        for (int i = num_intervals-1; i >= 0; i--) {
-             System.out.println("----------------");
-             System.out.println(ti.getIntervalType(i));
-             System.out.println(ti.getInterval(i));
+        for (int i = num_intervals - 1; i >= 0; i--) {
+            System.out.println("----------------");
+            System.out.println(ti.getIntervalType(i));
+            System.out.println(ti.getInterval(i));
         }
 
-    	// it is impossible for the origin to be closer to the present than the
-    	// depth of the tree so if this is the case we can return negative
-    	// infinity for the log-likelihood immediately.
+        // it is impossible for the origin to be closer to the present than the
+        // depth of the tree so if this is the case we can return negative
+        // infinity for the log-likelihood immediately.
         if (x0() < tree.getRoot().getHeight()) {
             return Double.NEGATIVE_INFINITY;
         }
@@ -242,7 +243,7 @@ public class TimTam extends TreeDistribution {
         double p = p();
 
         double logL;
-        logL = - q(x0());
+        logL = -q(x0());
         if (hasFinalSample) {
             logL += n * Math.log(4.0 * p);
         }
@@ -285,10 +286,10 @@ public class TimTam extends TreeDistribution {
         double lnR;
         boolean isZero;
 
-        public NegativeBinomial() {}
+        public NegativeBinomial() {
+        }
 
         /**
-         *
          * @param z
          * @param r
          * @param p
@@ -301,7 +302,6 @@ public class TimTam extends TreeDistribution {
         }
 
         /**
-         *
          * @param n the number of partial derivatives
          * @param z
          * @return the logarithm of the n-th partial derivative of the probability generating function
@@ -321,7 +321,6 @@ public class TimTam extends TreeDistribution {
         }
 
         /**
-         *
          * @param a
          * @param i
          * @return the logarithm of the Pochhammer function
@@ -385,6 +384,7 @@ public class TimTam extends TreeDistribution {
                 throw new RuntimeException("r and p of negative binomial not defined for zero distribution.");
             }
         }
+
         /**
          * Update the values of p and r based on the mean and variance.
          */
