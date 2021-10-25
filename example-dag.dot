@@ -1,0 +1,22 @@
+digraph G {
+  TimTam [shape=box,
+          style=filled,
+          color="#54278f",
+          fillcolor="#f2f0f7"];
+  RealParameters [shape=box];
+  TreeWithPointProcess [shape=box,
+                        style=filled,
+                        color="#54278f",
+                        fillcolor="#f2f0f7"];
+  TraitSet [shape=box];
+  Origin [shape=box];
+  Tree [shape=box];
+
+  Origin -> TimTam;
+  Origin -> TreeWithPointProcess;
+  TraitSet -> TreeWithPointProcess;
+  TreeWithPointProcess -> TimTam;
+  RealParameters -> TimTam;
+  Tree -> TreeWithPointProcess;
+  Tree -> TimTam;
+}
