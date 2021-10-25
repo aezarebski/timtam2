@@ -4,26 +4,23 @@ import beast.core.CalculationNode;
 import beast.core.Description;
 import beast.core.Input;
 import beast.core.parameter.RealParameter;
-import beast.evolution.alignment.TaxonSet;
 import beast.evolution.tree.Node;
 import beast.evolution.tree.TraitSet;
 import beast.evolution.tree.Tree;
-import beast.evolution.tree.coalescent.TreeIntervals;
 import beast.util.HeapSort;
 
 import java.util.Arrays;
-import java.util.List;
-import java.util.stream.DoubleStream;
-import java.util.stream.Stream;
 
 @Description("Extracts intervals from a tree when there is an additional point-process associated with it.")
 public class TreeWithPointProcess extends CalculationNode {
 
-    final public Input<RealParameter> originInput = new Input<>("origin","the origin time", Input.Validate.REQUIRED);
+    final public Input<RealParameter> originInput = new Input<>("origin", "the origin time", Input.Validate.REQUIRED);
     final public Input<Tree> treeInput = new Input<>("tree", "the tree", Input.Validate.REQUIRED);
     final public Input<TraitSet> pointsInput = new Input<>("points", "the points in the point process", Input.Validate.REQUIRED);
 
-    public TreeWithPointProcess() { super(); }
+    public TreeWithPointProcess() {
+        super();
+    }
 
     public TreeWithPointProcess(RealParameter origin, Tree tree, TraitSet points) {
         init(origin, tree, points);
@@ -37,6 +34,7 @@ public class TreeWithPointProcess extends CalculationNode {
 
     /**
      * Stolen from coalescent.TreeIntervals because it is protected there...
+     *
      * @param tree
      * @param times
      * @param childCounts
@@ -139,7 +137,8 @@ public class TreeWithPointProcess extends CalculationNode {
         return intervalTypes[i];
     }
 
-    /** The time since the last observed event. We adopt the convention that the origin
+    /**
+     * The time since the last observed event. We adopt the convention that the origin
      * is event number -1 so that events after that start at 0.
      *
      * @param i the event number
