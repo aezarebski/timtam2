@@ -33,13 +33,23 @@ public class Demo {
         return taxonSet;
     }
 
-    public static void main(String[] args) {
+    static void demoNegativeBinomial() {
 
+        TimTam tt = new TimTam();
+
+        TimTam.NegativeBinomial foo = tt.getNegativeBinomial();
+        foo.sayHello();
+
+
+    }
+
+    static void demoTreeWithPointProcess() {
 
         // the false argument is so that the tips are not adjusted to make the tree ultrametric.
         Tree tree = new TreeParser("((1: 4.5, 2: 4.5):1,3:5.5);",false);
 
-//        TimTam tt = new TimTam();
+        TimTam tt = new TimTam();
+
 //        tt.setInputValue("tree", tree);
 //        tt.setInputValue("lambda", new RealParameter("1.5"));
 //        tt.setInputValue("mu", new RealParameter("0.3"));
@@ -50,7 +60,6 @@ public class Demo {
 //        tt.initAndValidate();
 //        double foo = tt.calculateLogP();
 //        System.out.println("Hello World" + foo);
-
 
         RealParameter origin = new RealParameter("0.0");
 
@@ -69,13 +78,13 @@ public class Demo {
             System.out.println(tpp.getIntervalType(i).toString());
             System.out.println(tpp.getIntervalDuration(i));
         }
+    }
 
-//        TreeIntervals ti = new TreeIntervals(tree);
-//        int num_intervals = ti.getIntervalCount();
-//        for (int i = num_intervals-1; i >= 0; i--) {
-//            System.out.println("----------------");
-//            System.out.println(ti.getIntervalType(i));
-//            System.out.println(ti.getInterval(i));
-//        }
+    public static void main(String[] args) {
+
+        demoNegativeBinomial();
+//        demoTreeWithPointProcess();
+
+
     }
 }
