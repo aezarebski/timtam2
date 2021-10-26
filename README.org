@@ -7,19 +7,16 @@ easier and is still useful.
 * Remaining tasks and open problems
 
 1. AVOID USING THE SAME PACKAGE PATHS!
-2. Replace current use of =TraitSet= with a =DateParameter=.
-   - There is an example in =feast= for how to do this.
+2. Work out how to encode the relative timing properly.
+   - Use =TraitSet= to put correct dates on the leaves.
+   - Use =DateParameter= to put correct dates on the points.
+     + There is an example in =feast= for how to do this.
+   - Double check that this gets the internal nodes and root correct.
 3. Finish the implementation of the likelihood which is currently blocked
    because there isn't a negative binomial distribution.
-4. Move the code in =Demo.java= to a proper testing framework and sketch out
-   some examples to test the likelihood with.
-   - This just requires creating a =test= directory and indicating that it is
-     the test directory and then creating test classes with the matching package
-     path.
-   - There are examples in the feast package for how to do this.
-5. Figure out how to return additional data from the [[*=TimTam=]] class when
+4. Figure out how to return additional data from the [[*=TimTam=]] class when
    running MCMC. This should be incorporated into an example too.
-6. Set up a BEAUTi template.
+5. Set up a BEAUTi template.
    - This may require reading up on how to use Swing.
 
 * Classes
