@@ -15,6 +15,7 @@ import java.util.Arrays;
 public class TreeWithPointProcess extends CalculationNode {
 
     final public Input<RealParameter> originInput = new Input<>("origin", "the origin time", Input.Validate.REQUIRED);
+    final public Input<RealParameter> rootLengthInput = new Input<>("rootLength", "the time between the origin and the MRCA of the tree", Input.Validate.REQUIRED);
     final public Input<Tree> treeInput = new Input<>("tree", "the tree", Input.Validate.REQUIRED);
     final public Input<TraitSet> pointsInput = new Input<>("points", "the points in the point process", Input.Validate.REQUIRED);
 
@@ -22,8 +23,8 @@ public class TreeWithPointProcess extends CalculationNode {
         super();
     }
 
-    public TreeWithPointProcess(RealParameter origin, Tree tree, TraitSet points) {
-        init(origin, tree, points);
+    public TreeWithPointProcess(RealParameter origin, RealParameter rootLength, Tree tree, TraitSet points) {
+        init(origin, rootLength, tree, points);
     }
 
     @Override
@@ -33,19 +34,26 @@ public class TreeWithPointProcess extends CalculationNode {
     }
 
     /**
-     * Stolen from coalescent.TreeIntervals because it is protected there...
+     * Stolen from coalescent.TreeIntervals because it is protected there... this function mutates the times array and
+     * returns nothing. Note that the times are go backwards from the present.
      *
      * @param tree
      * @param times
      * @param childCounts
      */
-    protected static void collectTimes(Tree tree, double[] times, int[] childCounts) {
+    protected static void collectTimes(Tree tree, double rootLength, double[] times, int[] childCounts) {
         Node[] nodes = tree.getNodesAsArray();
+        double maxHeight = 0;
+        double currHeight;
         for (int i = 0; i < nodes.length; i++) {
             Node node = nodes[i];
-            times[i] = node.getHeight();
+            currHeight = node.getHeight();
+            if (currHeight > maxHeight)
+                maxHeight = currHeight;
+            times[i] = currHeight;
             childCounts[i] = node.isLeaf() ? 0 : 2;
         }
+        times[nodes.length] = maxHeight + rootLength;
     }
 
     /**
@@ -55,13 +63,14 @@ public class TreeWithPointProcess extends CalculationNode {
         Tree tree = treeInput.get();
         TraitSet pointTraits = pointsInput.get();
 
+        double rootLength = rootLengthInput.get().getDoubleValues()[0];
+
         final int treeNodeCount = tree.getNodeCount();
-        double[] treeNodeTimes = new double[treeNodeCount];
+        double[] treeNodeTimes = new double[treeNodeCount+1]; // one extra time for the origin to tMCRA.
         int[] treeNodeOutdegree = new int[treeNodeCount];
-        collectTimes(tree, treeNodeTimes, treeNodeOutdegree);
+        collectTimes(tree, rootLength, treeNodeTimes, treeNodeOutdegree);
         // we need to reverse and shift the times in the tree so it uses forward-time
         // starting from the origin.
-        // TODO ensure that this is handling the difference between TMRCA and the origin time correctly.
         double maxTreeNodeTime = Arrays.stream(treeNodeTimes).max().getAsDouble();
         for (int i = 0; i < treeNodeCount; i++) {
             treeNodeTimes[i] = maxTreeNodeTime - treeNodeTimes[i];

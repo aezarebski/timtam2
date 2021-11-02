@@ -24,16 +24,15 @@ public class TestTreeWithPointProcess {
     public void canRecoverIntervals() {
 
         RealParameter origin = new RealParameter("0.0");
+        RealParameter rootLength = new RealParameter("1.0");
         Tree tree = new TreeParser("((2:2, 1:1):1,3:4);",false);
-
-        // TODO Need to use another traitset to indicate that the root length is 1.0!!!
 
         TraitSet points = new TraitSet();
         points.initByName("traitname", "point-date",
                 "taxa", dummyTaxonSet(2),
                 "value", "t0=1.5, t1=2.5");
 
-        TreeWithPointProcess tpp = new TreeWithPointProcess(origin, tree, points);
+        TreeWithPointProcess tpp = new TreeWithPointProcess(origin, rootLength, tree, points);
 
         // There are two occurrences, three leaves and two internal nodes.
         assertEquals(tpp.getIntervalCount(),2 + 3 + (3 - 1));
