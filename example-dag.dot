@@ -8,12 +8,18 @@ digraph G {
                         style=filled,
                         color="#54278f",
                         fillcolor="#f2f0f7"];
-  TraitSet [shape=box];
-  Origin [shape=box];
+  TraitSet [shape=box,
+            style=filled,
+            color="#e6550d",
+            fillcolor="#fee6ce"];
+  RootLength [shape=box,
+              style=filled,
+              color="#e6550d",
+              fillcolor="#fee6ce"];
   Tree [shape=box];
 
-  Origin -> TimTam;
-  Origin -> TreeWithPointProcess;
+  RootLength -> TimTam;
+  RootLength -> TreeWithPointProcess;
   TraitSet -> TreeWithPointProcess;
   TreeWithPointProcess -> TimTam;
   RealParameters -> TimTam;

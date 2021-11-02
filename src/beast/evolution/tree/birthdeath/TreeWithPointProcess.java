@@ -14,7 +14,6 @@ import java.util.Arrays;
 @Description("Extracts intervals from a tree when there is an additional point-process associated with it.")
 public class TreeWithPointProcess extends CalculationNode {
 
-    final public Input<RealParameter> originInput = new Input<>("origin", "the origin time", Input.Validate.REQUIRED);
     final public Input<RealParameter> rootLengthInput = new Input<>("rootLength", "the time between the origin and the MRCA of the tree", Input.Validate.REQUIRED);
     final public Input<Tree> treeInput = new Input<>("tree", "the tree", Input.Validate.REQUIRED);
     final public Input<TraitSet> pointsInput = new Input<>("points", "the points in the point process", Input.Validate.REQUIRED);
@@ -23,8 +22,8 @@ public class TreeWithPointProcess extends CalculationNode {
         super();
     }
 
-    public TreeWithPointProcess(RealParameter origin, RealParameter rootLength, Tree tree, TraitSet points) {
-        init(origin, rootLength, tree, points);
+    public TreeWithPointProcess(RealParameter rootLength, Tree tree, TraitSet points) {
+        init(rootLength, tree, points);
     }
 
     @Override
@@ -89,7 +88,7 @@ public class TreeWithPointProcess extends CalculationNode {
         double treeET;
         int pointJx = 0;
         double pointET;
-        double currTime = originInput.get().getValue();
+        double currTime = 0.0; // TODO we should not really be hardcoding that the origin is zero....
         int intIx = 0;
         while (intIx < intervalCount) {
             // if the tree events have been exhausted set the next event time to positive
@@ -136,6 +135,14 @@ public class TreeWithPointProcess extends CalculationNode {
             calculateIntervals();
         }
         return intervalCount;
+    }
+
+    public double getInterval(int i) {
+        if (!intervalsKnown) {
+            calculateIntervals();
+        }
+        if (i < 0 || i >= intervalCount) throw new IllegalArgumentException();
+        return intervals[i];
     }
 
     public EventType getIntervalType(int i) {

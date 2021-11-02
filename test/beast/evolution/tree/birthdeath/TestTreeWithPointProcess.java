@@ -32,7 +32,7 @@ public class TestTreeWithPointProcess {
                 "taxa", dummyTaxonSet(2),
                 "value", "t0=1.5, t1=2.5");
 
-        TreeWithPointProcess tpp = new TreeWithPointProcess(origin, rootLength, tree, points);
+        TreeWithPointProcess tpp = new TreeWithPointProcess(rootLength, tree, points);
 
         // There are two occurrences, three leaves and two internal nodes.
         assertEquals(tpp.getIntervalCount(),2 + 3 + (3 - 1));
