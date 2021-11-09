@@ -39,6 +39,9 @@ public class TimTam extends TreeDistribution {
     // length of the edge from origin to MRCA node.
     RealParameter rootLength;
 
+    // the times at which a scheduled sequenced sample was attempted
+    TraitSet catastropheTimes;
+
     // the times at which there was an occurrence sample.
     TraitSet points;
 
@@ -64,8 +67,9 @@ public class TimTam extends TreeDistribution {
             RealParameter p,
             RealParameter omega,
             RealParameter rootLength,
+            TraitSet catastropheTimes,
             TraitSet points) {
-        this("timTamModel", lambda, mu, psi, p, omega, rootLength, points);
+        this("timTamModel", lambda, mu, psi, p, omega, rootLength, catastropheTimes, points);
     }
 
     final public Input<RealParameter> lambdaInput = new Input<>("lambda", "the birth rate of new infections");
@@ -74,6 +78,7 @@ public class TimTam extends TreeDistribution {
     final public Input<RealParameter> pInput = new Input<>("p", "the probability of sampling extant lineages");
     final public Input<RealParameter> omegaInput = new Input<>("omega", "the occurrence rate");
     final public Input<RealParameter> rootLengthInput = new Input<>("rootLength", "the length of the edge between the origin and the MRCA");
+    final public Input<TraitSet> catastropheTimesInput = new Input<>("catastropheTimes", "the times at which a scheduled sequenced sample was attempted");
     final public Input<TraitSet> pointsInput = new Input<>("points", "the points in the point process");
 
     @Override
@@ -98,6 +103,8 @@ public class TimTam extends TreeDistribution {
         this.rootLength= rootLengthInput.get();
         rootLength.setBounds(0.0, Double.POSITIVE_INFINITY);
 
+        this.catastropheTimes = catastropheTimesInput.get();
+
         this.points = pointsInput.get();
     }
 
@@ -109,6 +116,7 @@ public class TimTam extends TreeDistribution {
             RealParameter p,
             RealParameter omega,
             RealParameter rootLength,
+            TraitSet catastropheTimes,
             TraitSet points) {
 
         this.lambda = lambda;
@@ -130,6 +138,8 @@ public class TimTam extends TreeDistribution {
         rootLength.setBounds(0.0, Double.POSITIVE_INFINITY);
 
         this.nb = new NegativeBinomial();
+
+        this.catastropheTimes = catastropheTimes;
 
         this.points = points;
     }
@@ -169,7 +179,7 @@ public class TimTam extends TreeDistribution {
      */
     public final void calculateTreeLogLikelihood(Tree tree) {
 
-        TreeWithPointProcess ti = new TreeWithPointProcess(rootLength, tree, points);
+        TreeWithPointProcess ti = new TreeWithPointProcess(rootLength, tree, points, catastropheTimes);
         int numIntervals = ti.getIntervalCount();
 
         this.lnL = 0.0;

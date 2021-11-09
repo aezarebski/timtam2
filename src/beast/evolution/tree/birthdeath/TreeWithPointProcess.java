@@ -13,8 +13,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.OptionalInt;
-import java.util.stream.Collectors;
-import java.util.stream.DoubleStream;
 
 @Description("Extracts intervals from a tree when there is an additional point-process associated with it.")
 public class TreeWithPointProcess extends CalculationNode {
@@ -26,10 +24,6 @@ public class TreeWithPointProcess extends CalculationNode {
 
     public TreeWithPointProcess() {
         super();
-    }
-
-    public TreeWithPointProcess(RealParameter rootLength, Tree tree, TraitSet points) {
-        init(rootLength, tree, points);
     }
 
     public TreeWithPointProcess(RealParameter rootLength, Tree tree, TraitSet points, TraitSet catastropheTimes) {

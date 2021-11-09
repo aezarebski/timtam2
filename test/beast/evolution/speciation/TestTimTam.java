@@ -1,6 +1,7 @@
 package beast.evolution.speciation;
 
 import beast.core.parameter.RealParameter;
+import beast.evolution.branchratemodel.RateStatistic;
 import beast.evolution.tree.TraitSet;
 import beast.evolution.tree.Tree;
 import beast.util.TreeParser;
@@ -15,6 +16,7 @@ import static org.junit.Assert.assertTrue;
 public class TestTimTam {
 
     private final BiPredicate<Double, Double> approxEqual = (x, y) -> Math.abs(x - y) < 1e-5;
+    private final BiPredicate<Double, Double> roughlyEqual = (x, y) -> Math.abs(x - y) < 1e-1;
 
     @Test
     public void testLikelihood() {
@@ -39,22 +41,18 @@ public class TestTimTam {
                 "taxa", dummyTaxonSet(1),
                 "value", "t0=7.0");
 
-        TimTam tt = new TimTam(birthRate, deathRate, samplingRate, rhoProb, occurrenceRate, rootLength, points);
+        TimTam tt = new TimTam(birthRate, deathRate, samplingRate, rhoProb, occurrenceRate, rootLength, catastropheTimes, points);
         tt.setInputValue("tree", tree);
 
-
-        System.out.println("-----------------------------");
         double fx, fxh, h, fxDash;
         h = 1e-6;
         fxh = tt.p0(1.0, 1.0 - h);
         fx = tt.p0(1.0, 1.0);
         fxDash = tt.lnP0Dash1(1.0);
-        System.out.println("Numeric derivative: " + Math.log((fx - fxh) / h));
-        System.out.println("Symbolic derivative: " + fxDash);
-        System.out.println("-----------------------------");
-        System.out.println(tt.calculateLogP());
+        assertTrue(approxEqual.test(Math.log((fx - fxh) / h), fxDash));
+
         assertTrue(
-                approxEqual.test(
+                roughlyEqual.test(
                         -47.0,
                         tt.calculateLogP()
                 )
