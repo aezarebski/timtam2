@@ -1,29 +1,36 @@
 package beast.evolution.tree.birthdeath;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.OptionalInt;
+
 /**
- * Specifies that ways that an interval in a reconstructed tree can end.
+ * Specifies that ways that an interval of time without an observation can end.
+ *
+ * <p>This uses a class rather than an enumeration because we do not know ahead
+ * of time how many samples may have been generated in a catastrophe (which is a
+ * scheduled sequenced sample).</p>
  */
-public enum EventType {
+public class EventType {
 
-    /**
-     * Denotes a bifuration in the reconstructed tree.
-     */
-    BIRTH("birth"),
+    static final List<String> eventTypes = Arrays.asList("birth", "sample", "occurrence", "catastrophe");
 
-    /**
-     * Denotes a leaf of the reconstructed tree.
-     */
-    SAMPLE("sample"),
-
-    /**
-     * Denotes an unsequenced observation, ie an unsequenced unscheduled sample.
-     */
-    OCCURRENCE("occurrence");
-
-    EventType(String name) { this.name = name; }
+    EventType(String type, OptionalInt count) {
+        if (eventTypes.contains(type)) {
+            this.type = type;
+            this.count = count;
+        } else {
+            throw new IllegalArgumentException("Unexpected event type: " + type);
+        }
+    }
 
     @Override
-    public String toString() { return name; }
+    public String toString() { return type; }
 
-    private final String name;
+    private final String type;
+    private final OptionalInt count;
+
+    public OptionalInt getCount() {
+        return count;
+    }
 }

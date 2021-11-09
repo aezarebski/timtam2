@@ -10,6 +10,7 @@ import beast.evolution.tree.Tree;
 import beast.util.HeapSort;
 
 import java.util.Arrays;
+import java.util.OptionalInt;
 
 @Description("Extracts intervals from a tree when there is an additional point-process associated with it.")
 public class TreeWithPointProcess extends CalculationNode {
@@ -100,9 +101,9 @@ public class TreeWithPointProcess extends CalculationNode {
                 intervals[intIx] = treeET - currTime;
                 currTime = treeET;
                 if (treeNodeOutdegree[treeJxs[treeJx]] == 2) {
-                    intervalTypes[intIx] = EventType.BIRTH;
+                    intervalTypes[intIx] = new EventType("birth", OptionalInt.empty());
                 } else if (treeNodeOutdegree[treeJxs[treeJx]] == 0) {
-                    intervalTypes[intIx] = EventType.SAMPLE;
+                    intervalTypes[intIx] = new EventType("sample", OptionalInt.empty());
                 } else {
                     throw new IllegalArgumentException("Non-binary tree provided to TreeWithPointProcess");
                 }
@@ -110,7 +111,7 @@ public class TreeWithPointProcess extends CalculationNode {
             } else if (treeET > pointET) {
                 intervals[intIx] = pointET - currTime;
                 currTime = pointET;
-                intervalTypes[intIx] = EventType.OCCURRENCE;
+                intervalTypes[intIx] = new EventType("occurrence", OptionalInt.empty());
                 pointJx++;
             } else {
                 throw new IllegalArgumentException("Invalid events given to TreeWithPointProcess");
