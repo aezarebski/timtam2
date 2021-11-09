@@ -305,17 +305,39 @@ public class TimTam extends TreeDistribution {
         disc = tmp[2];
         expFact = tmp[3];
         return Math.log(disc)
+                + Math.log(expFact)
                 - (2 * Math.log(birth()))
-                - Math.log(expFact)
                 - (2 * Math.log((x2 - 1.0) - (x1 - 1.0) * expFact));
     }
 
     private double lnRDash1(double intervalDuration) {
-
+        double[] tmp = odeHelpers(intervalDuration);
+        double x1,x2,disc,expFact;
+        x1 = tmp[0];
+        x2 = tmp[1];
+        disc = tmp[2];
+        expFact = tmp[3];
+        return Math.log(2)
+                + Math.log(1 - expFact)
+                + Math.log(expFact)
+                + Math.log(disc)
+                - 2 * Math.log(birth())
+                - 3 * Math.log((x2 - expFact * (x1 - 1.0) - 1.0));
     }
 
     private double lnRDash2(double intervalDuration) {
-
+        double[] tmp = odeHelpers(intervalDuration);
+        double x1,x2,disc,expFact;
+        x1 = tmp[0];
+        x2 = tmp[1];
+        disc = tmp[2];
+        expFact = tmp[3];
+        return Math.log(6)
+                + 2 * Math.log(1 - expFact)
+                + Math.log(expFact)
+                + Math.log(disc)
+                - 2 * Math.log(birth())
+                - 4 * Math.log((x2 - expFact * (x1 - 1.0) - 1.0));
     }
 
     private double p0(double intervalDuration) {
@@ -327,11 +349,29 @@ public class TimTam extends TreeDistribution {
     }
 
     private double p0Dash1(double intervalDuration) {
-
+        double[] tmp = odeHelpers(intervalDuration);
+        double x1 = tmp[0];
+        double x2 = tmp[1];
+        double expFact = tmp[3];
+        double aa = x2 - x1 * expFact;
+        double bb = 1 - expFact;
+        double cc = x2 * expFact - x1;
+        return Math.log(cc * aa + x1 * x2 * Math.pow(bb, 2.0))
+                - 2.0 * Math.log(aa - bb);
     }
 
     private double p0Dash2(double intervalDuration) {
-
+        double[] tmp = odeHelpers(intervalDuration);
+        double x1 = tmp[0];
+        double x2 = tmp[1];
+        double expFact = tmp[3];
+        double aa = x2 - x1 * expFact;
+        double bb = 1 - expFact;
+        double cc = x2 * expFact - x1;
+        return Math.log(2.0)
+                + Math.log(bb)
+                + Math.log(cc * aa + x1 * x2 * Math.pow(bb, 2.0))
+                - 3.0 * Math.log(aa - bb);
     }
 
     private double[] odeHelpers(double intervalDuration) {
