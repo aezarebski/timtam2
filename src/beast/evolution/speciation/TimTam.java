@@ -234,6 +234,17 @@ public class TimTam extends TreeDistribution {
                 double lnRp1 = Math.log(Math.exp(this.nb.getLnR()) + 1.0);
                 this.nb.setLnPAndLnR(this.nb.getLnP(), lnRp1);
             }
+            case "catastrophe" -> {
+                int n = intervalType.getCount().getAsInt();
+                double rho = p();
+                lnL = (this.k - n) * Math.log(1 - rho)
+                        + n * Math.log(rho)
+                        + this.nb.lnPGF(1 - rho);
+                this.k -= n;
+                this.nb.setLnPAndLnR(Math.log(1 - rho) + this.nb.getLnP(),
+                        this.nb.getLnR());
+
+            }
             default -> throw new IllegalStateException("Unexpected value: " + intervalType.toString());
         }
 

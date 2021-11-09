@@ -31,6 +31,7 @@ public class TestTimTam {
 
         Tree tree = new TreeParser("((2:2, 1:1):1,3:4);",false);
 
+        // TODO this can be removed if you use this trick: https://github.com/laduplessis/skylinetools/blob/7993f64ca5699ad0da053af2f2a6d8e8a4c45fa8/src/skylinetools/parameter/DateParser.java#L33
         TraitSet points = new TraitSet();
         points.initByName("traitname", "point-date",
                 "taxa", dummyTaxonSet(2),
