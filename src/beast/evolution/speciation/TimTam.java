@@ -3,19 +3,13 @@ package beast.evolution.speciation;
 
 import beast.core.Input;
 import beast.core.parameter.RealParameter;
-import beast.evolution.tree.Node;
 import beast.evolution.tree.TraitSet;
 import beast.evolution.tree.Tree;
 import beast.evolution.tree.TreeDistribution;
 import beast.evolution.tree.birthdeath.EventType;
 import beast.evolution.tree.birthdeath.TreeWithPointProcess;
-import beast.evolution.tree.coalescent.TreeIntervals;
-import cern.jet.random.NegativeBinomial;
-import org.apache.commons.math3.util.MathArrays;
-import org.apache.commons.math3.util.MathUtils;
 
 import java.util.Arrays;
-import java.util.stream.DoubleStream;
 
 /**
  * Tree prior for birth-death-sampling while tracking the distribution of hidden
@@ -41,8 +35,6 @@ public class TimTam extends TreeDistribution {
 
     // occurrence rate
     RealParameter omega;
-
-    boolean hasFinalSample = false;
 
     // length of the edge from origin to MRCA node.
     RealParameter rootLength;
@@ -71,12 +63,9 @@ public class TimTam extends TreeDistribution {
             RealParameter psi,
             RealParameter p,
             RealParameter omega,
-            boolean hasFinalSample,
             RealParameter rootLength,
             TraitSet points) {
-        //Type units) {
-
-        this("timTamModel", lambda, mu, psi, p, omega, hasFinalSample, rootLength, points);
+        this("timTamModel", lambda, mu, psi, p, omega, rootLength, points);
     }
 
     final public Input<RealParameter> lambdaInput = new Input<>("lambda", "the birth rate of new infections");
@@ -84,7 +73,6 @@ public class TimTam extends TreeDistribution {
     final public Input<RealParameter> psiInput = new Input<>("psi", "the sampling rate");
     final public Input<RealParameter> pInput = new Input<>("p", "the probability of sampling extant lineages");
     final public Input<RealParameter> omegaInput = new Input<>("omega", "the occurrence rate");
-    final public Input<Boolean> hasFinalSampleInput = new Input<>("hasFinalSample", "boolean for if there was a scheduled sample at the present");
     final public Input<RealParameter> rootLengthInput = new Input<>("rootLength", "the length of the edge between the origin and the MRCA");
     final public Input<TraitSet> pointsInput = new Input<>("points", "the points in the point process");
 
@@ -107,8 +95,6 @@ public class TimTam extends TreeDistribution {
         this.omega = omegaInput.get();
         omega.setBounds(0.0, Double.POSITIVE_INFINITY);
 
-        this.hasFinalSample = hasFinalSampleInput.get();
-
         this.rootLength= rootLengthInput.get();
         rootLength.setBounds(0.0, Double.POSITIVE_INFINITY);
 
@@ -122,7 +108,6 @@ public class TimTam extends TreeDistribution {
             RealParameter psi,
             RealParameter p,
             RealParameter omega,
-            boolean hasFinalSample,
             RealParameter rootLength,
             TraitSet points) {
 
@@ -141,10 +126,10 @@ public class TimTam extends TreeDistribution {
         this.omega = omega;
         omega.setBounds(0.0, Double.POSITIVE_INFINITY);
 
-        this.hasFinalSample = hasFinalSample;
-
         this.rootLength= rootLength;
         rootLength.setBounds(0.0, Double.POSITIVE_INFINITY);
+
+        this.nb = new NegativeBinomial();
 
         this.points = points;
     }
@@ -165,20 +150,10 @@ public class TimTam extends TreeDistribution {
         return omega.getValue(0);
     }
 
-    /**
-     * @return the proportion of population sampled at final sample, or zero if there is no final sample
-     */
     public double p() {
-
-//        if (mask != null) return mask.p.getValue(0);
-        return hasFinalSample ? p.getValue(0) : 0;
+        return p.getValue(0);
     }
 
-    // The mask does not affect the following two methods
-
-    public double x0() {
-        return rootLength.getValue(0);
-    }
 
     @Override
     public double calculateLogP() {
@@ -193,7 +168,6 @@ public class TimTam extends TreeDistribution {
      * @return log-likelihood of density
      */
     public final void calculateTreeLogLikelihood(Tree tree) {
-        System.out.println("the calculateTreeLogLikelihood method has been called...");
 
         TreeWithPointProcess ti = new TreeWithPointProcess(rootLength, tree, points);
         int numIntervals = ti.getIntervalCount();
@@ -202,8 +176,8 @@ public class TimTam extends TreeDistribution {
         // TODO this assumes a fixed initial condition which should be movied
         //  into something that gets specified by the client.
         this.k = 1;
-        this.nb.setZero(true);
-        for (int i = 0; i <= numIntervals; i++) {
+        this.nb.setZero();
+        for (int i = 0; i < numIntervals; i++) {
             processInterval(ti.getInterval(i));
             processObservation(ti.getIntervalType(i));
         }
@@ -261,8 +235,8 @@ public class TimTam extends TreeDistribution {
         double lnC, lnMean, lnVariance;
 
         double p0Val = p0(intervalDuration); // TODO Check that this gives the correct value....
-        double p0Dash1Val = p0Dash1(intervalDuration);
-        double p0Dash2Val = p0Dash2(intervalDuration);
+        double lnP0Dash1Val = lnP0Dash1(intervalDuration);
+        double lnP0Dash2Val = lnP0Dash2(intervalDuration);
         double lnRVal = lnR(intervalDuration);
         double lnRDash1Val = lnRDash1(intervalDuration);
         double lnRDash2Val = lnRDash2(intervalDuration);
@@ -273,12 +247,12 @@ public class TimTam extends TreeDistribution {
             if (this.k > 0) {
 
                 lnFM0 = this.nb.lnPGF(p0Val) + this.k * lnRVal;
-                double tmp1 = this.nb.lnPGFDash1(p0Val) + Math.log(p0Dash1Val) + this.k * lnRVal;
+                double tmp1 = this.nb.lnPGFDash1(p0Val) + lnP0Dash1Val + this.k * lnRVal;
                 double tmp2 = Math.log(k) + (k-1) * lnRVal + lnRDash1Val + this.nb.lnPGF(p0Val);
                 lnFM1 = logSumExp(new double[]{tmp1, tmp2});
-                tmp1 = this.nb.lnPGFDash2(p0Val) + 2 * Math.log(p0Dash1Val) + this.k * lnRVal;
-                tmp2 = this.nb.lnPGFDash1(p0Val) + Math.log(p0Dash2Val) + this.k * lnRVal;
-                double tmp3 = Math.log(2) + this.nb.lnPGFDash1(p0Val) + Math.log(p0Dash1Val) + Math.log(this.k) + (this.k - 1) * lnRVal + lnRDash1Val;
+                tmp1 = this.nb.lnPGFDash2(p0Val) + 2 * lnP0Dash1Val + this.k * lnRVal;
+                tmp2 = this.nb.lnPGFDash1(p0Val) + lnP0Dash2Val + this.k * lnRVal;
+                double tmp3 = Math.log(2) + this.nb.lnPGFDash1(p0Val) + lnP0Dash1Val + Math.log(this.k) + (this.k - 1) * lnRVal + lnRDash1Val;
                 double tmp4 = this.nb.lnPGF(p0Val) + Math.log(this.k) + Math.log(this.k - 1) + (this.k - 2) * lnRVal + 2 * lnRDash1Val;
                 double tmp5 = this.nb.lnPGF(p0Val) + Math.log(this.k) + (this.k-1) * lnRVal + lnRDash2Val;
                 lnFM2 = logSumExp(new double[]{tmp1,tmp2,tmp3,tmp4,tmp5});
@@ -286,9 +260,9 @@ public class TimTam extends TreeDistribution {
             } else {
 
                 lnFM0 = this.nb.lnPGF(p0Val);
-                lnFM1 = this.nb.lnPGFDash1(p0Val) + Math.log(p0Dash1(intervalDuration));
-                double tmp1 = this.nb.lnPGFDash2(p0Val) + 2 * Math.log(p0Dash1Val);
-                double tmp2 = this.nb.lnPGFDash1(p0Val) + Math.log(p0Dash2Val);
+                lnFM1 = this.nb.lnPGFDash1(p0Val) + lnP0Dash1Val;
+                double tmp1 = this.nb.lnPGFDash2(p0Val) + 2 * lnP0Dash1Val;
+                double tmp2 = this.nb.lnPGFDash1(p0Val) + lnP0Dash2Val;
                 lnFM2 = logSumExp(new double[]{tmp1, tmp2});
 
             }
@@ -359,7 +333,15 @@ public class TimTam extends TreeDistribution {
         return (x1 * (x2 - 1.0) - x2 * (x1 - 1.0) * expFact) / ((x2 - 1.0) - (x1 - 1.0) * expFact);
     }
 
-    private double p0Dash1(double intervalDuration) {
+    protected double p0(double intervalDuration, double z) {
+        double[] tmp = odeHelpers(intervalDuration);
+        double x1 = tmp[0];
+        double x2 = tmp[1];
+        double expFact = tmp[3];
+        return (x1 * (x2 - z) - x2 * (x1 - z) * expFact) / ((x2 - z) - (x1 - z) * expFact);
+    }
+
+    protected double lnP0Dash1(double intervalDuration) {
         double[] tmp = odeHelpers(intervalDuration);
         double x1 = tmp[0];
         double x2 = tmp[1];
@@ -371,7 +353,7 @@ public class TimTam extends TreeDistribution {
                 - 2.0 * Math.log(aa - bb);
     }
 
-    private double p0Dash2(double intervalDuration) {
+    private double lnP0Dash2(double intervalDuration) {
         double[] tmp = odeHelpers(intervalDuration);
         double x1 = tmp[0];
         double x2 = tmp[1];
@@ -407,13 +389,17 @@ public class TimTam extends TreeDistribution {
         double ln1mP;
         double lnR;
 
-        public void setZero(boolean zero) {
-            isZero = zero;
+        public void setZero() {
+            isZero = true;
         }
 
         boolean isZero;
 
         public NegativeBinomial() {
+        }
+
+        public String toString() {
+            return "NegBinomial(" + Math.exp(this.lnR) + ", " + Math.exp(lnP) + ")";
         }
 
         /**
@@ -512,6 +498,7 @@ public class TimTam extends TreeDistribution {
             this.lnMean = lnMean;
             this.lnVariance = lnVariance;
             updateLnPAndLnR();
+            if (lnMean > 0) this.isZero = false;
         }
 
         public double getLnP() {
@@ -523,14 +510,11 @@ public class TimTam extends TreeDistribution {
         }
 
         public void setLnPAndLnR(double lnP, double lnR) {
-            if (!this.isZero) {
-                this.lnP = lnP;
-                this.ln1mP = Math.log(1 - Math.exp(lnP));
-                this.lnR = lnR;
-                updateLnMeanAndLnVariance();
-            } else {
-                throw new RuntimeException("r and p of negative binomial not defined for zero distribution.");
-            }
+            this.lnP = lnP;
+            this.ln1mP = Math.log(1 - Math.exp(lnP));
+            this.lnR = lnR;
+            updateLnMeanAndLnVariance();
+            if (this.lnMean > 0) this.isZero = false;
         }
 
         /**
@@ -563,9 +547,8 @@ public class TimTam extends TreeDistribution {
      * @see <a href="https://en.wikipedia.org/wiki/LogSumExp">Wikipedia page.</a>
      */
     final double logSumExp(double[] xs) {
-        DoubleStream s = Arrays.stream(xs);
-        double xMax = s.max().getAsDouble();
-        double tmp = s.map((x) -> Math.exp(x - xMax)).sum();
+        double xMax = Arrays.stream(xs).max().getAsDouble();
+        double tmp = Arrays.stream(xs).map((x) -> Math.exp(x - xMax)).sum();
         return xMax + Math.log(tmp);
     }
 }

@@ -209,7 +209,7 @@ public class TreeWithPointProcess extends CalculationNode {
         if (!intervalsKnown) {
             calculateIntervals();
         }
-        if (i < 0 || i >= intervalCount) throw new IllegalArgumentException();
+        if (i < 0 || i >= intervalCount) throw new IllegalArgumentException("intervalCount is " + intervalCount + " but interval " + i + " requested.");
         return intervals[i];
     }
 

@@ -10,12 +10,11 @@ import java.util.function.BiPredicate;
 import java.util.function.DoubleFunction;
 
 import static beast.evolution.tree.birthdeath.TestTreeWithPointProcess.dummyTaxonSet;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class TestTimTam {
 
-    private BiPredicate<Double, Double> approxEqual = (x, y) -> Math.abs(x - y) < 1e-5;
+    private final BiPredicate<Double, Double> approxEqual = (x, y) -> Math.abs(x - y) < 1e-5;
 
     @Test
     public void testLikelihood() {
@@ -23,23 +22,36 @@ public class TestTimTam {
         RealParameter birthRate = new RealParameter("2.0");
         RealParameter deathRate = new RealParameter("1.0");
         RealParameter samplingRate = new RealParameter("0.3");
-        RealParameter rhoProb = new RealParameter("-1.0");
+        RealParameter rhoProb = new RealParameter("0.5");
         RealParameter occurrenceRate = new RealParameter("0.6");
 
-        RealParameter origin = new RealParameter("0.0");
         RealParameter rootLength = new RealParameter("1.0");
-
-        Tree tree = new TreeParser("((2:2, 1:1):1,3:4);",false);
+        Tree tree = new TreeParser("(((1:3,2:1):1,3:4):2,4:6);",false);
 
         // TODO this can be removed if you use this trick: https://github.com/laduplessis/skylinetools/blob/7993f64ca5699ad0da053af2f2a6d8e8a4c45fa8/src/skylinetools/parameter/DateParser.java#L33
         TraitSet points = new TraitSet();
         points.initByName("traitname", "point-date",
                 "taxa", dummyTaxonSet(2),
-                "value", "t0=1.5, t1=2.5");
+                "value", "t0=2.0, t1=6.0");
 
-        TimTam tt = new TimTam(birthRate, deathRate, samplingRate, rhoProb, occurrenceRate, false, rootLength, points);
+        TraitSet catastropheTimes = new TraitSet();
+        catastropheTimes.initByName("traitname", "catastrophe-date",
+                "taxa", dummyTaxonSet(1),
+                "value", "t0=7.0");
+
+        TimTam tt = new TimTam(birthRate, deathRate, samplingRate, rhoProb, occurrenceRate, rootLength, points);
         tt.setInputValue("tree", tree);
 
+
+        System.out.println("-----------------------------");
+        double fx, fxh, h, fxDash;
+        h = 1e-6;
+        fxh = tt.p0(1.0, 1.0 - h);
+        fx = tt.p0(1.0, 1.0);
+        fxDash = tt.lnP0Dash1(1.0);
+        System.out.println("Numeric derivative: " + Math.log((fx - fxh) / h));
+        System.out.println("Symbolic derivative: " + fxDash);
+        System.out.println("-----------------------------");
         System.out.println(tt.calculateLogP());
         assertTrue(
                 approxEqual.test(
