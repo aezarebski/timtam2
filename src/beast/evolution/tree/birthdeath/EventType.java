@@ -6,7 +6,7 @@ package beast.evolution.tree.birthdeath;
 public enum EventType {
 
     /**
-     * Denotes a bifuration of the in the reconstructed tree.
+     * Denotes a bifuration in the reconstructed tree.
      */
     BIRTH("birth"),
 
@@ -16,7 +16,7 @@ public enum EventType {
     SAMPLE("sample"),
 
     /**
-     * Denotes an unsequenced observation.
+     * Denotes an unsequenced observation, ie an unsequenced unscheduled sample.
      */
     OCCURRENCE("occurrence");
 

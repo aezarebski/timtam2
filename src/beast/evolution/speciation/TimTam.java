@@ -213,8 +213,31 @@ public class TimTam extends TreeDistribution {
      * This method should mutate the input to account for the observation that occurred.
      *
      * @param intervalType
+     *
+     * @see beast.evolution.tree.birthdeath.EventType
+     *
      */
     private void processObservation(EventType intervalType) {
+        double lnL;
+
+        switch (intervalType.toString()) {
+            case "birth" -> {
+                lnL = Math.log(birth());
+                this.k += 1;
+            }
+            case "sample" -> {
+                lnL = Math.log(psi());
+                this.k -= 1;
+            }
+            case "occurrence" -> {
+                lnL = Math.log(omega()) + this.nb.lnPGFDash1(1.0);
+                double lnRp1 = Math.log(Math.exp(this.nb.getLnR()) + 1.0);
+                this.nb.setLnPAndLnR(this.nb.getLnP(), lnRp1);
+            }
+            default -> throw new IllegalStateException("Unexpected value: " + intervalType.toString());
+        }
+
+        this.lnL+=lnL;
     }
 
     /**
