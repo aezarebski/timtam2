@@ -628,7 +628,7 @@ parse_from_to_by <- function(from_to_by_string) {
 
 #' Predicate for the command line arguments being valid.
 arguments_are_valid <- function(args) {
-  if (args$rho > -1.0 && args$seg_agg_times != "") {
+  if (args$rho > -1.0 && args$seq_agg_times != "") {
     return(FALSE)
   }
   return(TRUE)
