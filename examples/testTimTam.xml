@@ -68,7 +68,7 @@
            tree="@NewickTree.t:ape-sim-example"
            lambda="@myLambda"
            mu="1.0"
-           psi="0.5"
+           psi="@myPsi"
            p="0.5"
            omega="0.5"
            catastropheTimes="@catastTimes"
@@ -76,22 +76,27 @@
            rootLength="0.2445398" />
 
     <parameter id="myLambda" value="2.0" lower="0.0" upper="1000000.0" />
+    <parameter id="myPsi" value="0.2" lower="0.0" upper="1000000.0" />
 
     <run spec='MCMC' chainLength="20000">
         <state>
             <stateNode idref='myLambda' />
+            <stateNode idref='myPsi' />
         </state>
 
         <distribution id="myTimTam.prior" idref='myTimTam' />
 
         <operator spec="RealRandomWalkOperator" windowSize="0.1" useGaussian="true" weight="1.0" parameter="@myLambda" />
+        <operator spec="RealRandomWalkOperator" windowSize="0.1" useGaussian="true" weight="1.0" parameter="@myPsi" />
 
         <logger logEvery="1" fileName="test.$(seed).log">
             <log idref='myLambda' />
+            <log idref='myPsi' />
         </logger>
 
         <logger logEvery="1000">
             <log idref='myLambda' />
+            <log idref='myPsi' />
         </logger>
     </run>
 
