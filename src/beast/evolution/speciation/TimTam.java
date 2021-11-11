@@ -3,11 +3,11 @@ package beast.evolution.speciation;
 
 import beast.core.Input;
 import beast.core.parameter.RealParameter;
-import beast.evolution.tree.TraitSet;
 import beast.evolution.tree.Tree;
 import beast.evolution.tree.TreeDistribution;
 import beast.evolution.tree.birthdeath.EventType;
 import beast.evolution.tree.birthdeath.PointProcess;
+import beast.evolution.tree.birthdeath.Schedule;
 import beast.evolution.tree.birthdeath.TreeWithPointProcess;
 
 import java.util.Arrays;
@@ -41,7 +41,7 @@ public class TimTam extends TreeDistribution {
     RealParameter rootLength;
 
     // the times at which a scheduled sequenced sample was attempted
-    TraitSet catastropheTimes;
+    Schedule catastropheTimes;
 
     // the times at which there was an occurrence sample.
     PointProcess points;
@@ -68,7 +68,7 @@ public class TimTam extends TreeDistribution {
             RealParameter p,
             RealParameter omega,
             RealParameter rootLength,
-            TraitSet catastropheTimes,
+            Schedule catastropheTimes,
             PointProcess points) {
         this("timTamModel", lambda, mu, psi, p, omega, rootLength, catastropheTimes, points);
     }
@@ -79,7 +79,7 @@ public class TimTam extends TreeDistribution {
     final public Input<RealParameter> pInput = new Input<>("p", "the probability of sampling extant lineages");
     final public Input<RealParameter> omegaInput = new Input<>("omega", "the occurrence rate");
     final public Input<RealParameter> rootLengthInput = new Input<>("rootLength", "the length of the edge between the origin and the MRCA");
-    final public Input<TraitSet> catastropheTimesInput = new Input<>("catastropheTimes", "the times at which a scheduled sequenced sample was attempted");
+    final public Input<Schedule> catastropheTimesInput = new Input<>("catastropheTimes", "the times at which a scheduled sequenced sample was attempted");
     final public Input<PointProcess> pointsInput = new Input<>("points", "the points in the point process");
 
     @Override
@@ -117,7 +117,7 @@ public class TimTam extends TreeDistribution {
             RealParameter p,
             RealParameter omega,
             RealParameter rootLength,
-            TraitSet catastropheTimes,
+            Schedule catastropheTimes,
             PointProcess points) {
 
         this.lambda = lambda;
@@ -176,7 +176,6 @@ public class TimTam extends TreeDistribution {
      * Generic likelihood calculation
      *
      * @param tree the tree to calculate likelihood of
-     * @return log-likelihood of density
      */
     public final void calculateTreeLogLikelihood(Tree tree) {
 
@@ -230,7 +229,7 @@ public class TimTam extends TreeDistribution {
                         this.nb.getLnR());
 
             }
-            default -> throw new IllegalStateException("Unexpected value: " + intervalType.toString());
+            default -> throw new IllegalStateException("Unexpected value: " + intervalType);
         }
 
         this.lnL+=lnL;

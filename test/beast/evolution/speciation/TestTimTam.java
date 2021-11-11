@@ -1,17 +1,15 @@
 package beast.evolution.speciation;
 
 import beast.core.parameter.RealParameter;
-import beast.evolution.branchratemodel.RateStatistic;
-import beast.evolution.tree.TraitSet;
 import beast.evolution.tree.Tree;
 import beast.evolution.tree.birthdeath.PointProcess;
+import beast.evolution.tree.birthdeath.Schedule;
 import beast.util.TreeParser;
 import org.junit.Test;
 
 import java.util.function.BiPredicate;
 import java.util.function.DoubleFunction;
 
-import static beast.evolution.tree.birthdeath.TestTreeWithPointProcess.dummyTaxonSet;
 import static org.junit.Assert.assertTrue;
 
 public class TestTimTam {
@@ -34,10 +32,8 @@ public class TestTimTam {
         PointProcess points = new PointProcess();
         points.initByName("value", "2.0 6.0");
 
-        TraitSet catastropheTimes = new TraitSet();
-        catastropheTimes.initByName("traitname", "catastrophe-date",
-                "taxa", dummyTaxonSet(1),
-                "value", "t0=7.0");
+        Schedule catastropheTimes = new Schedule();
+        catastropheTimes.initByName("value", "7.0");
 
         TimTam tt = new TimTam(birthRate, deathRate, samplingRate, rhoProb, occurrenceRate, rootLength, catastropheTimes, points);
         tt.setInputValue("tree", tree);

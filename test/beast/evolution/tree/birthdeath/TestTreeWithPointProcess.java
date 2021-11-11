@@ -1,10 +1,6 @@
 package beast.evolution.tree.birthdeath;
 
 import beast.core.parameter.RealParameter;
-import beast.evolution.alignment.Alignment;
-import beast.evolution.alignment.Sequence;
-import beast.evolution.alignment.TaxonSet;
-import beast.evolution.tree.TraitSet;
 import beast.evolution.tree.Tree;
 import beast.util.TreeParser;
 import org.junit.Test;
@@ -12,13 +8,11 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.function.BiPredicate;
 
 public class TestTreeWithPointProcess {
 
-    private BiPredicate<Double, Double> approxEqual = (x, y) -> Math.abs(x - y) < 1e-5;
+    private final BiPredicate<Double, Double> approxEqual = (x, y) -> Math.abs(x - y) < 1e-5;
 
     @Test
     public void canRecoverCatastrophe() {
@@ -29,10 +23,8 @@ public class TestTreeWithPointProcess {
         PointProcess points = new PointProcess();
         points.initByName("value", "2.0 6.0");
 
-        TraitSet catastropheTimes = new TraitSet();
-        catastropheTimes.initByName("traitname", "catastrophe-date",
-                "taxa", dummyTaxonSet(1),
-                "value", "t0=7.0");
+        Schedule catastropheTimes = new Schedule();
+        catastropheTimes.initByName("value", "7.0");
 
         TreeWithPointProcess tpp = new TreeWithPointProcess(rootLength, tree, points, catastropheTimes);
 
@@ -98,22 +90,5 @@ public class TestTreeWithPointProcess {
 
         assertEquals(tpp.getIntervalType(6).toString(), "sample");
         assertTrue(approxEqual.test(tpp.getIntervalDuration(6), 1.0));
-    }
-
-    /** A dummy taxonset.
-     *
-     * @param Nleaves the number of taxa
-     * @return a TaxonSet containing taxa with IDs: t0, t1, ...
-     */
-    public static TaxonSet dummyTaxonSet(int Nleaves) {
-        List<Sequence> seqList = new ArrayList<>();
-
-        for (int i=0; i<Nleaves; i++) {
-            String taxonID = "t" + i;
-            seqList.add(new Sequence(taxonID, "?"));
-        }
-
-        Alignment alignment = new Alignment(seqList, "nucleotide");
-        return new TaxonSet(alignment);
     }
 }
