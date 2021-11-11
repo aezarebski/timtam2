@@ -8,10 +8,14 @@ digraph G {
                         style=filled,
                         color="#54278f",
                         fillcolor="#f2f0f7"];
-  TraitSet [shape=box,
+  PointProcess [shape=box,
+                style=filled,
+                color="#54278f",
+                fillcolor="#f2f0f7"];
+  Schedule [shape=box,
             style=filled,
-            color="#e6550d",
-            fillcolor="#fee6ce"];
+            color="#54278f",
+            fillcolor="#f2f0f7"];
   RootLength [shape=box,
               style=filled,
               color="#e6550d",
@@ -20,7 +24,8 @@ digraph G {
 
   RootLength -> TimTam;
   RootLength -> TreeWithPointProcess;
-  TraitSet -> TreeWithPointProcess;
+  PointProcess -> TreeWithPointProcess;
+  Schedule -> TreeWithPointProcess;
   TreeWithPointProcess -> TimTam;
   RealParameters -> TimTam;
   Tree -> TreeWithPointProcess;

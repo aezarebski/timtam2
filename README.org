@@ -60,9 +60,10 @@ time and a =TraitSet= which is what we use to describe unsequenced observations.
 Figure [[example-dag]] shows an example of how =TimTam= and =TreeWithPointProcess=
 nodes might be used in a model, ie the nodes represent =CalculationNode=
 objects. The darker blue nodes are from the classes provided by this package.
-The =TraitSet= node is used to represent the times at which there was an
-unsequenced observation. In the future this may be represented by a proper date
-object. The =RootLength= is really a =RealParameter=.
+The =PointProcess= node represents the times at which there was an unsequenced
+observation and the =Schedule= node records when there was a scheduled sequenced
+sample. The =RootLength= is really a =RealParameter= but this has not been given
+its own class yet.
 
 #+name: example-dag
 #+attr_org: :width 500
