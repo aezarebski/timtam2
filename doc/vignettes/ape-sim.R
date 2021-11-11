@@ -89,6 +89,12 @@ parser$add_argument(
          help = "Generate plots"
        )
 parser$add_argument(
+         "--write-newick",
+         action = "store_true",
+         default = FALSE,
+         help = "Write a Newick string representation of the reconstructed tree to file."
+       )
+parser$add_argument(
          "-r",
          "--rho",
          type = "double",
@@ -414,6 +420,7 @@ run_simulation <- function(params, is_verbose) {
     aggregated_event_times_df = agg_event_times_df,
     final_prevalence = final_prevalence,
     phylo = phy,
+    reconstructed_tree = rt,
     outcome = outcome,
     tip_ix = tip_ix,
     num_extinct = num_extinct,
@@ -700,6 +707,14 @@ main <- function(args) {
                 file = output_filepath("ape-sim-event-times.csv"),
                 sep = ",",
                 row.names = FALSE)
+
+    if (args$write_newick) {
+      if (args$verbose) {
+        cat("writing the newick for the reconstructed tree...\n")
+      }
+      write.tree(phy = sim_result$reconstructed_tree,
+                 file = output_filepath("ape-sim-reconstructed-tree.newick"))
+    }
     ## if there are aggregated simulation results then these should also be
     ## recorded.
     if (!is.null(sim_result$aggregated_event_times_df)) {
