@@ -7,17 +7,19 @@ easier and is still useful.
 * Remaining tasks and open problems
 
 1. AVOID USING THE SAME PACKAGE PATHS!
-2. Work out how to encode the relative timing properly.
-   - Use =TraitSet= to put correct dates on the leaves.
-   - Use =DateParameter= to put correct dates on the points.
-     + There is an example in =feast= for how to do this.
-   - Double check that this gets the internal nodes and root correct.
-3. Finish the implementation of the likelihood which is currently blocked
-   because there isn't a negative binomial distribution.
-4. Figure out how to return additional data from the [[*=TimTam=]] class when
+2. Figure out how to return additional data from the [[*=TimTam=]] class when
    running MCMC. This should be incorporated into an example too.
-5. Set up a BEAUTi template.
+3. Use proper dates on the nodes and point process to avoid needing to
+   pre-compute these for the XML
+4. Make the vignette easier to run and make it easier to generate the XML from a
+   dataset.
+5. Include an example where the tree is estimated as well.
+6. Set up a BEAUTi template.
    - This may require reading up on how to use Swing.
+
+* Vignette
+
+- [[file:./doc/vignettes/fixed-tree-example.org][Fixed tree example]]
 
 * Classes
 
@@ -41,20 +43,27 @@ of hidden lineages.
 This class describes the kinds of events that can be observed under the TimTam
 likelihood.
 
+*** =PointProcess= and =Schedule=
+
+These classes are really just aliases to =RealParameter= as a way to make their
+meaning clearer. The =PointProcess= stores the occurrence times and the
+=Schedule= is used to indicate when there was a scheduled sample.
+
 *** =TreeWithPointProcess=
 
 This class extends the =CalculationNode= and provides functionality for
 computing the times between observed events. This requires a tree, the origin
 time and a =TraitSet= which is what we use to describe unsequenced observations.
 
-* Example
+* Structure
 
 Figure [[example-dag]] shows an example of how =TimTam= and =TreeWithPointProcess=
 nodes might be used in a model, ie the nodes represent =CalculationNode=
 objects. The darker blue nodes are from the classes provided by this package.
-The =TraitSet= node is used to represent the times at which there was an
-unsequenced observation. In the future this may be represented by a proper date
-object. The =RootLength= is really a =RealParameter=.
+The =PointProcess= node represents the times at which there was an unsequenced
+observation and the =Schedule= node records when there was a scheduled sequenced
+sample. The =RootLength= is really a =RealParameter= but this has not been given
+its own class yet.
 
 #+name: example-dag
 #+attr_org: :width 500

@@ -5,7 +5,6 @@ import beast.core.Description;
 import beast.core.Input;
 import beast.core.parameter.RealParameter;
 import beast.evolution.tree.Node;
-import beast.evolution.tree.TraitSet;
 import beast.evolution.tree.Tree;
 import beast.util.HeapSort;
 
@@ -19,14 +18,14 @@ public class TreeWithPointProcess extends CalculationNode {
 
     final public Input<RealParameter> rootLengthInput = new Input<>("rootLength", "the time between the origin and the MRCA of the tree", Input.Validate.REQUIRED);
     final public Input<Tree> treeInput = new Input<>("tree", "the tree", Input.Validate.REQUIRED);
-    final public Input<TraitSet> pointsInput = new Input<>("points", "the points in the point process", Input.Validate.REQUIRED);
-    final public Input<TraitSet> catastropheTimesInput = new Input<>("catastropheTimes", "the times at which there was a catastrophe", Input.Validate.OPTIONAL);
+    final public Input<PointProcess> pointsInput = new Input<>("points", "the points in the point process", Input.Validate.REQUIRED);
+    final public Input<Schedule> catastropheTimesInput = new Input<>("catastropheTimes", "the times at which there was a catastrophe", Input.Validate.OPTIONAL);
 
     public TreeWithPointProcess() {
         super();
     }
 
-    public TreeWithPointProcess(RealParameter rootLength, Tree tree, TraitSet points, TraitSet catastropheTimes) {
+    public TreeWithPointProcess(RealParameter rootLength, Tree tree, PointProcess points, Schedule catastropheTimes) {
         init(rootLength, tree, points, catastropheTimes);
     }
 
@@ -64,8 +63,8 @@ public class TreeWithPointProcess extends CalculationNode {
      */
     protected void calculateIntervals() {
         Tree tree = treeInput.get();
-        TraitSet pointTraits = pointsInput.get();
-        TraitSet catastropheTraits = catastropheTimesInput.get();
+        PointProcess pointTraits = pointsInput.get();
+        Schedule catastropheTraits = catastropheTimesInput.get();
 
         double rootLength = rootLengthInput.get().getDoubleValues()[0];
 
@@ -88,7 +87,7 @@ public class TreeWithPointProcess extends CalculationNode {
         int[] catastropheSizes;
         if (catastropheTraits != null) {
             // we make a list of the (forward) times at which there was a catastrophe so that we can collect this information out of the tree later.
-            catastropheTimes = catastropheTraits.taxaInput.get().asStringList().stream().mapToDouble(catastropheTraits::getValue).sorted().boxed().toList();
+            catastropheTimes = catastropheTraits.valuesInput.get().stream().mapToDouble(Double::doubleValue).sorted().boxed().toList();
             catastropheSizes = new int[catastropheTimes.size()];
             Arrays.fill(catastropheSizes, 0);
             measureCatastrophes(tree, maxTreeNodeTime, catastropheTimes, catastropheSizes);
@@ -102,8 +101,8 @@ public class TreeWithPointProcess extends CalculationNode {
             catastropheSizes = new int[0];
         }
 
-        final int pointCount = pointTraits.taxaInput.get().getTaxonCount();
-        final double[] pointTimes = pointTraits.taxaInput.get().asStringList().stream().mapToDouble(pointTraits::getValue).sorted().toArray();
+        final int pointCount = pointTraits.valuesInput.get().size();
+        final double[] pointTimes = pointTraits.valuesInput.get().stream().sorted().mapToDouble(Double::doubleValue).toArray();
 
         // The number of intervals needs to account for catastrophes where there are no sequences collected and catastrophes where multiple leaves correspond to a single interval.
         intervalCount = pointCount + treeNodeCount - totalInCatastrophes + numCatastrophes;
