@@ -186,6 +186,8 @@ public class TimTam extends TreeDistribution {
         // TODO this assumes a fixed initial condition which should be movied
         //  into something that gets specified by the client.
         this.k = 1;
+
+        this.nb = new NegativeBinomial();
         this.nb.setZero();
         for (int i = 0; i < numIntervals; i++) {
             processInterval(ti.getInterval(i));
