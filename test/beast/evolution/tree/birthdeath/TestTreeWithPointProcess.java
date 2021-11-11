@@ -26,10 +26,8 @@ public class TestTreeWithPointProcess {
         RealParameter rootLength = new RealParameter("1.0");
         Tree tree = new TreeParser("(((1:3,2:1):1,3:4):2,4:6);",false);
 
-        TraitSet points = new TraitSet();
-        points.initByName("traitname", "point-date",
-                "taxa", dummyTaxonSet(2),
-                "value", "t0=2.0, t1=6.0");
+        PointProcess points = new PointProcess();
+        points.initByName("value", "2.0 6.0");
 
         TraitSet catastropheTimes = new TraitSet();
         catastropheTimes.initByName("traitname", "catastrophe-date",
@@ -71,10 +69,8 @@ public class TestTreeWithPointProcess {
         RealParameter rootLength = new RealParameter("1.0");
         Tree tree = new TreeParser("((2:2, 1:1):1,3:4);",false);
 
-        TraitSet points = new TraitSet();
-        points.initByName("traitname", "point-date",
-                "taxa", dummyTaxonSet(2),
-                "value", "t0=1.5, t1=2.5");
+        PointProcess points = new PointProcess();
+        points.initByName("value", "1.5 2.5");
 
         TreeWithPointProcess tpp = new TreeWithPointProcess(rootLength, tree, points, null);
 
