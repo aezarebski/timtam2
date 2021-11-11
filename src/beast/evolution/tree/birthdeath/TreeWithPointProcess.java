@@ -19,14 +19,14 @@ public class TreeWithPointProcess extends CalculationNode {
 
     final public Input<RealParameter> rootLengthInput = new Input<>("rootLength", "the time between the origin and the MRCA of the tree", Input.Validate.REQUIRED);
     final public Input<Tree> treeInput = new Input<>("tree", "the tree", Input.Validate.REQUIRED);
-    final public Input<TraitSet> pointsInput = new Input<>("points", "the points in the point process", Input.Validate.REQUIRED);
+    final public Input<PointProcess> pointsInput = new Input<>("points", "the points in the point process", Input.Validate.REQUIRED);
     final public Input<TraitSet> catastropheTimesInput = new Input<>("catastropheTimes", "the times at which there was a catastrophe", Input.Validate.OPTIONAL);
 
     public TreeWithPointProcess() {
         super();
     }
 
-    public TreeWithPointProcess(RealParameter rootLength, Tree tree, TraitSet points, TraitSet catastropheTimes) {
+    public TreeWithPointProcess(RealParameter rootLength, Tree tree, PointProcess points, TraitSet catastropheTimes) {
         init(rootLength, tree, points, catastropheTimes);
     }
 
@@ -64,7 +64,7 @@ public class TreeWithPointProcess extends CalculationNode {
      */
     protected void calculateIntervals() {
         Tree tree = treeInput.get();
-        TraitSet pointTraits = pointsInput.get();
+        PointProcess pointTraits = pointsInput.get();
         TraitSet catastropheTraits = catastropheTimesInput.get();
 
         double rootLength = rootLengthInput.get().getDoubleValues()[0];
@@ -102,8 +102,8 @@ public class TreeWithPointProcess extends CalculationNode {
             catastropheSizes = new int[0];
         }
 
-        final int pointCount = pointTraits.taxaInput.get().getTaxonCount();
-        final double[] pointTimes = pointTraits.taxaInput.get().asStringList().stream().mapToDouble(pointTraits::getValue).sorted().toArray();
+        final int pointCount = pointTraits.valuesInput.get().size();
+        final double[] pointTimes = pointTraits.valuesInput.get().stream().sorted().mapToDouble(Double::doubleValue).toArray();
 
         // The number of intervals needs to account for catastrophes where there are no sequences collected and catastrophes where multiple leaves correspond to a single interval.
         intervalCount = pointCount + treeNodeCount - totalInCatastrophes + numCatastrophes;

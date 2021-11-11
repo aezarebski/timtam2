@@ -7,6 +7,7 @@ import beast.evolution.tree.TraitSet;
 import beast.evolution.tree.Tree;
 import beast.evolution.tree.TreeDistribution;
 import beast.evolution.tree.birthdeath.EventType;
+import beast.evolution.tree.birthdeath.PointProcess;
 import beast.evolution.tree.birthdeath.TreeWithPointProcess;
 
 import java.util.Arrays;
@@ -43,7 +44,7 @@ public class TimTam extends TreeDistribution {
     TraitSet catastropheTimes;
 
     // the times at which there was an occurrence sample.
-    TraitSet points;
+    PointProcess points;
 
     // we use this attribute to accumulate the log-likelihood in the calculation.
     private double lnL;
@@ -68,7 +69,7 @@ public class TimTam extends TreeDistribution {
             RealParameter omega,
             RealParameter rootLength,
             TraitSet catastropheTimes,
-            TraitSet points) {
+            PointProcess points) {
         this("timTamModel", lambda, mu, psi, p, omega, rootLength, catastropheTimes, points);
     }
 
@@ -79,7 +80,7 @@ public class TimTam extends TreeDistribution {
     final public Input<RealParameter> omegaInput = new Input<>("omega", "the occurrence rate");
     final public Input<RealParameter> rootLengthInput = new Input<>("rootLength", "the length of the edge between the origin and the MRCA");
     final public Input<TraitSet> catastropheTimesInput = new Input<>("catastropheTimes", "the times at which a scheduled sequenced sample was attempted");
-    final public Input<TraitSet> pointsInput = new Input<>("points", "the points in the point process");
+    final public Input<PointProcess> pointsInput = new Input<>("points", "the points in the point process");
 
     @Override
     public void initAndValidate() {
@@ -117,7 +118,7 @@ public class TimTam extends TreeDistribution {
             RealParameter omega,
             RealParameter rootLength,
             TraitSet catastropheTimes,
-            TraitSet points) {
+            PointProcess points) {
 
         this.lambda = lambda;
         lambda.setBounds(0.0, Double.POSITIVE_INFINITY);
