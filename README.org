@@ -17,6 +17,10 @@ easier and is still useful.
 6. Set up a BEAUTi template.
    - This may require reading up on how to use Swing.
 
+* Vignette
+
+- [[file:./doc/vignettes/fixed-tree-example.org][Fixed tree example]]
+
 * Classes
 
 Here is a description of the classes that are provided by the package.
@@ -39,13 +43,19 @@ of hidden lineages.
 This class describes the kinds of events that can be observed under the TimTam
 likelihood.
 
+*** =PointProcess= and =Schedule=
+
+These classes are really just aliases to =RealParameter= as a way to make their
+meaning clearer. The =PointProcess= stores the occurrence times and the
+=Schedule= is used to indicate when there was a scheduled sample.
+
 *** =TreeWithPointProcess=
 
 This class extends the =CalculationNode= and provides functionality for
 computing the times between observed events. This requires a tree, the origin
 time and a =TraitSet= which is what we use to describe unsequenced observations.
 
-* Example
+* Structure
 
 Figure [[example-dag]] shows an example of how =TimTam= and =TreeWithPointProcess=
 nodes might be used in a model, ie the nodes represent =CalculationNode=
