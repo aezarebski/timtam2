@@ -9,12 +9,15 @@ easier and is still useful.
 1. AVOID USING THE SAME PACKAGE PATHS!
 2. Figure out how to return additional data from the [[*=TimTam=]] class when
    running MCMC. This should be incorporated into an example too.
+   - Provide a =TimTamLogger= class which implements the =Loggable= interface
+     which can then plug into a =Logger=.
 3. Use proper dates on the nodes and point process to avoid needing to
    pre-compute these for the XML
 4. Make the vignette easier to run and make it easier to generate the XML from a
    dataset.
 5. Include an example where the tree is estimated as well.
-6. Set up a BEAUTi template.
+6. Include the capability to parameterise this in terms of \(R_{0}\).
+7. Set up a BEAUTi template.
    - This may require reading up on how to use Swing.
 
 * Vignette
