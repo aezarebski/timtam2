@@ -1,9 +1,17 @@
+/*
+ Usage
+ -----
+ $ dot example-dag.dot -Tpng -o example-dag.png
+*/
 digraph G {
   TimTam [shape=box,
           style=filled,
           color="#54278f",
           fillcolor="#f2f0f7"];
-  RealParameters [shape=box];
+  TimTamLogger [shape=box,
+                style=filled,
+                color="#54278f",
+                fillcolor="#f2f0f7"];
   TreeWithPointProcess [shape=box,
                         style=filled,
                         color="#54278f",
@@ -21,6 +29,8 @@ digraph G {
               color="#e6550d",
               fillcolor="#fee6ce"];
   Tree [shape=box];
+  RealParameters [shape=box];
+  MCMC [shape=box];
 
   RootLength -> TimTam;
   RootLength -> TreeWithPointProcess;
@@ -30,4 +40,8 @@ digraph G {
   RealParameters -> TimTam;
   Tree -> TreeWithPointProcess;
   Tree -> TimTam;
+  TimTam -> MCMC;
+
+  TimTam -> TimTamLogger;
+  TimTamLogger -> MCMC;
 }
