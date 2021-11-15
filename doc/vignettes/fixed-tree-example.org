@@ -3,13 +3,31 @@
 The tool, =ape-sim.R=, can be used to simulate a dataset.
 
 #+begin_src sh
-  ./ape-sim.R --seed 1 -p my-params.json -o out --duration 3.0 --rho 0.5 --write-newick
+  ./ape-sim.R --seed 1 -p my-params.json -o out --duration 4.0 --rho 0.5 --write-newick
 #+end_src
 
 Then, using the tree and event times produced by this simulation we can
 construct an XML file to specify the estimation of the birth rate and sampling
-rate: =fixed-tree-example.xml=. Which can be run using beast (provided it has
-access to this package).
+rate: =fixed-tree-example.xml=. The file =out/ape-sim-reconstructed-tree.newick=
+contains a Newick string describing the reconstructed tree. This needs to be put
+into the XML along with a list of the taxa it includes and the occurrence times.
+The following snippet helps with formatting the taxa times.
+
+#+begin_src R
+  library(ape)
+  x <- read.tree("out/ape-sim-reconstructed-tree.newick")
+  sprintf("<sequence taxon=\"%s\">A</sequence>", x$tip.label)
+#+end_src
+
+And this snippet demonstrates how to extract the occurrence times.
+
+#+begin_src R
+  x <- read.csv("out/ape-sim-event-times.csv")
+  root_length <- x[x$event == "origin", "time"]
+  paste(sort(x[x$event == "occurrence", "time"] + root_length), collapse = " ")
+#+end_src
+
+Which can be run using beast (provided it has access to this package).
 
 #+begin_src sh
   beast fixed-tree-example.xml
