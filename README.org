@@ -1,27 +1,23 @@
 #+title: TimTam
 
 This repository is an attempt to implement the [[https://github.com/aezarebski/timtam][TimTam]] likelihood as a BEAST2
-package. As a first pass we will only consider "unscheduled" data since this is
-easier and is still useful.
+package. There is a [[*Vignette][vignette]] demonstrating how to use this.
 
 * Remaining tasks and open problems
 
 1. AVOID USING THE SAME PACKAGE PATHS!
-2. Figure out how to return additional data from the [[*=TimTam=]] class when
-   running MCMC. This should be incorporated into an example too.
-   - Incorporate the use of =TimTamLogger= into the current vignette.
-3. Use proper dates on the nodes and point process to avoid needing to
+2. Use proper dates on the nodes and point process to avoid needing to
    pre-compute these for the XML
-4. Make the vignette easier to run and make it easier to generate the XML from a
+3. Make the vignette easier to run and make it easier to generate the XML from a
    dataset.
-5. Include an example where the tree is estimated as well.
-6. Include the capability to parameterise this in terms of \(R_{0}\).
-7. Set up a BEAUTi template.
+4. Include an example where the tree is estimated as well.
+5. Include the capability to parameterise this in terms of \(R_{0}\).
+6. Set up a BEAUTi template.
    - This may require reading up on how to use Swing.
 
 * Vignette
 
-- [[file:./doc/vignettes/fixed-tree-example.org][Fixed tree example]]
+- [[file:./doc/vignettes/README.org][Fixed tree example]]
 
 * Classes
 
@@ -31,14 +27,13 @@ Here is a description of the classes that are provided by the package.
 
 *** =TimTam=
 
-This class extends the =TreeDistribution= and implements the tree prior that we
-care about. It uses the [[*=TreeWithPointProcess=]] class to help it navigate the
-data. TimTam has a nested class, =NegativeBinomial=, which is used to model the
-number of hidden lineages.
+This class extends the =TreeDistribution= and implements the tree prior. It uses
+the [[*=TreeWithPointProcess=]] class to help it traverse the data.
 
 *** =TimTamLogger=
 
-This class implements =Loggable= to record the prevalence at each MCMC step.
+This class implements =Loggable= and is used to record the prevalence at each
+MCMC step.
 
 ** =beast.evolution.tree.birthdeath=
 
