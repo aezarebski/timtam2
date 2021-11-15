@@ -390,7 +390,7 @@ public class TimTam extends TreeDistribution {
     }
 
     public NegativeBinomial getNegativeBinomial() {
-        return new NegativeBinomial();
+        return this.nb;
     }
 
     public class NegativeBinomial {
