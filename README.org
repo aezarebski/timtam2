@@ -8,6 +8,8 @@ package. There is a [[*Vignette][vignette]] demonstrating how to use this.
 1. AVOID USING THE SAME PACKAGE PATHS!
 2. Use proper dates on the nodes and point process to avoid needing to
    pre-compute these for the XML
+   - The [[https://cran.r-project.org/web/packages/phangorn/index.html][phangorn]] package can simulate sequences on a tree.
+   - There is a Taming the Beast [[https://taming-the-beast.org/tutorials/Molecular-Dating-Tutorial/][tutorial]] which looks at dates on nodes.
 3. Make the vignette easier to run and make it easier to generate the XML from a
    dataset.
 4. Include an example where the tree is estimated as well.
@@ -17,7 +19,7 @@ package. There is a [[*Vignette][vignette]] demonstrating how to use this.
 
 * Vignette
 
-- [[file:./doc/vignettes/README.org][Fixed tree example]]
+- [[file:./doc/vignettes/fixed-tree/README.org][Fixed tree example]]
 
 * Classes
 
