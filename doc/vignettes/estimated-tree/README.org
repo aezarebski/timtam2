@@ -1,0 +1,52 @@
+#+title: Estimated Tree Example
+
+The tool, =ape-sim.R=, can be used to simulate a dataset.
+
+#+begin_src sh
+  ./ape-sim.R --seed 1 -p my-params.json -o out --duration 4.0 --rho 0.5 --simulate-sequences --write-newick
+#+end_src
+
+The results of this simulation for the data for the analysis described in
+=estimated-tree-example.xml=. The file =out/ape-sim-sequences.fasta= contains a
+simulated set of sequences for the reconstructed tree. This needs to be put into
+the XML along with a list of the taxa it includes and the occurrence times. The
+following snippet helps with formatting the taxa times.
+
+#+begin_src R :tangle prep-data.R
+  library(ape)
+  library(purrr)
+  library(magrittr)
+  library(dplyr)
+
+  sim_seqs <- read.FASTA("out/ape-sim-sequences.fasta") |> as.character() |> map(\(x) paste0(x, collapse="")) |> as.character()
+
+  sim_tree <- read.tree("out/ape-sim-reconstructed-tree.newick")
+  tip_labels <- sim_tree$tip.label
+  num_tips <- length(tip_labels)
+  tip_depths <- node.depth.edgelength(sim_tree)[1:num_tips]
+
+  sim_root <- read.csv("out/ape-sim-event-times.csv") |> filter(event == "origin") |> use_series("time") |> abs()
+
+  taxa_id <- sprintf("%s|%.4f", tip_labels, tip_depths + sim_root)
+  writeLines(sprintf("<sequence id=\"%s\" taxon=\"%s\">%s</sequence>", taxa_id, taxa_id, sim_seqs), con = "out/sequence-tags.xml")
+#+end_src
+
+And this snippet demonstrates how to extract the occurrence times.
+
+#+begin_src R :tangle prep-data.R
+  x <- read.csv("out/ape-sim-event-times.csv")
+  root_length <- x[x$event == "origin", "time"]
+  paste(sort(x[x$event == "occurrence", "time"] + root_length), collapse = " ")
+#+end_src
+
+Which can be run using beast (provided it has access to this package).
+
+#+begin_src sh
+  beast estimated-tree-example.xml
+#+end_src
+
+The script =posterior-visualisation.R= generates the visualisation of the
+posterior samples shown below.
+
+#+attr_org: :width 500
+[[./out/posterior-plot.png]]

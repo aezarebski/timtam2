@@ -20,6 +20,7 @@ package. There is a [[*Vignette][vignette]] demonstrating how to use this.
 * Vignette
 
 - [[file:./doc/vignettes/fixed-tree/README.org][Fixed tree example]]
+- [[file:./doc/vignettes/estimated-tree/README.org][Estimated tree example]]
 
 * Classes
 
