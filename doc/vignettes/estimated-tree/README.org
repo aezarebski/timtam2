@@ -21,37 +21,26 @@ given that it is observed, there is a \(20\%\) chance it will be sequenced.
 }
 #+end_src
 
-The results of this simulation for the data for the analysis described in
-=estimated-tree-example.xml=. The file =out/ape-sim-sequences.fasta= contains a
-simulated set of sequences for the reconstructed tree. This needs to be put into
-the XML along with a list of the taxa it includes and the occurrence times. The
-following snippet helps with formatting the taxa times.
+The file =out/ape-sim-sequences.fasta= contains a simulated set of sequences for
+the reconstructed tree. Beauti can use this to generate an XML for the BDSky
+model which will work as a starting place for out XML. The result from Beauti
+should be saved to a file =out/analysis-bdsky.xml= to make it explicit that this
+is using the BDSky prior.
 
-#+begin_src R :tangle prep-data.R
-  library(ape)
-  library(purrr)
-  library(magrittr)
-  library(dplyr)
-
-  sim_seqs <- read.FASTA("out/ape-sim-sequences.fasta") |> as.character() |> map(\(x) paste0(x, collapse="")) |> as.character()
-
-  sim_tree <- read.tree("out/ape-sim-reconstructed-tree.newick")
-  tip_labels <- sim_tree$tip.label
-  num_tips <- length(tip_labels)
-  tip_depths <- node.depth.edgelength(sim_tree)[1:num_tips]
-
-  sim_root <- read.csv("out/ape-sim-event-times.csv") |> filter(event == "origin") |> use_series("time") |> abs()
-
-  taxa_id <- sprintf("%s|%.4f", tip_labels, tip_depths + sim_root)
-  writeLines(sprintf("<sequence id=\"%s\" taxon=\"%s\">%s</sequence>", taxa_id, taxa_id, sim_seqs), con = "out/sequence-tags.xml")
+#+begin_src sh
+  java -cp <path/to/beast.jar> beast.app.beauti.Beauti
 #+end_src
 
-And this snippet demonstrates how to extract the occurrence times.
+The file =out/ape-sim-event-times.csv= contains the times of all the observations
+in the simulation. This needs to be put into the XML along with a list of the
+taxa it includes and the occurrence times. The following snippet helps with
+formatting the occurrence times for inclusion in the XML.
 
-#+begin_src R :tangle prep-data.R
-  x <- read.csv("out/ape-sim-event-times.csv")
-  root_length <- x[x$event == "origin", "time"]
-  paste(sort(x[x$event == "occurrence", "time"] + root_length), collapse = " ")
+#+begin_src R
+x <- read.csv("out/ape-sim-event-times.csv")
+root_length <- x[x$event == "origin", "time"]
+occ_times <- sort(x[x$event == "occurrence", "time"] + root_length)
+paste(occ_times, collapse = " ")
 #+end_src
 
 Which can be run using beast (provided it has access to this package).
