@@ -1,9 +1,24 @@
 #+title: Estimated Tree Example
 
-The tool, =ape-sim.R=, can be used to simulate a dataset.
+The tool, =ape-sim.R=, (version 0.1.2) can be used to simulate a dataset.
 
 #+begin_src sh
-  ./ape-sim.R --seed 1 -p my-params.json -o out --duration 4.0 --rho 0.5 --simulate-sequences --write-newick
+  ./ape-sim.R -v -s 1 -p my-params.json -o out -d 0.15 --simulate-sequences --write-newick --make-plots
+#+end_src
+
+The parameters for the simulation are defined in =my-params.json= as shown below.
+They correspond to an average infectious period of one week. After infection
+there is a \(50\%\) chance the infection will be observed in some manner, and
+given that it is observed, there is a \(20\%\) chance it will be sequenced.
+
+#+begin_src json :tangle my-params.json
+{
+    "birthRate": 104.0,
+    "deathRate": 26.0,
+    "samplingRate": 5.2,
+    "occurrenceRate": 20.8,
+    "substitutionRate": 1e-3
+}
 #+end_src
 
 The results of this simulation for the data for the analysis described in
