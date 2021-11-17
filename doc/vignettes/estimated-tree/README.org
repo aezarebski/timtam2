@@ -31,14 +31,16 @@ is using the BDSky prior.
   java -cp <path/to/beast.jar> beast.app.beauti.Beauti
 #+end_src
 
-The file =out/ape-sim-event-times.csv= contains the times of all the observations
-in the simulation. This needs to be put into the XML along with a list of the
-taxa it includes and the occurrence times. The following snippet helps with
-formatting the occurrence times for inclusion in the XML.
+After seeing that this analysis produces something sensible, we can make a copy
+in =out/analysis-timtam.xml= and use that as a starting point for an analysis
+using TimTam. The file =out/ape-sim-event-times.csv= contains the times of all the
+observations in the simulation. This needs to be put into the XML along with a
+list of the taxa it includes and the occurrence times. The following snippet
+helps with formatting the occurrence times for inclusion in the XML.
 
 #+begin_src R
 x <- read.csv("out/ape-sim-event-times.csv")
-root_length <- x[x$event == "origin", "time"]
+root_length <- abs(x[x$event == "origin", "time"])
 occ_times <- sort(x[x$event == "occurrence", "time"] + root_length)
 paste(occ_times, collapse = " ")
 #+end_src
