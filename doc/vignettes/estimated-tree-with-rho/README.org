@@ -31,15 +31,16 @@ and save the resulting XML, the settings are fine for our purposes here.
   java -cp <path/to/beast.jar> beast.app.beauti.Beauti
 #+end_src
 
-And this snippet demonstrates how to extract the occurrence times and write them
-to a text file.
+And this snippet demonstrates how to extract the occurrence times, reverse them
+and write them to a text file.
 
 #+begin_src R
   x <- read.csv("out/ape-sim-event-times.csv")
-  root_length <- x[x$event == "origin", "time"]
-  occurrence_text = paste(sort(x[x$event == "occurrence", "time"] + root_length),
-                          collapse = " ")
-  writeLines(text = occurrence_text,
+  duration <- 4.0
+  root_length <- abs(x[x$event == "origin", "time"])
+  occurrence_times <- sort(x[x$event == "occurrence", "time"] + root_length)
+  bwd_occurrence_times <- duration - occurrence_times
+  writeLines(text = paste(bwd_occurrence_times,collapse = " "),
              con = "out/occurrence-times.txt")
 #+end_src
 
