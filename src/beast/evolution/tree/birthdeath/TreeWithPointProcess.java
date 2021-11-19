@@ -185,10 +185,21 @@ public class TreeWithPointProcess extends CalculationNode {
             }
         }
 
-        if (Arrays.stream(catastropheSizes).sum() == 0) throw new RuntimeException(
-                "\nIt appears that no samples were obtained in any of the catastrophies, please " +
-                "\ndouble check that the timing of these has been specified correctly in the XML. " +
-                "\nThe current catastrophe times are " + catastropheTimes);
+        if (Arrays.stream(catastropheSizes).sum() == 0) {
+            StringBuilder nodeTimesSB = new StringBuilder();
+            for (Node node : nodes) {
+                if (node.isLeaf()) {
+                    nodeTimesSB.append("\n\t\t").append(maxTime - node.getHeight());
+                }
+            }
+            throw new RuntimeException(
+                    "\nIt appears that no samples were obtained in any of the catastrophies, please " +
+                            "\ndouble check that the timing of these has been specified correctly in the XML. " +
+                            "\nFor debugging purposes here are some variables:" +
+                            "\n\tThe current catastrophe times are " + catastropheTimes +
+                            "\n\tThe maxTime is " + maxTime +
+                            "\n\tThe node times are " + nodeTimesSB);
+        }
     }
 
     protected int intervalCount;
