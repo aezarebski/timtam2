@@ -44,7 +44,7 @@ and write them to a text file.
   occurrence_times <- sort(x[x$event == "occurrence", "time"] + root_length)
   bwd_occurrence_times <- duration - occurrence_times
   writeLines(text = paste(bwd_occurrence_times,collapse = " "),
-             con = "out/occurrence-times.txt"))
+             con = "out/occurrence-times.txt")
 #+end_src
 
 The FASTA file can then be provided to Beauti to set up a scaffold for our
