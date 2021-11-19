@@ -14,24 +14,24 @@ import java.util.List;
 import java.util.OptionalInt;
 
 @Description("Extracts intervals from a tree when there is an additional point-process associated with it.")
-public class TreeWithPointProcess extends CalculationNode {
+public class TreeWithBackwardsPointProcess extends CalculationNode {
 
     final public Input<RealParameter> rootLengthInput = new Input<>("rootLength", "the time between the origin and the MRCA of the tree", Input.Validate.REQUIRED);
     final public Input<Tree> treeInput = new Input<>("tree", "the tree", Input.Validate.REQUIRED);
-    final public Input<PointProcess> pointsInput = new Input<>("points", "the points in the point process", Input.Validate.REQUIRED);
-    final public Input<Schedule> catastropheTimesInput = new Input<>("catastropheTimes", "the times at which there was a catastrophe", Input.Validate.OPTIONAL);
+    final public Input<BackwardsPointProcess> pointsInput = new Input<>("points", "the points in the point process", Input.Validate.REQUIRED);
+    final public Input<BackwardsSchedule> catastropheTimesInput = new Input<>("catastropheTimes", "the times at which there was a catastrophe", Input.Validate.OPTIONAL);
 
     private Tree tree;
-    private Schedule catastropheTraits;
+    private BackwardsSchedule catastropheTraits;
     private double rootLength;
     private double[] pointTimes;
     private int pointCount;
 
-    public TreeWithPointProcess() {
+    public TreeWithBackwardsPointProcess() {
         super();
     }
 
-    public TreeWithPointProcess(RealParameter rootLength, Tree tree, PointProcess points, Schedule catastropheTimes) {
+    public TreeWithBackwardsPointProcess(RealParameter rootLength, Tree tree, BackwardsPointProcess points, BackwardsSchedule catastropheTimes) {
         init(rootLength, tree, points, catastropheTimes);
     }
 
@@ -41,7 +41,7 @@ public class TreeWithPointProcess extends CalculationNode {
         catastropheTraits = catastropheTimesInput.get();
         rootLength = rootLengthInput.get().getDoubleValues()[0];
 
-        PointProcess pointTraits = pointsInput.get();
+        BackwardsPointProcess pointTraits = pointsInput.get();
         pointTimes = pointTraits.valuesInput.get().stream().sorted().mapToDouble(Double::doubleValue).toArray();
         pointCount = pointTimes.length;
         calculateIntervals();
@@ -168,7 +168,7 @@ public class TreeWithPointProcess extends CalculationNode {
      * @param catastropheTimes
      * @param catastropheSizes
      *
-     * @see TreeWithPointProcess#collectTimes
+     * @see TreeWithBackwardsPointProcess#collectTimes
      */
     private void measureCatastrophes(Tree tree, double maxTime, List<Double> catastropheTimes, int[] catastropheSizes) {
         Node[] nodes = tree.getNodesAsArray();

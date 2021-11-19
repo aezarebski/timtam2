@@ -2,8 +2,8 @@ package beast.evolution.speciation;
 
 import beast.core.parameter.RealParameter;
 import beast.evolution.tree.Tree;
-import beast.evolution.tree.birthdeath.PointProcess;
-import beast.evolution.tree.birthdeath.Schedule;
+import beast.evolution.tree.birthdeath.BackwardsPointProcess;
+import beast.evolution.tree.birthdeath.BackwardsSchedule;
 import beast.util.TreeParser;
 import org.junit.Test;
 
@@ -29,10 +29,10 @@ public class TestTimTam {
         RealParameter rootLength = new RealParameter("1.0");
         Tree tree = new TreeParser("(((1:3,2:1):1,3:4):2,4:6);",false);
 
-        PointProcess points = new PointProcess();
+        BackwardsPointProcess points = new BackwardsPointProcess();
         points.initByName("value", "2.0 6.0");
 
-        Schedule catastropheTimes = new Schedule();
+        BackwardsSchedule catastropheTimes = new BackwardsSchedule();
         catastropheTimes.initByName("value", "7.0");
 
         TimTam tt = new TimTam(birthRate, deathRate, samplingRate, rhoProb, occurrenceRate, rootLength, catastropheTimes, points);
@@ -58,8 +58,8 @@ public class TestTimTam {
 
         TimTam tt = new TimTam();
 
-        TimTam.NegativeBinomial myNB = tt.getNegativeBinomial();
-
+        TimTam.NegativeBinomial myNB = tt.getNewNegativeBinomial();
+        myNB.setZero();
 
         assertTrue(
                 approxEqual.test(

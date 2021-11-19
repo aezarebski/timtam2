@@ -6,9 +6,9 @@ import beast.core.parameter.RealParameter;
 import beast.evolution.tree.Tree;
 import beast.evolution.tree.TreeDistribution;
 import beast.evolution.tree.birthdeath.EventType;
-import beast.evolution.tree.birthdeath.PointProcess;
-import beast.evolution.tree.birthdeath.Schedule;
-import beast.evolution.tree.birthdeath.TreeWithPointProcess;
+import beast.evolution.tree.birthdeath.BackwardsPointProcess;
+import beast.evolution.tree.birthdeath.BackwardsSchedule;
+import beast.evolution.tree.birthdeath.TreeWithBackwardsPointProcess;
 
 import java.util.Arrays;
 
@@ -41,10 +41,10 @@ public class TimTam extends TreeDistribution {
     RealParameter rootLength;
 
     // the times at which a scheduled sequenced sample was attempted
-    Schedule catastropheTimes;
+    BackwardsSchedule catastropheTimes;
 
     // the times at which there was an occurrence sample.
-    PointProcess points;
+    BackwardsPointProcess points;
 
     // we use this attribute to accumulate the log-likelihood in the calculation.
     private double lnL;
@@ -68,8 +68,8 @@ public class TimTam extends TreeDistribution {
             RealParameter p,
             RealParameter omega,
             RealParameter rootLength,
-            Schedule catastropheTimes,
-            PointProcess points) {
+            BackwardsSchedule catastropheTimes,
+            BackwardsPointProcess points) {
         this("timTamModel", lambda, mu, psi, p, omega, rootLength, catastropheTimes, points);
     }
 
@@ -79,8 +79,8 @@ public class TimTam extends TreeDistribution {
     final public Input<RealParameter> pInput = new Input<>("p", "the probability of sampling extant lineages");
     final public Input<RealParameter> omegaInput = new Input<>("omega", "the occurrence rate");
     final public Input<RealParameter> rootLengthInput = new Input<>("rootLength", "the length of the edge between the origin and the MRCA");
-    final public Input<Schedule> catastropheTimesInput = new Input<>("catastropheTimes", "the times at which a scheduled sequenced sample was attempted");
-    final public Input<PointProcess> pointsInput = new Input<>("points", "the points in the point process");
+    final public Input<BackwardsSchedule> catastropheTimesInput = new Input<>("catastropheTimes", "the times at which a scheduled sequenced sample was attempted");
+    final public Input<BackwardsPointProcess> pointsInput = new Input<>("points", "the points in the point process");
 
     @Override
     public void initAndValidate() {
@@ -117,8 +117,8 @@ public class TimTam extends TreeDistribution {
             RealParameter p,
             RealParameter omega,
             RealParameter rootLength,
-            Schedule catastropheTimes,
-            PointProcess points) {
+            BackwardsSchedule catastropheTimes,
+            BackwardsPointProcess points) {
 
         this.lambda = lambda;
         lambda.setBounds(0.0, Double.POSITIVE_INFINITY);
@@ -179,7 +179,7 @@ public class TimTam extends TreeDistribution {
      */
     public final void calculateTreeLogLikelihood(Tree tree) {
 
-        TreeWithPointProcess ti = new TreeWithPointProcess(rootLength, tree, points, catastropheTimes);
+        TreeWithBackwardsPointProcess ti = new TreeWithBackwardsPointProcess(rootLength, tree, points, catastropheTimes);
         int numIntervals = ti.getIntervalCount();
 
         this.lnL = 0.0;
@@ -391,6 +391,10 @@ public class TimTam extends TreeDistribution {
 
     public NegativeBinomial getNegativeBinomial() {
         return this.nb;
+    }
+
+    public NegativeBinomial getNewNegativeBinomial() {
+        return new NegativeBinomial();
     }
 
     public class NegativeBinomial {

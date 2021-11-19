@@ -10,7 +10,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.function.BiPredicate;
 
-public class TestTreeWithPointProcess {
+public class TestTreeWithBackwardsPointProcess {
 
     private final BiPredicate<Double, Double> approxEqual = (x, y) -> Math.abs(x - y) < 1e-5;
 
@@ -20,13 +20,13 @@ public class TestTreeWithPointProcess {
         RealParameter rootLength = new RealParameter("1.0");
         Tree tree = new TreeParser("(((1:3,2:1):1,3:4):2,4:6);",false);
 
-        PointProcess points = new PointProcess();
+        BackwardsPointProcess points = new BackwardsPointProcess();
         points.initByName("value", "2.0 6.0");
 
-        Schedule catastropheTimes = new Schedule();
+        BackwardsSchedule catastropheTimes = new BackwardsSchedule();
         catastropheTimes.initByName("value", "7.0");
 
-        TreeWithPointProcess tpp = new TreeWithPointProcess(rootLength, tree, points, catastropheTimes);
+        TreeWithBackwardsPointProcess tpp = new TreeWithBackwardsPointProcess(rootLength, tree, points, catastropheTimes);
 
         // There are two occurrences, three leaves and two internal nodes.
         assertEquals(7, tpp.getIntervalCount());
@@ -61,10 +61,10 @@ public class TestTreeWithPointProcess {
         RealParameter rootLength = new RealParameter("1.0");
         Tree tree = new TreeParser("((2:2, 1:1):1,3:4);",false);
 
-        PointProcess points = new PointProcess();
+        BackwardsPointProcess points = new BackwardsPointProcess();
         points.initByName("value", "1.5 2.5");
 
-        TreeWithPointProcess tpp = new TreeWithPointProcess(rootLength, tree, points, null);
+        TreeWithBackwardsPointProcess tpp = new TreeWithBackwardsPointProcess(rootLength, tree, points, null);
 
         // There are two occurrences, three leaves and two internal nodes.
         assertEquals(tpp.getIntervalCount(),2 + 3 + (3 - 1));
