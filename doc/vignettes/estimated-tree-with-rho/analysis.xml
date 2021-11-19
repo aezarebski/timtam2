@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><beast beautitemplate='Standard' beautistatus='' namespace="beast.core:beast.evolution.alignment:beast.evolution.tree.coalescent:beast.core.util:beast.evolution.nuc:beast.evolution.operators:beast.evolution.sitemodel:beast.evolution.substitutionmodel:beast.evolution.likelihood" required="" version="2.6">
+
+
+    <data
+id="sequences"
+spec="Alignment"
+name="alignment">
+                        <sequence id="seq_t102_4.000000" spec="Sequence" taxon="t102_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t104_2.674748" spec="Sequence" taxon="t104_2.674748" totalcount="4" value="c"/>
+                        <sequence id="seq_t106_2.608581" spec="Sequence" taxon="t106_2.608581" totalcount="4" value="c"/>
+                        <sequence id="seq_t107_3.138305" spec="Sequence" taxon="t107_3.138305" totalcount="4" value="c"/>
+                        <sequence id="seq_t108_3.022077" spec="Sequence" taxon="t108_3.022077" totalcount="4" value="c"/>
+                        <sequence id="seq_t111_4.000000" spec="Sequence" taxon="t111_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t114_4.000000" spec="Sequence" taxon="t114_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t115_4.000000" spec="Sequence" taxon="t115_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t116_4.000000" spec="Sequence" taxon="t116_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t118_4.000000" spec="Sequence" taxon="t118_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t119_4.000000" spec="Sequence" taxon="t119_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t120_4.000000" spec="Sequence" taxon="t120_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t124_3.908154" spec="Sequence" taxon="t124_3.908154" totalcount="4" value="c"/>
+                        <sequence id="seq_t126_4.000000" spec="Sequence" taxon="t126_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t127_4.000000" spec="Sequence" taxon="t127_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t128_4.000000" spec="Sequence" taxon="t128_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t130_4.000000" spec="Sequence" taxon="t130_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t135_2.869255" spec="Sequence" taxon="t135_2.869255" totalcount="4" value="c"/>
+                        <sequence id="seq_t142_2.639331" spec="Sequence" taxon="t142_2.639331" totalcount="4" value="c"/>
+                        <sequence id="seq_t145_1.917806" spec="Sequence" taxon="t145_1.917806" totalcount="4" value="c"/>
+                        <sequence id="seq_t150_2.631868" spec="Sequence" taxon="t150_2.631868" totalcount="4" value="c"/>
+                        <sequence id="seq_t155_4.000000" spec="Sequence" taxon="t155_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t161_2.573705" spec="Sequence" taxon="t161_2.573705" totalcount="4" value="c"/>
+                        <sequence id="seq_t165_2.154822" spec="Sequence" taxon="t165_2.154822" totalcount="4" value="c"/>
+                        <sequence id="seq_t168_2.288889" spec="Sequence" taxon="t168_2.288889" totalcount="4" value="c"/>
+                        <sequence id="seq_t171_3.223610" spec="Sequence" taxon="t171_3.223610" totalcount="4" value="c"/>
+                        <sequence id="seq_t175_4.000000" spec="Sequence" taxon="t175_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t182_3.250155" spec="Sequence" taxon="t182_3.250155" totalcount="4" value="c"/>
+                        <sequence id="seq_t183_3.569192" spec="Sequence" taxon="t183_3.569192" totalcount="4" value="c"/>
+                        <sequence id="seq_t184_4.000000" spec="Sequence" taxon="t184_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t189_4.000000" spec="Sequence" taxon="t189_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t193_4.000000" spec="Sequence" taxon="t193_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t194_4.000000" spec="Sequence" taxon="t194_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t196_3.505342" spec="Sequence" taxon="t196_3.505342" totalcount="4" value="c"/>
+                        <sequence id="seq_t197_4.000000" spec="Sequence" taxon="t197_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t198_4.000000" spec="Sequence" taxon="t198_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t199_4.000000" spec="Sequence" taxon="t199_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t204_3.038468" spec="Sequence" taxon="t204_3.038468" totalcount="4" value="c"/>
+                        <sequence id="seq_t205_3.451950" spec="Sequence" taxon="t205_3.451950" totalcount="4" value="c"/>
+                        <sequence id="seq_t208_4.000000" spec="Sequence" taxon="t208_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t20_3.865150" spec="Sequence" taxon="t20_3.865150" totalcount="4" value="c"/>
+                        <sequence id="seq_t214_3.906591" spec="Sequence" taxon="t214_3.906591" totalcount="4" value="c"/>
+                        <sequence id="seq_t215_4.000000" spec="Sequence" taxon="t215_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t21_4.000000" spec="Sequence" taxon="t21_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t221_4.000000" spec="Sequence" taxon="t221_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t222_3.401325" spec="Sequence" taxon="t222_3.401325" totalcount="4" value="c"/>
+                        <sequence id="seq_t223_3.445891" spec="Sequence" taxon="t223_3.445891" totalcount="4" value="c"/>
+                        <sequence id="seq_t224_3.829752" spec="Sequence" taxon="t224_3.829752" totalcount="4" value="c"/>
+                        <sequence id="seq_t225_4.000000" spec="Sequence" taxon="t225_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t226_4.000000" spec="Sequence" taxon="t226_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t227_4.000000" spec="Sequence" taxon="t227_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t229_4.000000" spec="Sequence" taxon="t229_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t230_3.578116" spec="Sequence" taxon="t230_3.578116" totalcount="4" value="c"/>
+                        <sequence id="seq_t233_3.670351" spec="Sequence" taxon="t233_3.670351" totalcount="4" value="c"/>
+                        <sequence id="seq_t236_4.000000" spec="Sequence" taxon="t236_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t237_4.000000" spec="Sequence" taxon="t237_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t240_3.870934" spec="Sequence" taxon="t240_3.870934" totalcount="4" value="c"/>
+                        <sequence id="seq_t249_2.330893" spec="Sequence" taxon="t249_2.330893" totalcount="4" value="c"/>
+                        <sequence id="seq_t24_4.000000" spec="Sequence" taxon="t24_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t254_3.549672" spec="Sequence" taxon="t254_3.549672" totalcount="4" value="c"/>
+                        <sequence id="seq_t255_4.000000" spec="Sequence" taxon="t255_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t256_3.423445" spec="Sequence" taxon="t256_3.423445" totalcount="4" value="c"/>
+                        <sequence id="seq_t258_4.000000" spec="Sequence" taxon="t258_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t260_4.000000" spec="Sequence" taxon="t260_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t262_3.717565" spec="Sequence" taxon="t262_3.717565" totalcount="4" value="c"/>
+                        <sequence id="seq_t264_4.000000" spec="Sequence" taxon="t264_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t266_4.000000" spec="Sequence" taxon="t266_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t267_4.000000" spec="Sequence" taxon="t267_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t269_3.932374" spec="Sequence" taxon="t269_3.932374" totalcount="4" value="c"/>
+                        <sequence id="seq_t272_3.149076" spec="Sequence" taxon="t272_3.149076" totalcount="4" value="c"/>
+                        <sequence id="seq_t275_4.000000" spec="Sequence" taxon="t275_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t277_4.000000" spec="Sequence" taxon="t277_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t279_4.000000" spec="Sequence" taxon="t279_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t27_3.127428" spec="Sequence" taxon="t27_3.127428" totalcount="4" value="c"/>
+                        <sequence id="seq_t280_3.766255" spec="Sequence" taxon="t280_3.766255" totalcount="4" value="c"/>
+                        <sequence id="seq_t281_4.000000" spec="Sequence" taxon="t281_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t286_3.860768" spec="Sequence" taxon="t286_3.860768" totalcount="4" value="c"/>
+                        <sequence id="seq_t288_1.804242" spec="Sequence" taxon="t288_1.804242" totalcount="4" value="c"/>
+                        <sequence id="seq_t290_1.977781" spec="Sequence" taxon="t290_1.977781" totalcount="4" value="c"/>
+                        <sequence id="seq_t292_2.766386" spec="Sequence" taxon="t292_2.766386" totalcount="4" value="c"/>
+                        <sequence id="seq_t2_1.837239" spec="Sequence" taxon="t2_1.837239" totalcount="4" value="c"/>
+                        <sequence id="seq_t302_4.000000" spec="Sequence" taxon="t302_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t303_4.000000" spec="Sequence" taxon="t303_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t30_3.968043" spec="Sequence" taxon="t30_3.968043" totalcount="4" value="c"/>
+                        <sequence id="seq_t311_2.583805" spec="Sequence" taxon="t311_2.583805" totalcount="4" value="c"/>
+                        <sequence id="seq_t312_2.913496" spec="Sequence" taxon="t312_2.913496" totalcount="4" value="c"/>
+                        <sequence id="seq_t316_4.000000" spec="Sequence" taxon="t316_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t317_3.873036" spec="Sequence" taxon="t317_3.873036" totalcount="4" value="c"/>
+                        <sequence id="seq_t31_4.000000" spec="Sequence" taxon="t31_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t322_2.575355" spec="Sequence" taxon="t322_2.575355" totalcount="4" value="c"/>
+                        <sequence id="seq_t323_2.146447" spec="Sequence" taxon="t323_2.146447" totalcount="4" value="c"/>
+                        <sequence id="seq_t327_4.000000" spec="Sequence" taxon="t327_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t328_4.000000" spec="Sequence" taxon="t328_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t329_3.909933" spec="Sequence" taxon="t329_3.909933" totalcount="4" value="c"/>
+                        <sequence id="seq_t330_3.456558" spec="Sequence" taxon="t330_3.456558" totalcount="4" value="c"/>
+                        <sequence id="seq_t336_3.705517" spec="Sequence" taxon="t336_3.705517" totalcount="4" value="c"/>
+                        <sequence id="seq_t341_3.419156" spec="Sequence" taxon="t341_3.419156" totalcount="4" value="c"/>
+                        <sequence id="seq_t344_4.000000" spec="Sequence" taxon="t344_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t346_4.000000" spec="Sequence" taxon="t346_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t348_4.000000" spec="Sequence" taxon="t348_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t34_4.000000" spec="Sequence" taxon="t34_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t351_2.909137" spec="Sequence" taxon="t351_2.909137" totalcount="4" value="c"/>
+                        <sequence id="seq_t357_4.000000" spec="Sequence" taxon="t357_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t359_4.000000" spec="Sequence" taxon="t359_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t35_4.000000" spec="Sequence" taxon="t35_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t360_4.000000" spec="Sequence" taxon="t360_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t364_4.000000" spec="Sequence" taxon="t364_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t365_4.000000" spec="Sequence" taxon="t365_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t366_4.000000" spec="Sequence" taxon="t366_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t372_3.589355" spec="Sequence" taxon="t372_3.589355" totalcount="4" value="c"/>
+                        <sequence id="seq_t375_4.000000" spec="Sequence" taxon="t375_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t376_4.000000" spec="Sequence" taxon="t376_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t377_4.000000" spec="Sequence" taxon="t377_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t379_3.976296" spec="Sequence" taxon="t379_3.976296" totalcount="4" value="c"/>
+                        <sequence id="seq_t380_4.000000" spec="Sequence" taxon="t380_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t382_4.000000" spec="Sequence" taxon="t382_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t384_4.000000" spec="Sequence" taxon="t384_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t386_4.000000" spec="Sequence" taxon="t386_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t388_4.000000" spec="Sequence" taxon="t388_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t389_4.000000" spec="Sequence" taxon="t389_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t390_4.000000" spec="Sequence" taxon="t390_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t392_3.929509" spec="Sequence" taxon="t392_3.929509" totalcount="4" value="c"/>
+                        <sequence id="seq_t393_4.000000" spec="Sequence" taxon="t393_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t394_4.000000" spec="Sequence" taxon="t394_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t398_3.687002" spec="Sequence" taxon="t398_3.687002" totalcount="4" value="c"/>
+                        <sequence id="seq_t399_3.827372" spec="Sequence" taxon="t399_3.827372" totalcount="4" value="c"/>
+                        <sequence id="seq_t403_4.000000" spec="Sequence" taxon="t403_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t422_2.111069" spec="Sequence" taxon="t422_2.111069" totalcount="4" value="c"/>
+                        <sequence id="seq_t425_1.700520" spec="Sequence" taxon="t425_1.700520" totalcount="4" value="c"/>
+                        <sequence id="seq_t429_1.360373" spec="Sequence" taxon="t429_1.360373" totalcount="4" value="c"/>
+                        <sequence id="seq_t43_3.378863" spec="Sequence" taxon="t43_3.378863" totalcount="4" value="c"/>
+                        <sequence id="seq_t45_3.689254" spec="Sequence" taxon="t45_3.689254" totalcount="4" value="c"/>
+                        <sequence id="seq_t47_3.502266" spec="Sequence" taxon="t47_3.502266" totalcount="4" value="c"/>
+                        <sequence id="seq_t49_3.958357" spec="Sequence" taxon="t49_3.958357" totalcount="4" value="c"/>
+                        <sequence id="seq_t51_4.000000" spec="Sequence" taxon="t51_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t53_4.000000" spec="Sequence" taxon="t53_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t54_4.000000" spec="Sequence" taxon="t54_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t66_4.000000" spec="Sequence" taxon="t66_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t68_4.000000" spec="Sequence" taxon="t68_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t69_4.000000" spec="Sequence" taxon="t69_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t72_3.446118" spec="Sequence" taxon="t72_3.446118" totalcount="4" value="c"/>
+                        <sequence id="seq_t73_3.690906" spec="Sequence" taxon="t73_3.690906" totalcount="4" value="c"/>
+                        <sequence id="seq_t76_4.000000" spec="Sequence" taxon="t76_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t81_4.000000" spec="Sequence" taxon="t81_4.000000" totalcount="4" value="c"/>
+                        <sequence id="seq_t83_4.000000" spec="Sequence" taxon="t83_4.000000" totalcount="4" value="c"/>
+                    </data>
+
+
+
+
+    <input spec="beast.evolution.tree.birthdeath.Schedule"
+           id="catastTimes"
+           value="4.000000" />
+
+<input spec="beast.evolution.tree.birthdeath.PointProcess"
+           id="occTimes"
+           value="0.782001198231993 0.784413198231993 1.00080419823199 1.11152619823199 1.17498819823199 1.26677519823199 1.30170219823199 1.38249819823199 1.43602019823199 1.60501519823198 1.67637219823198 1.77345919823199 1.86360919823199 1.87242019823199 1.97053219823199 2.01714919823199 2.12147519823199 2.12670219823199 2.15549419823198 2.29498619823199 2.30864219823198 2.31256619823199 2.34093019823199 2.37123619823199 2.42060019823199 2.45039619823199 2.47303619823198 2.47587619823199 2.49284019823199 2.49877319823199 2.52311919823199 2.59798719823199 2.61736119823199 2.65367419823199 2.65776319823199 2.66331619823199 2.73568119823199 2.74321019823199 2.753928198232 2.83143719823199 2.83699719823199 2.84835119823199 2.84906819823199 2.86720819823199 2.90330819823198 2.90561019823199 3.03658219823199 3.10475819823199 3.13470919823199 3.13777019823199 3.15904119823198 3.16587419823198 3.19170119823199 3.20416419823199 3.20644819823199 3.20851819823199 3.21909119823199 3.22322119823199 3.23192819823199 3.23785319823199 3.23821719823199 3.250041198232 3.26909019823199 3.28583419823198 3.291138198232 3.316672198232 3.32068019823199 3.32933019823199 3.35120719823199 3.35424119823199 3.36413519823199 3.366225198232 3.45873719823199 3.50267319823199 3.50366919823199" />
+
+
+
+
+
+<map name="Uniform" >beast.math.distributions.Uniform</map>
+<map name="Exponential" >beast.math.distributions.Exponential</map>
+<map name="LogNormal" >beast.math.distributions.LogNormalDistributionModel</map>
+<map name="Normal" >beast.math.distributions.Normal</map>
+<map name="Beta" >beast.math.distributions.Beta</map>
+<map name="Gamma" >beast.math.distributions.Gamma</map>
+<map name="LaplaceDistribution" >beast.math.distributions.LaplaceDistribution</map>
+<map name="prior" >beast.math.distributions.Prior</map>
+<map name="InverseGamma" >beast.math.distributions.InverseGamma</map>
+<map name="OneOnX" >beast.math.distributions.OneOnX</map>
+
+<input spec="beast.evolution.speciation.TimTam"
+       id="myTimTam"
+       tree="@Tree.t:sequences"
+       lambda="@birthRate.t:sequences"
+       mu="1.0"
+       psi="@samplingRate.t:sequences"
+       p="0.5"
+       omega="0.5"
+       catastropheTimes="@catastTimes"
+       points="@occTimes"
+       rootLength="0.2445398" />
+
+<run id="mcmc" spec="MCMC" chainLength="10000">
+    <state id="state" spec="State" storeEvery="5000">
+        <tree id="Tree.t:sequences" spec="beast.evolution.tree.Tree" name="stateNode">
+            <trait id="dateTrait.t:sequences" spec="beast.evolution.tree.TraitSet" traitname="date" value="t2_1.837239=1.837239,t20_3.865150=3.865150,t21_4.000000=4.000000,t24_4.000000=4.000000,t27_3.127428=3.127428,t30_3.968043=3.968043,t31_4.000000=4.000000,t34_4.000000=4.000000,t35_4.000000=4.000000,t43_3.378863=3.378863,t45_3.689254=3.689254,t47_3.502266=3.502266,t49_3.958357=3.958357,t51_4.000000=4.000000,t53_4.000000=4.000000,t54_4.000000=4.000000,t66_4.000000=4.000000,t68_4.000000=4.000000,t69_4.000000=4.000000,t72_3.446118=3.446118,t73_3.690906=3.690906,t76_4.000000=4.000000,t81_4.000000=4.000000,t83_4.000000=4.000000,t102_4.000000=4.000000,t104_2.674748=2.674748,t106_2.608581=2.608581,t107_3.138305=3.138305,t108_3.022077=3.022077,t111_4.000000=4.000000,t114_4.000000=4.000000,t115_4.000000=4.000000,t116_4.000000=4.000000,t118_4.000000=4.000000,t119_4.000000=4.000000,t120_4.000000=4.000000,t124_3.908154=3.908154,t126_4.000000=4.000000,t127_4.000000=4.000000,t128_4.000000=4.000000,t130_4.000000=4.000000,t135_2.869255=2.869255,t142_2.639331=2.639331,t145_1.917806=1.917806,t150_2.631868=2.631868,t155_4.000000=4.000000,t161_2.573705=2.573705,t165_2.154822=2.154822,t168_2.288889=2.288889,t171_3.223610=3.223610,t175_4.000000=4.000000,t182_3.250155=3.250155,t183_3.569192=3.569192,t184_4.000000=4.000000,t189_4.000000=4.000000,t193_4.000000=4.000000,t194_4.000000=4.000000,t196_3.505342=3.505342,t197_4.000000=4.000000,t198_4.000000=4.000000,t199_4.000000=4.000000,t204_3.038468=3.038468,t205_3.451950=3.451950,t208_4.000000=4.000000,t214_3.906591=3.906591,t215_4.000000=4.000000,t221_4.000000=4.000000,t222_3.401325=3.401325,t223_3.445891=3.445891,t224_3.829752=3.829752,t225_4.000000=4.000000,t226_4.000000=4.000000,t227_4.000000=4.000000,t229_4.000000=4.000000,t230_3.578116=3.578116,t233_3.670351=3.670351,t236_4.000000=4.000000,t237_4.000000=4.000000,t240_3.870934=3.870934,t249_2.330893=2.330893,t254_3.549672=3.549672,t255_4.000000=4.000000,t256_3.423445=3.423445,t258_4.000000=4.000000,t260_4.000000=4.000000,t262_3.717565=3.717565,t264_4.000000=4.000000,t266_4.000000=4.000000,t267_4.000000=4.000000,t269_3.932374=3.932374,t272_3.149076=3.149076,t275_4.000000=4.000000,t277_4.000000=4.000000,t279_4.000000=4.000000,t280_3.766255=3.766255,t281_4.000000=4.000000,t286_3.860768=3.860768,t288_1.804242=1.804242,t290_1.977781=1.977781,t292_2.766386=2.766386,t302_4.000000=4.000000,t303_4.000000=4.000000,t311_2.583805=2.583805,t312_2.913496=2.913496,t316_4.000000=4.000000,t317_3.873036=3.873036,t322_2.575355=2.575355,t323_2.146447=2.146447,t327_4.000000=4.000000,t328_4.000000=4.000000,t329_3.909933=3.909933,t330_3.456558=3.456558,t336_3.705517=3.705517,t341_3.419156=3.419156,t344_4.000000=4.000000,t346_4.000000=4.000000,t348_4.000000=4.000000,t351_2.909137=2.909137,t357_4.000000=4.000000,t359_4.000000=4.000000,t360_4.000000=4.000000,t364_4.000000=4.000000,t365_4.000000=4.000000,t366_4.000000=4.000000,t372_3.589355=3.589355,t375_4.000000=4.000000,t376_4.000000=4.000000,t377_4.000000=4.000000,t379_3.976296=3.976296,t380_4.000000=4.000000,t382_4.000000=4.000000,t384_4.000000=4.000000,t386_4.000000=4.000000,t388_4.000000=4.000000,t389_4.000000=4.000000,t390_4.000000=4.000000,t392_3.929509=3.929509,t393_4.000000=4.000000,t394_4.000000=4.000000,t398_3.687002=3.687002,t399_3.827372=3.827372,t403_4.000000=4.000000,t422_2.111069=2.111069,t425_1.700520=1.700520,t429_1.360373=1.360373">
+                <taxa id="TaxonSet.sequences" spec="TaxonSet">
+                    <alignment idref="sequences"/>
+                </taxa>
+            </trait>
+            <taxonset idref="TaxonSet.sequences"/>
+        </tree>
+        <parameter id="birthRate.t:sequences" spec="parameter.RealParameter" name="stateNode">2.0</parameter>
+        <parameter id="samplingRate.t:sequences" spec="parameter.RealParameter" name="stateNode">0.2</parameter>
+        <parameter id="clockRate.c:sequences" spec="parameter.RealParameter" name="stateNode">1.0</parameter>
+    </state>
+
+    <init id="RandomTree.t:sequences" spec="beast.evolution.tree.RandomTree" estimate="false" initial="@Tree.t:sequences" taxa="@sequences">
+        <populationModel id="ConstantPopulation0.t:sequences" spec="ConstantPopulation">
+            <parameter id="randomPopSize.t:sequences" spec="parameter.RealParameter" name="popSize">1.0</parameter>
+        </populationModel>
+    </init>
+
+
+    <distribution id="posterior" spec="util.CompoundDistribution">
+        <distribution id="prior" spec="util.CompoundDistribution">
+            <distribution id="myTimTam.prior" idref='myTimTam' />
+            <prior id="ClockPrior.c:sequences" name="distribution" x="@clockRate.c:sequences">
+                <Uniform id="Uniform.0" name="distr" upper="Infinity"/>
+            </prior>
+        </distribution>
+        <distribution id="likelihood" spec="util.CompoundDistribution" useThreads="true">
+            <distribution id="treeLikelihood.sequences" spec="ThreadedTreeLikelihood" data="@sequences" tree="@Tree.t:sequences">
+                <siteModel id="SiteModel.s:sequences" spec="SiteModel">
+                    <parameter id="mutationRate.s:sequences" spec="parameter.RealParameter" estimate="false" name="mutationRate">1.0</parameter>
+                    <parameter id="gammaShape.s:sequences" spec="parameter.RealParameter" estimate="false" name="shape">1.0</parameter>
+                    <parameter id="proportionInvariant.s:sequences" spec="parameter.RealParameter" estimate="false" lower="0.0" name="proportionInvariant" upper="1.0">0.0</parameter>
+                    <substModel id="JC69.s:sequences" spec="JukesCantor"/>
+                </siteModel>
+                <branchRateModel id="StrictClock.c:sequences" spec="beast.evolution.branchratemodel.StrictClockModel" clock.rate="@clockRate.c:sequences"/>
+            </distribution>
+        </distribution>
+    </distribution>
+
+    <operator id="YuleBirthRateScaler.t:sequences" spec="ScaleOperator" parameter="@birthRate.t:sequences" weight="3.0"/>
+
+    <operator id="YuleSamplingRateScaler.t:sequences" spec="ScaleOperator" parameter="@samplingRate.t:sequences" weight="3.0"/>
+
+    <operator id="YuleModelTreeScaler.t:sequences" spec="ScaleOperator" scaleFactor="0.5" tree="@Tree.t:sequences" weight="3.0"/>
+
+    <operator id="YuleModelTreeRootScaler.t:sequences" spec="ScaleOperator" rootOnly="true" scaleFactor="0.5" tree="@Tree.t:sequences" weight="3.0"/>
+
+    <operator id="YuleModelUniformOperator.t:sequences" spec="Uniform" tree="@Tree.t:sequences" weight="30.0"/>
+
+    <operator id="YuleModelSubtreeSlide.t:sequences" spec="SubtreeSlide" tree="@Tree.t:sequences" weight="15.0"/>
+
+    <operator id="YuleModelNarrow.t:sequences" spec="Exchange" tree="@Tree.t:sequences" weight="15.0"/>
+
+    <operator id="YuleModelWide.t:sequences" spec="Exchange" isNarrow="false" tree="@Tree.t:sequences" weight="3.0"/>
+
+    <operator id="YuleModelWilsonBalding.t:sequences" spec="WilsonBalding" tree="@Tree.t:sequences" weight="3.0"/>
+
+    <operator id="StrictClockRateScaler.c:sequences" spec="ScaleOperator" parameter="@clockRate.c:sequences" weight="3.0"/>
+
+    <operator id="strictClockUpDownOperator.c:sequences" spec="UpDownOperator" scaleFactor="0.75" weight="3.0">
+        <up idref="clockRate.c:sequences"/>
+        <down idref="Tree.t:sequences"/>
+    </operator>
+
+    <logger id="tracelog" spec="Logger" fileName="sequences.log" logEvery="1000" model="@posterior" sanitiseHeaders="true" sort="smart">
+        <log idref="posterior"/>
+        <log idref="likelihood"/>
+        <log idref="prior"/>
+        <log idref="treeLikelihood.sequences"/>
+        <log id="TreeHeight.t:sequences" spec="beast.evolution.tree.TreeHeightLogger" tree="@Tree.t:sequences"/>
+        <log idref="birthRate.t:sequences"/>
+        <log idref="clockRate.c:sequences"/>
+    </logger>
+
+    <logger id="screenlog" spec="Logger" logEvery="1000">
+        <log idref="posterior"/>
+        <log idref="likelihood"/>
+        <log idref="prior"/>
+    </logger>
+
+</run>
+
+</beast>
