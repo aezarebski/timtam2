@@ -21,10 +21,10 @@ public class TestTreeWithBackwardsPointProcess {
         Tree tree = new TreeParser("(((1:3,2:1):1,3:4):2,4:6);",false);
 
         BackwardsPointProcess points = new BackwardsPointProcess();
-        points.initByName("value", "2.0 6.0");
+        points.initByName("value", "5.0 1.0");
 
         BackwardsSchedule catastropheTimes = new BackwardsSchedule();
-        catastropheTimes.initByName("value", "7.0");
+        catastropheTimes.initByName("value", "0.0");
 
         TreeWithBackwardsPointProcess tpp = new TreeWithBackwardsPointProcess(rootLength, tree, points, catastropheTimes);
 
@@ -62,7 +62,7 @@ public class TestTreeWithBackwardsPointProcess {
         Tree tree = new TreeParser("((2:2, 1:1):1,3:4);",false);
 
         BackwardsPointProcess points = new BackwardsPointProcess();
-        points.initByName("value", "1.5 2.5");
+        points.initByName("value", "3.5 2.5");
 
         TreeWithBackwardsPointProcess tpp = new TreeWithBackwardsPointProcess(rootLength, tree, points, null);
 

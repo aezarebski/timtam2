@@ -30,10 +30,10 @@ public class TestTimTam {
         Tree tree = new TreeParser("(((1:3,2:1):1,3:4):2,4:6);",false);
 
         BackwardsPointProcess points = new BackwardsPointProcess();
-        points.initByName("value", "2.0 6.0");
+        points.initByName("value", "5.0 1.0");
 
         BackwardsSchedule catastropheTimes = new BackwardsSchedule();
-        catastropheTimes.initByName("value", "7.0");
+        catastropheTimes.initByName("value", "0.0");
 
         TimTam tt = new TimTam(birthRate, deathRate, samplingRate, rhoProb, occurrenceRate, rootLength, catastropheTimes, points);
         tt.setInputValue("tree", tree);
