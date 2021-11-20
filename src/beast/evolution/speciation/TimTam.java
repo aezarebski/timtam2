@@ -178,7 +178,6 @@ public class TimTam extends TreeDistribution {
      * @param tree the tree to calculate likelihood of
      */
     public final void calculateTreeLogLikelihood(Tree tree) {
-
         TreeWithBackwardsPointProcess ti = new TreeWithBackwardsPointProcess(rootLength, tree, points, catastropheTimes);
         int numIntervals = ti.getIntervalCount();
 
