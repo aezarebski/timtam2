@@ -3,5 +3,5 @@
   "deathRate": 1.0,
   "samplingRate": 0.5,
   "occurrenceRate": 0.5,
-  "substitutionRate": 1e-3
+  "substitutionRate": 1e-2
 }
