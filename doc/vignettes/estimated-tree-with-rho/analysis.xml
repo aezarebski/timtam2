@@ -265,12 +265,12 @@ name="alignment">
         <down idref="Tree.t:ape-sim-sequences"/>
     </operator>
 
-    <operator id="samplingRateUpDownOperator.c:ape-sim-sequences" spec="UpDownOperator" scaleFactor="0.95" weight="6.0">
+    <operator id="samplingRateUpDownOperator.c:ape-sim-sequences" spec="UpDownOperator" scaleFactor="0.95" weight="10.0">
         <down idref="samplingRate.t:ape-sim-sequences"/>
         <up idref="Tree.t:ape-sim-sequences"/>
     </operator>
 
-    <logger id="tracelog" spec="Logger" fileName="estimated-tree-posterior-samples.log" logEvery="1000" model="@posterior" sanitiseHeaders="true" sort="smart">
+    <logger id="tracelog" spec="Logger" fileName="estimated-tree-posterior-samples.log" logEvery="10000" model="@posterior" sanitiseHeaders="true" sort="smart">
         <log idref="posterior"/>
         <log idref="likelihood"/>
         <log idref="prior"/>
@@ -279,6 +279,7 @@ name="alignment">
         <log idref="birthRate.t:ape-sim-sequences"/>
         <log idref="samplingRate.t:ape-sim-sequences"/>
         <log idref="clockRate.c:ape-sim-sequences"/>
+        <log spec="beast.evolution.speciation.TimTamLogger" timtam="@myTimTam" />
     </logger>
 
     <logger id="screenlog" spec="Logger" logEvery="1000">
