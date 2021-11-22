@@ -141,7 +141,7 @@ public class TreeWithBackwardsPointProcess extends CalculationNode {
             if (treeET < pointET) {
                 intervals[intIx] = treeET - currTime;
                 currTime = treeET;
-                if (Math.abs(treeET - catastET) > 1e-7) {
+                if (Math.abs(treeET - catastET) > 1e-9) {
                     if (treeNodeOutdegree[treeJxs[treeJx]] == 2) {
                         intervalTypes[intIx] = birthEvent;
                     } else if (treeNodeOutdegree[treeJxs[treeJx]] == 0) {
@@ -153,7 +153,7 @@ public class TreeWithBackwardsPointProcess extends CalculationNode {
                 } else {
                     intervalTypes[intIx] = new EventType("catastrophe", OptionalInt.of(catastropheSizes[catastJx]));
                     catastJx++;
-                    while (Math.abs(treeET - catastET) < 1e-7) {
+                    while (Math.abs(treeET - catastET) < 1e-9) {
                         treeJx++;
                         treeET = (treeJx < treeJxs.length) ? treeNodeTimes[treeJxs[treeJx]] : Double.POSITIVE_INFINITY;
                     }
@@ -164,7 +164,17 @@ public class TreeWithBackwardsPointProcess extends CalculationNode {
                 intervalTypes[intIx] = occurrenceEvent;
                 pointJx++;
             } else {
-                throw new IllegalArgumentException("It appears that a tree event and a point process event occurred at the same time:\ntree time " + treeET + ", point time " + pointET);
+                throw new IllegalArgumentException(
+                        "It appears that a tree event and a point process event occurred at the same time:\n\ttree time " +
+                        treeET +
+                        ", point time " +
+                        pointET +
+                        "\n\tcatastET: " + catastET +
+                        "\n\tintIx: " + intIx +
+                        "\n\tintervalCount: " + intervalCount +
+                        "\n\tcurrentTime: " + currTime +
+                        "\n\ttreeJx: " + treeJx +
+                        "\n\tpointJx: " + pointJx);
             }
             intIx++;
         }
