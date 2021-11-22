@@ -46,27 +46,27 @@ MCMC step.
 This class describes the kinds of events that can be observed under the TimTam
 likelihood.
 
-*** =PointProcess= and =Schedule=
+*** =BackwardsPointProcess= and =BackwardsSchedule=
 
 These classes are really just aliases to =RealParameter= as a way to make their
-meaning clearer. The =PointProcess= stores the occurrence times and the
-=Schedule= is used to indicate when there was a scheduled sample.
+meaning clearer. The =BackwardsPointProcess= stores the occurrence times and the
+=BackwardsSchedule= is used to indicate when there was a scheduled sample.
 
-*** =TreeWithPointProcess=
+*** =TreeWithBackwardsPointProcess=
 
-This class extends the =CalculationNode= and provides functionality for
-computing the times between observed events. This requires a tree, the origin
-time and a =TraitSet= which is what we use to describe unsequenced observations.
+This class extends the =CalculationNode= and provides functionality for computing
+the times between observed events. This requires a tree, the origin time and a
+=TraitSet= which is what we use to describe unsequenced observations.
 
 * Structure
 
-Figure [[example-dag]] shows an example of how =TimTam= and =TreeWithPointProcess=
-nodes might be used in a model, ie the nodes represent =CalculationNode=
-objects. The darker blue nodes are from the classes provided by this package.
-The =PointProcess= node represents the times at which there was an unsequenced
-observation and the =Schedule= node records when there was a scheduled sequenced
-sample. The =RootLength= is really a =RealParameter= but this has not been given
-its own class yet.
+Figure [[example-dag]] shows an example of how =TimTam= and
+=TreeWithBackwardsPointProcess= nodes might be used in a model, ie the nodes
+represent =CalculationNode= objects. The darker blue nodes are from the classes
+provided by this package. The =BackwardsPointProcess= node represents the times at
+which there was an unsequenced observation and the =BackwardsSchedule= node
+records when there was a scheduled sequenced sample. The =RootLength= is really a
+=RealParameter= but this has not been given its own class yet.
 
 #+name: example-dag
 #+attr_org: :width 500
