@@ -12,18 +12,18 @@ digraph G {
                 style=filled,
                 color="#54278f",
                 fillcolor="#f2f0f7"];
-  TreeWithPointProcess [shape=box,
-                        style=filled,
-                        color="#54278f",
-                        fillcolor="#f2f0f7"];
-  PointProcess [shape=box,
-                style=filled,
-                color="#54278f",
-                fillcolor="#f2f0f7"];
-  Schedule [shape=box,
-            style=filled,
-            color="#54278f",
-            fillcolor="#f2f0f7"];
+  TreeWithBackwardsPointProcess [shape=box,
+                                 style=filled,
+                                 color="#54278f",
+                                 fillcolor="#f2f0f7"];
+  BackwardsPointProcess [shape=box,
+                         style=filled,
+                         color="#54278f",
+                         fillcolor="#f2f0f7"];
+  BackwardsSchedule [shape=box,
+                     style=filled,
+                     color="#54278f",
+                     fillcolor="#f2f0f7"];
   RootLength [shape=box,
               style=filled,
               color="#e6550d",
@@ -33,12 +33,12 @@ digraph G {
   MCMC [shape=box];
 
   RootLength -> TimTam;
-  RootLength -> TreeWithPointProcess;
-  PointProcess -> TreeWithPointProcess;
-  Schedule -> TreeWithPointProcess;
-  TreeWithPointProcess -> TimTam;
+  RootLength -> TreeWithBackwardsPointProcess;
+  BackwardsPointProcess -> TreeWithBackwardsPointProcess;
+  BackwardsSchedule -> TreeWithBackwardsPointProcess;
+  TreeWithBackwardsPointProcess -> TimTam;
   RealParameters -> TimTam;
-  Tree -> TreeWithPointProcess;
+  Tree -> TreeWithBackwardsPointProcess;
   Tree -> TimTam;
   TimTam -> MCMC;
 

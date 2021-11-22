@@ -1,0 +1,7 @@
+{
+    "birthRate": 104.0,
+    "deathRate": 26.0,
+    "samplingRate": 5.2,
+    "occurrenceRate": 20.8,
+    "substitutionRate": 1e-3
+}

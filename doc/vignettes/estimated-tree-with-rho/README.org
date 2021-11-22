@@ -1,0 +1,73 @@
+#+title: Estimated Tree Example With Rho
+
+** Simulating the dataset
+
+The tool, =ape-sim.R=, can be used to simulate a dataset.
+
+#+begin_src sh
+  ./ape-sim.R --seed 1 -p my-params.json -o out --duration 4.0 --rho 0.5 --verbose --simulate-sequences
+#+end_src
+
+The parameters for this are specified in the following JSON. They are not very
+realistic, but they are convenient for a simple example.
+
+#+begin_src json :tangle my-params.json
+  {
+    "birthRate": 3.0,
+    "deathRate": 1.0,
+    "samplingRate": 0.5,
+    "occurrenceRate": 0.5,
+    "substitutionRate": 1e-2
+  }
+#+end_src
+
+** Making the XML
+
+The FASTA file can then be provided to Beauti to set up a scaffold for our
+analysis file. All we need to do here is load the alignment, parse the tip dates
+and save the resulting XML, the settings are fine for our purposes here.
+
+#+begin_src sh
+  java -cp <path/to/beast.jar> beast.app.beauti.Beauti
+#+end_src
+
+And this snippet demonstrates how to extract the occurrence times, reverse them
+and write them to a text file.
+
+#+begin_src R
+  x <- read.csv("out/ape-sim-event-times.csv")
+  duration <- 4.0
+  root_length <- abs(x[x$event == "origin", "time"])
+  occurrence_times <- sort(x[x$event == "occurrence", "time"] + root_length)
+  bwd_occurrence_times <- duration - occurrence_times
+  writeLines(text = paste(bwd_occurrence_times,collapse = " "),
+             con = "out/occurrence-times.txt")
+#+end_src
+
+To turn the XML into one that uses TimTam we need to make some edits:
+
+- include a =Schedule= input to describe when the \(\rho\)-sample occurred,
+- include a =PointProcess= input using the occurrence times from the simulation,
+- include a =TimTam= input to act as out target distribution,
+- and include two parameters for \(\lambda\) and \(\psi\)
+
+Once we have set the model up, we need to edit the =run= block. This involves
+re-defining the =state= to be out \(\lambda\) and \(\psi\) nodes and removing all
+the material associated with the default analysis. Two =RealRandomWalkOperator=
+operators are used for these parameters. After updating the loggers to return
+the desired values we are right to run the analysis.
+
+** MCMC and results
+
+Run the analysis defined in the XML
+
+#+begin_src sh
+  java -cp <path/to/beast.jar> beast.app.beastapp.BeastMain -seed 1 -overwrite analysis.xml
+#+end_src
+
+We can get a quick inspection of the results using Tracer. The script
+=posterior-visualisation.R= generates the visualisation of the posterior samples
+shown below.
+
+#+attr_org: :width 500
+[[./out/posterior-plot.png]]
