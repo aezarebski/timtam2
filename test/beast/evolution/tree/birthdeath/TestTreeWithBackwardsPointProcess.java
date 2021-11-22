@@ -37,15 +37,12 @@ public class TestTreeWithBackwardsPointProcess {
         Alignment myTaxa = new Alignment(mySeqs, "nucleotide");
         TaxonSet myTaxonSet = new TaxonSet(myTaxa);
 
-        // TODO put a constraint on this to ensure that the origin occurs before the first occurrence!
         TraitSet myTraitSet = new TraitSet();
         myTraitSet.initByName(
                 "traitname", "date",
                 "value", "t0_8.0=8.0,t1_9.5=9.5",
                 "taxa", myTaxonSet
         );
-
-
 
         RandomTree myTree;
         myTree = new RandomTree();
@@ -56,7 +53,6 @@ public class TestTreeWithBackwardsPointProcess {
 
         double rootLengthDouble = 1.0;
         RealParameter rootLength = new RealParameter("1.0");
-
 
         // This loop is included to ensure that we get an origin that occurs before the first occurrence event.
         double mRCAHeight;
