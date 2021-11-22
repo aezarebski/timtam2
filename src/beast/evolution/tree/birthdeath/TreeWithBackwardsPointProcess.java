@@ -24,6 +24,11 @@ public class TreeWithBackwardsPointProcess extends CalculationNode {
     private Tree tree;
     private BackwardsSchedule bwdCatastropheTraits;
     private double rootLength;
+    private int treeNodeCount;
+    private Node[] treeNodes;
+    private double[] treeNodeTimes;
+    private int[] treeNodeOutdegree;
+    private List<Double> fwdCatastropheTimes;
 
     public TreeWithBackwardsPointProcess() {
         super();
@@ -39,6 +44,10 @@ public class TreeWithBackwardsPointProcess extends CalculationNode {
     @Override
     public void initAndValidate() {
         tree = treeInput.get();
+        treeNodes = tree.getNodesAsArray();
+        treeNodeCount = tree.getNodeCount();
+        treeNodeTimes = new double[treeNodeCount+1]; // one extra time for the origin to tMCRA.
+        treeNodeOutdegree = new int[treeNodeCount];
         rootLength = rootLengthInput.get().getDoubleValues()[0];
         bwdCatastropheTraits = bwdCatastropheTimesInput.get();
 
@@ -51,35 +60,31 @@ public class TreeWithBackwardsPointProcess extends CalculationNode {
      * returns nothing. Note that the times are go backwards from the present. The very last time goes all the way back
      * to the origin.
      *
-     * @param tree
      * @param rootLength
      * @param times
      * @param childCounts
      */
-    protected static void collectTimes(Tree tree, double rootLength, double[] times, int[] childCounts) {
-        Node[] nodes = tree.getNodesAsArray();
+    protected void collectTimes(double rootLength, double[] times, int[] childCounts) {
+        Node node;
         double maxHeight = 0;
         double currHeight;
-        for (int i = 0; i < nodes.length; i++) {
-            Node node = nodes[i];
+        for (int i = 0; i < treeNodeCount; i++) {
+            node = treeNodes[i];
             currHeight = node.getHeight();
             if (currHeight > maxHeight)
                 maxHeight = currHeight;
             times[i] = currHeight;
             childCounts[i] = node.isLeaf() ? 0 : 2;
         }
-        times[nodes.length] = maxHeight + rootLength;
+        times[treeNodeCount] = maxHeight + rootLength;
     }
 
     /**
      * Calculate the intervals.
      */
     protected void calculateIntervals() {
-        final int treeNodeCount = tree.getNodeCount();
-        double[] treeNodeTimes = new double[treeNodeCount+1]; // one extra time for the origin to tMCRA.
-        int[] treeNodeOutdegree = new int[treeNodeCount];
-        collectTimes(tree, rootLength, treeNodeTimes, treeNodeOutdegree);
-        // we need to reverse and shift the times in the tree so it uses forward-time starting from the origin. This
+        collectTimes(rootLength, treeNodeTimes, treeNodeOutdegree);
+        // we need to reverse and shift the times in the tree, so it uses forward-time starting from the origin. This
         // could probably be improved to avoid the call to the max method.
         double maxTreeNodeTime = Arrays.stream(treeNodeTimes).max().getAsDouble();
         for (int i = 0; i < treeNodeCount; i++) {
@@ -89,7 +94,6 @@ public class TreeWithBackwardsPointProcess extends CalculationNode {
         HeapSort.sort(treeNodeTimes, treeJxs);
 
         int numCatastrophes, totalInCatastrophes;
-        List<Double> fwdCatastropheTimes;
         int[] catastropheSizes;
         if (bwdCatastropheTraits != null) {
             // we make a list of the (forward) times at which there was a catastrophe so that we can collect this
@@ -97,7 +101,7 @@ public class TreeWithBackwardsPointProcess extends CalculationNode {
             fwdCatastropheTimes = bwdCatastropheTraits.valuesInput.get().stream().mapToDouble(x -> maxTreeNodeTime - x).sorted().boxed().toList();
             catastropheSizes = new int[fwdCatastropheTimes.size()];
             Arrays.fill(catastropheSizes, 0);
-            measureCatastrophes(tree, maxTreeNodeTime, fwdCatastropheTimes, catastropheSizes);
+            measureCatastrophes(maxTreeNodeTime, catastropheSizes);
             numCatastrophes = catastropheSizes.length;
             totalInCatastrophes = Arrays.stream(catastropheSizes).sum();
         } else {
@@ -116,6 +120,9 @@ public class TreeWithBackwardsPointProcess extends CalculationNode {
         intervalCount = pointCount + treeNodeCount - totalInCatastrophes + numCatastrophes;
         intervals = new double[intervalCount];
         intervalTypes = new EventType[intervalCount];
+        EventType birthEvent = new EventType("birth", OptionalInt.empty());
+        EventType sampleEvent = new EventType("sample", OptionalInt.empty());
+        EventType occurrenceEvent = new EventType("occurrence", OptionalInt.empty());
 
         int treeJx = 0;
         int pointJx = 0;
@@ -136,9 +143,9 @@ public class TreeWithBackwardsPointProcess extends CalculationNode {
                 currTime = treeET;
                 if (Math.abs(treeET - catastET) > 1e-7) {
                     if (treeNodeOutdegree[treeJxs[treeJx]] == 2) {
-                        intervalTypes[intIx] = new EventType("birth", OptionalInt.empty());
+                        intervalTypes[intIx] = birthEvent;
                     } else if (treeNodeOutdegree[treeJxs[treeJx]] == 0) {
-                        intervalTypes[intIx] = new EventType("sample", OptionalInt.empty());
+                        intervalTypes[intIx] = sampleEvent;
                     } else {
                         throw new IllegalArgumentException("Non-binary tree provided to TreeWithPointProcess");
                     }
@@ -154,7 +161,7 @@ public class TreeWithBackwardsPointProcess extends CalculationNode {
             } else if (treeET > pointET) {
                 intervals[intIx] = pointET - currTime;
                 currTime = pointET;
-                intervalTypes[intIx] = new EventType("occurrence", OptionalInt.empty());
+                intervalTypes[intIx] = occurrenceEvent;
                 pointJx++;
             } else {
                 throw new IllegalArgumentException("It appears that a tree event and a point process event occurred at the same time:\ntree time " + treeET + ", point time " + pointET);
@@ -168,22 +175,19 @@ public class TreeWithBackwardsPointProcess extends CalculationNode {
     /**
      * Look at the tree and detect catastrophes and mutate the array of sizes to contain these counts.
      *
-     * @param tree
      * @param maxTime
-     * @param fwdCatastropheTimes
      * @param catastropheSizes
      *
      * @see TreeWithBackwardsPointProcess#collectTimes
      */
-    private void measureCatastrophes(Tree tree, double maxTime, List<Double> fwdCatastropheTimes, int[] catastropheSizes) {
-        Node[] nodes = tree.getNodesAsArray();
+    private void measureCatastrophes(double maxTime, int[] catastropheSizes) {
         double nodeTime;
 
-        for (Node node : nodes) {
+        for (Node node : treeNodes) {
             if (node.isLeaf()) {
                 nodeTime = maxTime - node.getHeight();
-                for (int j = 0; j < fwdCatastropheTimes.size(); j++) {
-                    if (Math.abs(fwdCatastropheTimes.get(j) - nodeTime) < 1e-8) {
+                for (int j = 0; j < this.fwdCatastropheTimes.size(); j++) {
+                    if (Math.abs(this.fwdCatastropheTimes.get(j) - nodeTime) < 1e-8) {
                         catastropheSizes[j] += 1;
                     }
                 }
@@ -192,7 +196,7 @@ public class TreeWithBackwardsPointProcess extends CalculationNode {
 
         if (Arrays.stream(catastropheSizes).sum() == 0) {
             StringBuilder nodeTimesSB = new StringBuilder();
-            for (Node node : nodes) {
+            for (Node node : treeNodes) {
                 if (node.isLeaf()) {
                     nodeTimesSB.append("\n\t\t").append(maxTime - node.getHeight());
                 }
@@ -201,7 +205,7 @@ public class TreeWithBackwardsPointProcess extends CalculationNode {
                     "\nIt appears that no samples were obtained in any of the catastrophies, please " +
                             "\ndouble check that the timing of these has been specified correctly in the XML. " +
                             "\nFor debugging purposes here are some variables:" +
-                            "\n\tThe current catastrophe times are " + fwdCatastropheTimes +
+                            "\n\tThe current catastrophe times are " + this.fwdCatastropheTimes +
                             "\n\tThe maxTime is " + maxTime +
                             "\n\tThe node times are " + nodeTimesSB);
         }
