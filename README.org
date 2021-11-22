@@ -6,21 +6,15 @@ package. There is a [[*Vignette][vignette]] demonstrating how to use this.
 * Remaining tasks and open problems
 
 1. AVOID USING THE SAME PACKAGE PATHS!
-2. The times in =Schedule= and =PointProcess= should be backwards times so they are
-   not effected by changing the origin when estimating the tree.
-   - Consider replacing these classes with =BackwardsSchedule= and
-     =BackwardPointProcess= to make it explicit what is happening here.
-3. Replace =rootLength= with =origin= since this becomes more natural when working
-   with estimated trees.
-4. Use proper dates on the nodes and point process to avoid needing to
+2. Include an example without \(\rho\)-sampling.
+3. Use proper dates on the nodes and point process to avoid needing to
    pre-compute these for the XML
    - The [[https://cran.r-project.org/web/packages/phangorn/index.html][phangorn]] package can simulate sequences on a tree.
    - There is a Taming the Beast [[https://taming-the-beast.org/tutorials/Molecular-Dating-Tutorial/][tutorial]] which looks at dates on nodes.
-5. Make the vignette easier to run and make it easier to generate the XML from a
+4. Make the vignette easier to run and make it easier to generate the XML from a
    dataset.
-6. Include an example where the tree is estimated as well.
-7. Include the capability to parameterise this in terms of \(R_{0}\).
-8. Set up a BEAUTi template.
+5. Include the capability to parameterise this in terms of \(R_{0}\).
+6. Set up a BEAUTi template.
    - This may require reading up on how to use Swing.
 
 * Vignette
