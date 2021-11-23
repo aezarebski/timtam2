@@ -59,8 +59,10 @@ To turn the XML into one that uses TimTam we need to make some edits:
 
 - include a =beast.util.TreeParser= input to read the Newick string of our
   reconstructed tree from the simulation above,
-- include a =Schedule= input to describe when the \(\rho\)-sample occurred,
-- include a =PointProcess= input using the occurrence times from the simulation,
+- include a =BackwardsSchedule= input to describe when the \(\rho\)-sample
+  occurred,
+- include a =BackwardsPointProcess= input using the occurrence times from the
+  simulation,
 - include a =TimTam= input to act as out target distribution,
 - and include two parameters for \(\lambda\) and \(\psi\)
 
