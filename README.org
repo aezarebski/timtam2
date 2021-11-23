@@ -22,7 +22,7 @@ package. There is a [[*Vignette][vignette]] demonstrating how to use this.
 - [[file:./doc/vignettes/fixed-tree-with-rho/README.org][Fixed tree with \(\rho\)-sample]]
 - [[file:./doc/vignettes/estimated-tree-with-rho/README.org][Estimated tree with \(\rho\)-sample]]
 - [[file:./doc/vignettes/fixed-tree-without-rho/README.org][Fixed tree without \(\rho\)-sample]]
-- [[file:./doc/vignettes/estimated-tree/README.org][Estimated tree example]]
+- [[file:./doc/vignettes/estimated-tree-without-rho/README.org][Estimated tree without \(\rho\)-sample]]
 
 * Classes
 
