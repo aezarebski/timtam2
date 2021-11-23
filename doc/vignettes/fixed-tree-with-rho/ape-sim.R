@@ -684,6 +684,11 @@ arguments_are_valid <- function(args) {
       return(FALSE)
     }
   }
+  ## If we are being asked to use a particular output directory it should exist.
+  if (!dir.exists(args$output_directory)) {
+    warning("missing output directory: ", args$output_directory)
+    return(FALSE)
+  }
   return(TRUE)
 }
 
