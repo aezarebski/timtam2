@@ -1,0 +1,80 @@
+#+title: Fixed Tree Example Without Rho
+
+** Simulating the dataset
+
+The tool, =ape-sim.R=, can be used to simulate a dataset.
+
+#+begin_src sh
+  ./ape-sim.R --seed 1 -p my-params.json -o out --duration 4.0 -v --write-newick --make-plots
+#+end_src
+
+The parameters for this are specified in the following JSON. They are not very
+realistic, but they are convenient for a simple example.
+
+#+begin_src json :tangle my-params.json
+  {
+    "birthRate": 3.0,
+    "deathRate": 1.0,
+    "samplingRate": 0.5,
+    "occurrenceRate": 0.5
+  }
+#+end_src
+
+** Making the XML
+
+The file =out/ape-sim-reconstructed-tree.newick= contains a Newick string
+describing the reconstructed tree. We can use this to generate a dummy FASTA
+file describing the tips of the reconstructed tree.
+
+#+begin_src R
+  library(ape)
+  library(phangorn)
+  x <- read.tree("out/ape-sim-reconstructed-tree.newick")
+  seqs <- simSeq(x, l = 1, rate = 0)
+  write.phyDat(seqs, file = "out/sequences.fasta", format = "fasta")
+#+end_src
+
+And this snippet demonstrates how to extract the occurrence times, reverse them
+and write them to a text file. Note that unlike in the examples where there is a
+\(\rho\)-sample we treat the final tip-time as the present.
+
+#+begin_src R
+  x <- read.csv("out/ape-sim-event-times.csv")
+  duration <- 4.0
+  root_length <- abs(x[x$event == "origin", "time"])
+  occurrence_times <- sort(x[x$event == "occurrence", "time"] + root_length)
+  last_sample_time <- max(x[x$event == "sampling", "time"]) + root_length
+  bwd_occurrence_times <- last_sample_time - occurrence_times
+  writeLines(text = paste(bwd_occurrence_times,collapse = " "),
+             con = "out/occurrence-times.txt")
+#+end_src
+
+To turn the XML into one that uses TimTam we need to make some edits:
+
+- include a =beast.util.TreeParser= input to read the Newick string of our
+  reconstructed tree from the simulation above,
+- include a =BackwardsPointProcess= input using the occurrence times from the
+  simulation,
+- include a =TimTam= input to act as out target distribution,
+- and include two parameters for \(\lambda\) and \(\psi\)
+
+Once we have set the model up, we need to edit the =run= block. This involves
+re-defining the =state= to be out \(\lambda\) and \(\psi\) nodes and removing all
+the material associated with the default analysis. Two =RealRandomWalkOperator=
+operators are used for these parameters. After updating the loggers to return
+the desired values we are right to run the analysis.
+
+** MCMC and results
+
+Run the analysis defined in the XML
+
+#+begin_src sh
+  java -cp <path/to/beast.jar> beast.app.beastapp.BeastMain -seed 1 -overwrite analysis.xml
+#+end_src
+
+We can get a quick inspection of the results using Tracer. The script
+=posterior-visualisation.R= generates the visualisation of the posterior samples
+shown below.
+
+#+attr_org: :width 500
+[[./out/posterior-plot.png]]

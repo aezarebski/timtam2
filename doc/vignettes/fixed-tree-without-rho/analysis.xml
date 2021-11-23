@@ -132,29 +132,27 @@ name="alignment">
 <map name="OneOnX" >beast.math.distributions.OneOnX</map>
 
 
-<run id="mcmc" spec="MCMC" chainLength="10000000">
+<run id="mcmc" spec="MCMC" chainLength="100000">
 
     <state>
         <stateNode idref='myLambda' />
         <stateNode idref='myPsi' />
     </state>
 
-    <distribution id="myTimTam.prior" idref='myTimTam' />
+            <distribution id="myTimTam.p:sequences" idref="myTimTam"/>
 
     <operator spec="RealRandomWalkOperator" windowSize="0.1" useGaussian="true" weight="1.0" parameter="@myLambda" />
 
     <operator spec="RealRandomWalkOperator" windowSize="0.1" useGaussian="true" weight="1.0" parameter="@myPsi" />
 
-    <logger logEvery="100" fileName="fixed-tree-posterior-samples.log">
+    <logger logEvery="100" fileName="fixed-tree-without-rho.log">
         <log idref='myLambda' />
         <log idref='myPsi' />
         <log spec="beast.evolution.speciation.TimTamLogger" timtam="@myTimTam" />
     </logger>
 
     <logger id="screenlog" spec="Logger" logEvery="1000">
-        <log idref="posterior"/>
-        <log idref="likelihood"/>
-        <log idref="prior"/>
+        <log idref='myLambda' />
     </logger>
 
     <operatorschedule id="OperatorSchedule" spec="OperatorSchedule"/>
