@@ -17,10 +17,12 @@ package. There is a [[*Vignette][vignette]] demonstrating how to use this.
    - This is being blocked by not being able to compile the package outside of
      IntelliJ
    - This will be easier if there is a Beauti template
-5. Set up a BEAUTi template.
-   - This may require reading up on how to use Swing.
-   - This should probably wait until there is a better way to specify node and
-     occurrence times.
+5. Set up a BEAUTi template. There is a partial solution but some things need
+   work:
+   - Currently occurrence times must be specified manually
+   - UpDown operators need to be specified manually for the parameters that need
+     them
+   - The schedule for catastrophes must be specified manually
 6. Include the capability to parameterise this in terms of \(R_{0}\).
 7. Support heterogeneous rates
 
@@ -30,6 +32,11 @@ package. There is a [[*Vignette][vignette]] demonstrating how to use this.
 - [[file:./doc/vignettes/estimated-tree-with-rho/README.org][Estimated tree with \(\rho\)-sample]]
 - [[file:./doc/vignettes/fixed-tree-without-rho/README.org][Fixed tree without \(\rho\)-sample]]
 - [[file:./doc/vignettes/estimated-tree-without-rho/README.org][Estimated tree without \(\rho\)-sample]]
+
+* Beauti
+
+There is a partial template for Beauti in =templates/TimTam.xml=. It has
+limitations described in the TODO list above.
 
 * Classes
 
