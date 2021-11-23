@@ -6,7 +6,7 @@ package. There is a [[*Vignette][vignette]] demonstrating how to use this.
 * Remaining tasks and open problems
 
 1. AVOID USING THE SAME PACKAGE PATHS!
-2. Include an example without \(\rho\)-sampling.
+2. Include an example without \(\rho\)-sampling with an estimated tree.
 3. Use proper dates on the nodes and point process to avoid needing to
    pre-compute these for the XML
    - The [[https://cran.r-project.org/web/packages/phangorn/index.html][phangorn]] package can simulate sequences on a tree.
