@@ -84,9 +84,8 @@ public class TreeWithBackwardsPointProcess extends CalculationNode {
      */
     protected void calculateIntervals() {
         collectTimes(rootLength, treeNodeTimes, treeNodeOutdegree);
-        // we need to reverse and shift the times in the tree, so it uses forward-time starting from the origin. This
-        // could probably be improved to avoid the call to the max method.
-        double maxTreeNodeTime = Arrays.stream(treeNodeTimes).max().getAsDouble();
+        // we need to reverse and shift the times in the tree, so it uses forward-time starting from the origin.
+        double maxTreeNodeTime = treeNodeTimes[treeNodeCount];
         for (int i = 0; i < treeNodeCount; i++) {
             treeNodeTimes[i] = maxTreeNodeTime - treeNodeTimes[i];
         }

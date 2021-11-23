@@ -96,7 +96,9 @@ public class TimTam extends TreeDistribution {
         psi.setBounds(0.0, Double.POSITIVE_INFINITY);
 
         this.p = pInput.get();
-        p.setBounds(0.0, 1.0);
+        if (this.p != null) {
+            this.p.setBounds(0.0, 1.0);
+        }
 
         this.omega = omegaInput.get();
         omega.setBounds(0.0, Double.POSITIVE_INFINITY);
@@ -130,7 +132,9 @@ public class TimTam extends TreeDistribution {
         psi.setBounds(0.0, Double.POSITIVE_INFINITY);
 
         this.p = p;
-        p.setBounds(0.0, 1.0);
+        if (this.p != null) {
+            p.setBounds(0.0, 1.0);
+        }
 
         this.omega = omega;
         omega.setBounds(0.0, Double.POSITIVE_INFINITY);
