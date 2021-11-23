@@ -26,7 +26,90 @@ public class TestTreeWithBackwardsPointProcess {
     private final BiPredicate<Double, Double> approxEqual = (x, y) -> Math.abs(x - y) < 1e-5;
 
     @Test
-    public void canHandleEstimatedTree() {
+    public void estimatedTreeEndingOnOccurrence() {
+
+        ConstantPopulation myPopModel = new ConstantPopulation();
+        myPopModel.initByName("popSize", "1.0");
+
+        List<Sequence> mySeqs = new ArrayList<>();
+        mySeqs.add(new Sequence("t0_8.0", "?"));
+        mySeqs.add(new Sequence("t1_9.0", "?"));
+        Alignment myTaxa = new Alignment(mySeqs, "nucleotide");
+        TaxonSet myTaxonSet = new TaxonSet(myTaxa);
+
+        TraitSet myTraitSet = new TraitSet();
+        myTraitSet.initByName(
+                "traitname", "date",
+                "value", "t0_8.0=8.0,t1_9.0=9.0",
+                "taxa", myTaxonSet
+        );
+
+        RandomTree myTree;
+        myTree = new RandomTree();
+        myTree.initByName(
+                "taxonset", myTaxonSet,
+                "trait", myTraitSet,
+                "populationModel", myPopModel);
+
+        double rootLengthDouble = 1.0;
+        RealParameter rootLength = new RealParameter("1.0");
+
+        // This loop is included to ensure that we get an origin that occurs before the first occurrence event.
+        double mRCAHeight;
+        mRCAHeight = myTree.getRoot().getHeight();
+        while (mRCAHeight + rootLengthDouble < 4.0) {
+            myTree = new RandomTree();
+            myTree.initByName(
+                    "taxonset", myTaxonSet,
+                    "trait", myTraitSet,
+                    "populationModel", myPopModel);
+            mRCAHeight = myTree.getRoot().getHeight();
+        }
+        assertTrue(mRCAHeight + rootLengthDouble > 4.0);
+
+        BackwardsPointProcess points = new BackwardsPointProcess();
+        points.initByName("value", "4.0 -0.5");
+
+        TreeWithBackwardsPointProcess tpp = new TreeWithBackwardsPointProcess(
+                rootLength,
+                myTree,
+                points,
+                null);
+
+        // There are two occurrences, two leaves and one internal nodes. The "present" is the time of the last tip.
+        assertEquals(5, tpp.getIntervalCount());
+
+        double hiddenDelay;
+        if (Objects.equals(tpp.getIntervalType(0).toString(), "birth")) {
+            assertEquals(tpp.getIntervalType(0).toString(), "birth");
+            assertTrue(approxEqual.test(tpp.getIntervalDuration(0), 1.0));
+            assertEquals(tpp.getIntervalType(1).toString(), "occurrence");
+            assertTrue(tpp.getIntervalDuration(1) > 0.0);
+            hiddenDelay = tpp.getIntervalDuration(1) + 1.0;
+        } else {
+            assertEquals(tpp.getIntervalType(0).toString(), "occurrence");
+            assertTrue(tpp.getIntervalDuration(0) > 0);
+            assertEquals(tpp.getIntervalType(1).toString(), "birth");
+            assertTrue(tpp.getIntervalDuration(1) < 1.0);
+            hiddenDelay = tpp.getIntervalDuration(0) + tpp.getIntervalDuration(1);
+        }
+
+        assertEquals(tpp.getIntervalType(2).toString(), "sample");
+        assertTrue(approxEqual.test(
+                hiddenDelay + tpp.getIntervalDuration(2),
+                mRCAHeight + rootLengthDouble - 1.0));
+
+
+        assertEquals(tpp.getIntervalType(3).toString(), "sample");
+        assertTrue(approxEqual.test(tpp.getIntervalDuration(3), 1.0));
+
+        assertEquals(tpp.getIntervalType(4).toString(), "occurrence");
+        assertTrue(approxEqual.test(tpp.getIntervalDuration(4), 0.5));
+
+    }
+
+    @Test
+    public void estimatedTreeEndingOnSample() {
 
         ConstantPopulation myPopModel = new ConstantPopulation();
         myPopModel.initByName("popSize", "1.0");
