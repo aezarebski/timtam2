@@ -169,20 +169,7 @@ name="alignment">
            value="2.72891919823199 2.72650719823199 2.51011619823199 2.39939419823199 2.33593219823199 2.24414519823199 2.20921819823199 2.12842219823199 2.07490019823199 1.905905198232 1.834548198232 1.73746119823199 1.64731119823199 1.63850019823199 1.54038819823199 1.49377119823199 1.38944519823199 1.38421819823199 1.355426198232 1.21593419823199 1.202278198232 1.19835419823199 1.16999019823199 1.13968419823199 1.09032019823199 1.06052419823199 1.037884198232 1.03504419823199 1.01808019823199 1.01214719823199 0.987801198231993 0.912933198231993 0.893559198231993 0.857246198231993 0.853157198231993 0.847604198231993 0.775239198231993 0.767710198231993 0.756992198231983 0.679483198231993 0.673923198231993 0.662569198231993 0.661852198231993 0.643712198231993 0.607612198232003 0.605310198231993 0.474338198231993 0.406162198231993 0.376211198231993 0.373150198231993 0.351879198232003 0.345046198232003 0.319219198231993 0.306756198231993 0.304472198231993 0.302402198231993 0.291829198231993 0.287699198231993 0.278992198231993 0.273067198231993 0.272703198231993 0.260879198231983 0.241830198231993 0.225086198232003 0.219782198231983 0.194248198231983 0.190240198231993 0.181590198231993 0.159713198231993 0.156679198231993 0.146785198231993 0.144695198231983 0.0521831982319929 0.00824719823199294 0.00725119823199272" />
 
 
-<input spec="beast.evolution.speciation.TimTam"
-       id="myTimTam"
-       tree="@NewickTree.t:fixed-tree-with-rho"
-       lambda="@myLambda"
-       mu="1.0"
-       psi="@myPsi"
-       p="0.5"
-       omega="0.5"
-       catastropheTimes="@catastTimes"
-       points="@occTimes"
-       rootLength="0.2445398" />
 
-<parameter id="myLambda" value="2.0" lower="0.0" upper="1000000.0" />
-<parameter id="myPsi" value="0.2" lower="0.0" upper="1000000.0" />
 
 <map name="Uniform" >beast.math.distributions.Uniform</map>
 <map name="Exponential" >beast.math.distributions.Exponential</map>
@@ -198,24 +185,49 @@ name="alignment">
 
 <run id="mcmc" spec="MCMC" chainLength="100000">
 
-    <state>
-        <stateNode idref='myLambda' />
-        <stateNode idref='myPsi' />
+    <state spec="State" storeEvery="5000">
+        <parameter id="myLambda" spec="parameter.RealParameter" name="stateNode" lower="0.0">3.0</parameter>
+        <parameter id="myPsi" spec="parameter.RealParameter" name="stateNode" lower="0.0">0.5</parameter>
     </state>
 
-    <distribution id="myTimTam.prior" idref='myTimTam' />
+            <distribution spec="beast.evolution.speciation.TimTam"
+                          id="myTimTam"
+                          tree="@NewickTree.t:fixed-tree-with-rho"
+                          lambda="@myLambda"
+                          mu="1.0"
+                          psi="@myPsi"
+                          p="0.5"
+                          omega="0.5"
+                          catastropheTimes="@catastTimes"
+                          points="@occTimes"
+                          rootLength="0.2445398" />
+        <!-- <distribution id="prior"  spec="util.CompoundDistribution" >
 
-    <operator spec="RealRandomWalkOperator" windowSize="0.1" useGaussian="true" weight="1.0" parameter="@myLambda" />
+             <prior id="BirthPrior.t:ape-sim-sequences" name="distribution" x="@myLambda">
+             <Gamma id="Gamma.0" name="distr" alpha="6.0" beta="0.5" />
+             </prior>
+
+             <prior id="SamplingPrior.t:ape-sim-sequences" name="distribution" x="@myPsi">
+             <Gamma id="Gamma.1" name="distr" alpha="2.0" beta="0.5" />
+             </prior>
+
+             </distribution> -->
+
+    <operator id="birthRateScalerSmall.t:ape-sim-sequences" spec="ScaleOperator" scaleFactor="0.1" parameter="@myLambda" weight="15.0"/>
+    <operator id="birthRateScalerLarge.t:ape-sim-sequences" spec="ScaleOperator" scaleFactor="0.9" parameter="@myLambda" weight="15.0"/>
+    <operator id="birthRateWalkSmall.t:ape-sim-sequences" spec="RealRandomWalkOperator" windowSize="0.0001" useGaussian="true" weight="15.0" parameter="@myLambda" />
+    <operator id="birthRateWalkMedium.t:ape-sim-sequences" spec="RealRandomWalkOperator" windowSize="0.0100" useGaussian="true" weight="15.0" parameter="@myLambda" />
+    <operator id="birthRateWalkLarge.t:ape-sim-sequences" spec="RealRandomWalkOperator" windowSize="1.0000" useGaussian="true" weight="15.0" parameter="@myLambda" />
 
     <operator spec="RealRandomWalkOperator" windowSize="0.1" useGaussian="true" weight="1.0" parameter="@myPsi" />
 
-    <logger logEvery="100" fileName="fixed-tree-posterior-samples.log">
+    <logger logEvery="1000" fileName="fixed-tree-posterior-samples.log">
         <log idref='myLambda' />
         <log idref='myPsi' />
-        <log spec="beast.evolution.speciation.TimTamLogger" timtam="@myTimTam" />
+        <!-- <log spec="beast.evolution.speciation.TimTamLogger" timtam="@myTimTam" /> -->
     </logger>
 
-    <logger logEvery="10000">
+    <logger logEvery="1000">
         <log idref='myLambda' />
         <log idref='myPsi' />
     </logger>

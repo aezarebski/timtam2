@@ -175,9 +175,8 @@ name="alignment">
 <map name="OneOnX" >beast.math.distributions.OneOnX</map>
 
 
-<parameter id="birthRate.t:ape-sim-sequences" value="3.0" lower="0.0" upper="10.0" />
 
-<run id="mcmc" spec="MCMC" chainLength="1000000">
+<run id="mcmc" spec="MCMC" chainLength="100000">
     <state id="state" spec="State" storeEvery="5000">
         <tree id="Tree.t:ape-sim-sequences" spec="beast.evolution.tree.Tree" name="stateNode">
             <trait id="dateTrait.t:ape-sim-sequences" spec="beast.evolution.tree.TraitSet" traitname="date" value="t2_1.837239=1.837239,t20_3.865150=3.865150,t21_4.000000=4.000000,t24_4.000000=4.000000,t27_3.127428=3.127428,t30_3.968043=3.968043,t31_4.000000=4.000000,t34_4.000000=4.000000,t35_4.000000=4.000000,t43_3.378863=3.378863,t45_3.689254=3.689254,t47_3.502266=3.502266,t49_3.958357=3.958357,t51_4.000000=4.000000,t53_4.000000=4.000000,t54_4.000000=4.000000,t66_4.000000=4.000000,t68_4.000000=4.000000,t69_4.000000=4.000000,t72_3.446118=3.446118,t73_3.690906=3.690906,t76_4.000000=4.000000,t81_4.000000=4.000000,t83_4.000000=4.000000,t102_4.000000=4.000000,t104_2.674748=2.674748,t106_2.608581=2.608581,t107_3.138305=3.138305,t108_3.022077=3.022077,t111_4.000000=4.000000,t114_4.000000=4.000000,t115_4.000000=4.000000,t116_4.000000=4.000000,t118_4.000000=4.000000,t119_4.000000=4.000000,t120_4.000000=4.000000,t124_3.908154=3.908154,t126_4.000000=4.000000,t127_4.000000=4.000000,t128_4.000000=4.000000,t130_4.000000=4.000000,t135_2.869255=2.869255,t142_2.639331=2.639331,t145_1.917806=1.917806,t150_2.631868=2.631868,t155_4.000000=4.000000,t161_2.573705=2.573705,t165_2.154822=2.154822,t168_2.288889=2.288889,t171_3.223610=3.223610,t175_4.000000=4.000000,t182_3.250155=3.250155,t183_3.569192=3.569192,t184_4.000000=4.000000,t189_4.000000=4.000000,t193_4.000000=4.000000,t194_4.000000=4.000000,t196_3.505342=3.505342,t197_4.000000=4.000000,t198_4.000000=4.000000,t199_4.000000=4.000000,t204_3.038468=3.038468,t205_3.451950=3.451950,t208_4.000000=4.000000,t214_3.906591=3.906591,t215_4.000000=4.000000,t221_4.000000=4.000000,t222_3.401325=3.401325,t223_3.445891=3.445891,t224_3.829752=3.829752,t225_4.000000=4.000000,t226_4.000000=4.000000,t227_4.000000=4.000000,t229_4.000000=4.000000,t230_3.578116=3.578116,t233_3.670351=3.670351,t236_4.000000=4.000000,t237_4.000000=4.000000,t240_3.870934=3.870934,t249_2.330893=2.330893,t254_3.549672=3.549672,t255_4.000000=4.000000,t256_3.423445=3.423445,t258_4.000000=4.000000,t260_4.000000=4.000000,t262_3.717565=3.717565,t264_4.000000=4.000000,t266_4.000000=4.000000,t267_4.000000=4.000000,t269_3.932374=3.932374,t272_3.149076=3.149076,t275_4.000000=4.000000,t277_4.000000=4.000000,t279_4.000000=4.000000,t280_3.766255=3.766255,t281_4.000000=4.000000,t286_3.860768=3.860768,t288_1.804242=1.804242,t290_1.977781=1.977781,t292_2.766386=2.766386,t302_4.000000=4.000000,t303_4.000000=4.000000,t311_2.583805=2.583805,t312_2.913496=2.913496,t316_4.000000=4.000000,t317_3.873036=3.873036,t322_2.575355=2.575355,t323_2.146447=2.146447,t327_4.000000=4.000000,t328_4.000000=4.000000,t329_3.909933=3.909933,t330_3.456558=3.456558,t336_3.705517=3.705517,t341_3.419156=3.419156,t344_4.000000=4.000000,t346_4.000000=4.000000,t348_4.000000=4.000000,t351_2.909137=2.909137,t357_4.000000=4.000000,t359_4.000000=4.000000,t360_4.000000=4.000000,t364_4.000000=4.000000,t365_4.000000=4.000000,t366_4.000000=4.000000,t372_3.589355=3.589355,t375_4.000000=4.000000,t376_4.000000=4.000000,t377_4.000000=4.000000,t379_3.976296=3.976296,t380_4.000000=4.000000,t382_4.000000=4.000000,t384_4.000000=4.000000,t386_4.000000=4.000000,t388_4.000000=4.000000,t389_4.000000=4.000000,t390_4.000000=4.000000,t392_3.929509=3.929509,t393_4.000000=4.000000,t394_4.000000=4.000000,t398_3.687002=3.687002,t399_3.827372=3.827372,t403_4.000000=4.000000,t422_2.111069=2.111069,t425_1.700520=1.700520,t429_1.360373=1.360373">
@@ -187,7 +186,7 @@ name="alignment">
             </trait>
             <taxonset idref="TaxonSet.ape-sim-sequences"/>
         </tree>
-        <stateNode idref="birthRate.t:ape-sim-sequences" />
+        <parameter id="birthRate.t:ape-sim-sequences" spec="parameter.RealParameter" name="stateNode">3.0</parameter>
         <parameter id="samplingRate.t:ape-sim-sequences" spec="parameter.RealParameter" name="stateNode">0.5</parameter>
         <parameter id="clockRate.c:ape-sim-sequences" spec="parameter.RealParameter" name="stateNode">0.01</parameter>
     </state>
@@ -260,17 +259,13 @@ name="alignment">
         <down idref="Tree.t:ape-sim-sequences"/>
     </operator>
 
-    <operator id="birthRateUpDownOperator.c:ape-sim-sequences" spec="UpDownOperator" scaleFactor="0.95" weight="15.0">
-        <up idref="birthRate.t:ape-sim-sequences"/>
-        <down idref="Tree.t:ape-sim-sequences"/>
-    </operator>
+    <operator id="birthRateScalerSmall.t:ape-sim-sequences" spec="ScaleOperator" scaleFactor="0.1" parameter="@birthRate.t:ape-sim-sequences" weight="15.0"/>
+    <operator id="birthRateWalkMedium.t:ape-sim-sequences" spec="RealRandomWalkOperator" windowSize="0.0100" useGaussian="true" weight="15.0" parameter="@birthRate.t:ape-sim-sequences" />
 
-    <operator id="samplingRateUpDownOperator.c:ape-sim-sequences" spec="UpDownOperator" scaleFactor="0.95" weight="10.0">
-        <down idref="samplingRate.t:ape-sim-sequences"/>
-        <up idref="Tree.t:ape-sim-sequences"/>
-    </operator>
+    <operator id="samplingRateScalerSmall.t:ape-sim-sequences" spec="ScaleOperator" scaleFactor="0.1" parameter="@samplingRate.t:ape-sim-sequences" weight="15.0"/>
+    <operator id="samplingRateWalkMedium.t:ape-sim-sequences" spec="RealRandomWalkOperator" windowSize="0.0100" useGaussian="true" weight="15.0" parameter="@samplingRate.t:ape-sim-sequences" />
 
-    <logger id="tracelog" spec="Logger" fileName="estimated-tree-posterior-samples.log" logEvery="10000" model="@posterior" sanitiseHeaders="true" sort="smart">
+    <logger id="tracelog" spec="Logger" fileName="estimated-tree-with-rho.log" logEvery="1000" model="@posterior" sanitiseHeaders="true" sort="smart">
         <log idref="posterior"/>
         <log idref="likelihood"/>
         <log idref="prior"/>

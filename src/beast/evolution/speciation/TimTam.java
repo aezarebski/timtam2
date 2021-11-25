@@ -570,4 +570,17 @@ public class TimTam extends TreeDistribution {
         double tmp = Arrays.stream(xs).map((x) -> Math.exp(x - xMax)).sum();
         return xMax + Math.log(tmp);
     }
+
+    @Override
+    protected boolean requiresRecalculation() {
+        // We need to tell beast that the likelihood needs to be recalculated each time one of the inputs corresponding
+        // to a parameter changes. Since the schedule and points are not estimated we do not care about them here.
+        return super.requiresRecalculation()
+                || lambdaInput.get().somethingIsDirty()
+                || muInput.get().somethingIsDirty()
+                || psiInput.get().somethingIsDirty()
+                || pInput.get().somethingIsDirty()
+                || omegaInput.get().somethingIsDirty()
+                || rootLengthInput.get().somethingIsDirty();
+    }
 }
