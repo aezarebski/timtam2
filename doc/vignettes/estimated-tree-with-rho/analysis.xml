@@ -259,21 +259,11 @@ name="alignment">
         <down idref="Tree.t:ape-sim-sequences"/>
     </operator>
 
-    <operator id="birthRateUpDownOperator.c:ape-sim-sequences" spec="UpDownOperator" scaleFactor="0.95" weight="15.0">
-        <up idref="birthRate.t:ape-sim-sequences"/>
-        <down idref="Tree.t:ape-sim-sequences"/>
-    </operator>
-
-    <operator id="samplingRateUpDownOperator.c:ape-sim-sequences" spec="UpDownOperator" scaleFactor="0.95" weight="10.0">
-        <down idref="samplingRate.t:ape-sim-sequences"/>
-        <up idref="Tree.t:ape-sim-sequences"/>
-    </operator>
-
     <operator id="birthRateScalerSmall.t:ape-sim-sequences" spec="ScaleOperator" scaleFactor="0.1" parameter="@birthRate.t:ape-sim-sequences" weight="15.0"/>
-    <operator id="birthRateScalerLarge.t:ape-sim-sequences" spec="ScaleOperator" scaleFactor="0.9" parameter="@birthRate.t:ape-sim-sequences" weight="15.0"/>
-    <operator id="birthRateWalkSmall.t:ape-sim-sequences" spec="RealRandomWalkOperator" windowSize="0.0001" useGaussian="true" weight="15.0" parameter="@birthRate.t:ape-sim-sequences" />
     <operator id="birthRateWalkMedium.t:ape-sim-sequences" spec="RealRandomWalkOperator" windowSize="0.0100" useGaussian="true" weight="15.0" parameter="@birthRate.t:ape-sim-sequences" />
-    <operator id="birthRateWalkLarge.t:ape-sim-sequences" spec="RealRandomWalkOperator" windowSize="1.0000" useGaussian="true" weight="15.0" parameter="@birthRate.t:ape-sim-sequences" />
+
+    <operator id="samplingRateScalerSmall.t:ape-sim-sequences" spec="ScaleOperator" scaleFactor="0.1" parameter="@samplingRate.t:ape-sim-sequences" weight="15.0"/>
+    <operator id="samplingRateWalkMedium.t:ape-sim-sequences" spec="RealRandomWalkOperator" windowSize="0.0100" useGaussian="true" weight="15.0" parameter="@samplingRate.t:ape-sim-sequences" />
 
     <logger id="tracelog" spec="Logger" fileName="estimated-tree-with-rho.log" logEvery="1000" model="@posterior" sanitiseHeaders="true" sort="smart">
         <log idref="posterior"/>
