@@ -1,0 +1,84 @@
+<beast version='2.0' namespace='beast.app.beauti:beast.core:beast.evolution.branchratemodel:beast.evolution.speciation:beast.evolution.tree.coalescent:beast.core.util:beast.evolution.nuc:beast.evolution.operators:beast.evolution.sitemodel:beast.evolution.substitutionmodel:beast.evolution.likelihood:beast.evolution:beast.math.distributions'>
+
+    <!-- tree priors -->
+    <mergewith point='treePriorTemplates'>
+
+
+        <subtemplate id='TimTam' class='beast.evolution.speciation.TimTam' mainid='TimTam.t:$(n)'>
+            <![CDATA[
+                   <input spec="beast.evolution.tree.birthdeath.BackwardsSchedule"
+                   id="catastropheSchedule.t:$(n)"
+                   value="0.0" />
+
+                   <input spec="beast.evolution.tree.birthdeath.BackwardsPointProcess"
+                   id="occurrenceTimes.t:$(n)"
+                   value="0.0 0.1" />
+
+                   <distribution id="TimTam.t:$(n)"
+                   spec="beast.evolution.speciation.TimTam"
+                   mu="1.0"
+                   p="0.5"
+                   omega="0.5"
+                   rootLength="0.2445398"
+                   catastropheTimes="@catastropheSchedule.t:$(n)"
+                   points="@occurrenceTimes.t:$(n)"
+                   tree='@Tree.t:$(n)'>
+            	     <lambda spec='parameter.RealParameter' id="birthRate.t:$(n)" value='1.0' lower='0' upper='100' />
+                   <psi spec='parameter.RealParameter' id="samplingRate.t:$(n)" value='0.5' lower='0' upper='100' />
+                   </distribution>
+
+                   <prior id='birthRatePrior.t:$(n)' x='@birthRate.t:$(n)'><distr spec="beast.math.distributions.Uniform" lower='0' upper='100'/></prior>
+                   <prior id='samplingRatePrior.t:$(n)' x='@samplingRate.t:$(n)'><distr spec="beast.math.distributions.Uniform" lower='0' upper='100'/></prior>
+
+  		             <scale id='birthRateScaler.t:$(n)' spec='ScaleOperator' scaleFactor="0.75" weight="3" parameter="@birthRate.t:$(n)"/>
+                   <input id='birthRateWalk.t:$(n)' spec="RealRandomWalkOperator" windowSize="0.1" useGaussian="true" weight="3" parameter="@birthRate.t:$(n)"/>
+
+  		             <scale id='samplingRateScaler.t:$(n)' spec='ScaleOperator' scaleFactor="0.75" weight="3" parameter="@samplingRate.t:$(n)"/>
+                   <input id='samplingRateWalk.t:$(n)' spec="RealRandomWalkOperator" windowSize="0.1" useGaussian="true" weight="3" parameter="@samplingRate.t:$(n)"/>
+
+                   <input spec="beast.evolution.speciation.TimTamLogger" id="TimTamLogger.t:$(n)" />
+                   ]]>
+
+            <plate fragment="TreeOperators" var="m" range="TimTam" />
+
+            <connect srcID='TimTam.t:$(n)' targetID='prior' inputName='distribution' if='inposterior(TimTam.t:$(n)) and inposterior(Tree.t:$(n)) and Tree.t:$(n)/estimate=true'>
+                TimTam prior on tree t:$(n)
+            </connect>
+            <connect srcID='birthRate.t:$(n)' targetID='state' inputName='stateNode' if='inposterior(TimTam.t:$(n)) and inposterior(birthRate.t:$(n)) and birthRate.t:$(n)/estimate=true' />
+            <connect srcID='samplingRate.t:$(n)' targetID='state' inputName='stateNode' if='inposterior(TimTam.t:$(n)) and inposterior(samplingRate.t:$(n)) and samplingRate.t:$(n)/estimate=true' />
+
+            <connect srcID='birthRatePrior.t:$(n)' targetID='prior' inputName='distribution' if='inposterior(TimTam.t:$(n)) and inposterior(birthRate.t:$(n)) and birthRate.t:$(n)/estimate=true'>
+                birth rate of the TimTam model on partition t:$(n)
+            </connect>
+            <connect srcID='samplingRatePrior.t:$(n)' targetID='prior' inputName='distribution' if='inposterior(TimTam.t:$(n)) and inposterior(samplingRate.t:$(n)) and samplingRate.t:$(n)/estimate=true'>
+                sampling rate of the TimTam model on partition t:$(n)
+            </connect>
+
+            <connect srcID='birthRateScaler.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTam.t:$(n)) and inposterior(birthRate.t:$(n)) and birthRate.t:$(n)/estimate=true'>
+                Scale birth rate of TimTam prior of tree t:$(n)
+            </connect>
+
+            <connect srcID='birthRateWalk.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTam.t:$(n)) and inposterior(birthRate.t:$(n)) and birthRate.t:$(n)/estimate=true'>
+                Random walk operator on birth rate of TimTam prior of tree t:$(n)
+            </connect>
+
+            <connect srcID='samplingRateScaler.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTam.t:$(n)) and inposterior(samplingRate.t:$(n)) and samplingRate.t:$(n)/estimate=true'>
+                Scale sampling rate of TimTam prior of tree t:$(n)
+            </connect>
+
+            <connect srcID='samplingRateWalk.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTam.t:$(n)) and inposterior(samplingRate.t:$(n)) and samplingRate.t:$(n)/estimate=true'>
+                Random walk operator on sampling rate of TimTam prior of tree t:$(n)
+            </connect>
+
+            <connect srcID='birthRate.t:$(n)' targetID='tracelog' inputName='log' if='inposterior(TimTam.t:$(n)) and inposterior(birthRate.t:$(n)) and birthRate.t:$(n)/estimate=true' />
+
+            <connect srcID='samplingRate.t:$(n)' targetID='tracelog' inputName='log' if='inposterior(TimTam.t:$(n)) and inposterior(samplingRate.t:$(n)) and samplingRate.t:$(n)/estimate=true' />
+
+            <connect srcID='TimTamLogger.t:$(n)' targetID='tracelog' inputName='log' if='inposterior(TimTam.t:$(n)) and inposterior(samplingRate.t:$(n)) and samplingRate.t:$(n)/estimate=true' />
+            <connect srcID='TimTam.t:$(n)' targetID='TimTamLogger.t:$(n)' inputName='timtam' if='inposterior(TimTam.t:$(n)) and inposterior(samplingRate.t:$(n)) and samplingRate.t:$(n)/estimate=true' />
+
+        </subtemplate>
+
+    </mergewith>
+
+</beast>
