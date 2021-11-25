@@ -348,7 +348,7 @@ name="alignment">
 
             <parameter id="samplingRate.t:ape-sim-sequences" spec="parameter.RealParameter" lower="0.0" name="stateNode" upper="100.0">0.5</parameter>
 
-            <parameter id="birthRate.t:ape-sim-sequences" spec="parameter.RealParameter" name="stateNode">2.0</parameter>
+            <parameter id="birthRate.t:ape-sim-sequences" spec="parameter.RealParameter" name="stateNode">3.0</parameter>
 
         </state>
 
@@ -464,19 +464,13 @@ name="alignment">
 
         <operator id="birthRateScaler.t:ape-sim-sequences" spec="ScaleOperator" parameter="@birthRate.t:ape-sim-sequences" weight="3.0"/>
 
+        <operator id="birthRateWalk.t:ape-sim-sequences" spec="RealRandomWalkOperator" parameter="@birthRate.t:ape-sim-sequences" useGaussian="true" weight="3.0" windowSize="0.1"/>
+
         <operator id="samplingRateScaler.t:ape-sim-sequences" spec="ScaleOperator" parameter="@samplingRate.t:ape-sim-sequences" weight="3.0"/>
 
-        <operator id="birthRateUpDownOperator.c:ape-sim-sequences" spec="UpDownOperator" scaleFactor="0.95" weight="15.0">
-            <up idref="birthRate.t:ape-sim-sequences"/>
-            <down idref="Tree.t:ape-sim-sequences"/>
-        </operator>
+        <operator id="samplingRateWalk.t:ape-sim-sequences" spec="RealRandomWalkOperator" parameter="@samplingRate.t:ape-sim-sequences" useGaussian="true" weight="3.0" windowSize="0.1"/>
 
-        <operator id="samplingRateUpDownOperator.c:ape-sim-sequences" spec="UpDownOperator" scaleFactor="0.95" weight="10.0">
-            <down idref="samplingRate.t:ape-sim-sequences"/>
-            <up idref="Tree.t:ape-sim-sequences"/>
-        </operator>
-
-        <logger id="tracelog" spec="Logger" fileName="ape-sim-sequences.log" logEvery="1000" model="@posterior" sanitiseHeaders="true" sort="smart">
+        <logger id="tracelog" spec="Logger" fileName="estimated-tree-with-rho-via-beauti.log" logEvery="1000" model="@posterior" sanitiseHeaders="true" sort="smart">
 
             <log idref="posterior"/>
 
@@ -489,8 +483,6 @@ name="alignment">
             <log id="TreeHeight.t:ape-sim-sequences" spec="beast.evolution.tree.TreeHeightLogger" tree="@Tree.t:ape-sim-sequences"/>
 
             <log idref="clockRate.c:ape-sim-sequences"/>
-
-            <log idref="TimTam.t:ape-sim-sequences"/>
 
             <log idref="samplingRate.t:ape-sim-sequences"/>
 
