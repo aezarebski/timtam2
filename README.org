@@ -6,25 +6,17 @@ package. There is a [[*Vignette][vignette]] demonstrating how to use this.
 * Remaining tasks and open problems
 
 1. AVOID USING THE SAME PACKAGE PATHS!
-2. Improve the operators used in the examples.
-   - Currently only up/down operators work but not random walk or scaling ones.
-3. Use proper dates on the nodes and point process to avoid needing to
+2. Use proper dates on the nodes and point process to avoid needing to
    pre-compute these for the XML
    - The [[https://cran.r-project.org/web/packages/phangorn/index.html][phangorn]] package can simulate sequences on a tree.
    - There is a Taming the Beast [[https://taming-the-beast.org/tutorials/Molecular-Dating-Tutorial/][tutorial]] which looks at dates on nodes.
-4. Make the vignette easier to run and make it easier to generate the XML from a
+3. Make the vignette easier to run and make it easier to generate the XML from a
    dataset.
    - This is being blocked by not being able to compile the package outside of
      IntelliJ
-   - This will be easier if there is a Beauti template
-5. Set up a BEAUTi template. There is a partial solution but some things need
-   work:
-   - Currently occurrence times must be specified manually
-   - UpDown operators need to be specified manually for the parameters that need
-     them
-   - The schedule for catastrophes must be specified manually
-6. Include the capability to parameterise this in terms of \(R_{0}\).
-7. Support heterogeneous rates
+4. Include the capability to parameterise this in terms of \(R_{0}\).
+5. Support heterogeneous rates
+6. Include support for occurrence times in Beauti.
 
 * Vignette
 
@@ -35,8 +27,9 @@ package. There is a [[*Vignette][vignette]] demonstrating how to use this.
 
 * Beauti
 
-There is a partial template for Beauti in =templates/TimTam.xml=. It has
-limitations described in the TODO list above.
+There is a partial template for Beauti in =templates/TimTam.xml=. At the moment
+you still need to specify the occurrence times manually in the XML generated
+because it is unclear how best to do this via Beauti.
 
 * Classes
 
