@@ -324,7 +324,7 @@ name="alignment">
 
     <map name="OneOnX" >beast.math.distributions.OneOnX</map>
 
-    <run id="mcmc" spec="MCMC" chainLength="100000">
+    <run id="mcmc" spec="MCMC" chainLength="200000">
 
         <state id="state" spec="State" storeEvery="5000">
 
@@ -344,7 +344,7 @@ name="alignment">
 
             </tree>
 
-            <parameter id="clockRate.c:ape-sim-sequences" spec="parameter.RealParameter" name="stateNode">1.0</parameter>
+            <parameter id="clockRate.c:ape-sim-sequences" spec="parameter.RealParameter" name="stateNode">0.01</parameter>
 
             <parameter id="samplingRate.t:ape-sim-sequences" spec="parameter.RealParameter" lower="0.0" name="stateNode" upper="100.0">0.5</parameter>
 
