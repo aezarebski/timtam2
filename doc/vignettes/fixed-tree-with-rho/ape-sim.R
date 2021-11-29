@@ -194,17 +194,18 @@ run_conditioned_simulation <- function(params, is_verbose) {
       cat("simulating the sequences on the reconstructed tree...\n")
     }
     result$seq_sim <- sequence_simulation(result$reconstructed_tree,
+                                          params$seqLength,
                                           params$substitutionRate)
   }
   return(result)
 }
 
-sequence_simulation <- function(tr, sub_rate) {
-  return(simSeq(tr, rate = sub_rate))
+sequence_simulation <- function(tr, len, sub_rate) {
+  return(simSeq(tr, l = len, rate = sub_rate))
 }
 
 run_simulation <- function(params, is_verbose) {
-  time_eps <- 1e-6
+  time_eps <- 1e-10
   if (is_verbose) {
     cat("simulating tmrca and phylogeny...\n")
   }
@@ -681,6 +682,10 @@ arguments_are_valid <- function(args) {
   if (args$simulate_sequences) {
     if (!is.element("substitutionRate", names(tmp_params))) {
       warning("--simulate-sequences flag was given but there is no substitutionRate in the parameters JSON.")
+      return(FALSE)
+    }
+    if (!is.element("seqLength", names(tmp_params))) {
+      warning("--simulate-sequences flag was given but there is no seqLength in the parameters JSON.")
       return(FALSE)
     }
   }
