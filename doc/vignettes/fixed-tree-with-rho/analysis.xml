@@ -326,6 +326,8 @@
 
         <state id="state" spec="State" storeEvery="5000">
 
+            <parameter id="deathRate.t:sequences" spec="parameter.RealParameter" lower="0.0" name="stateNode" upper="100.0">0.5</parameter>
+
             <parameter id="samplingRate.t:sequences" spec="parameter.RealParameter" lower="0.0" name="stateNode" upper="100.0">0.5</parameter>
 
             <parameter id="occurrenceRate.t:sequences" spec="parameter.RealParameter" lower="0.0" name="stateNode" upper="100.0">0.5</parameter>
@@ -340,13 +342,9 @@
 
             <distribution id="prior" spec="util.CompoundDistribution">
 
-                <distribution id="TimTam.t:sequences" spec="beast.evolution.speciation.TimTam" lambda="@birthRate.t:sequences" omega="@occurrenceRate.t:sequences" psi="@samplingRate.t:sequences" tree="@Tree.t:sequences">
+                <distribution id="TimTam.t:sequences" spec="beast.evolution.speciation.TimTam" lambda="@birthRate.t:sequences" mu="@deathRate.t:sequences" omega="@occurrenceRate.t:sequences" psi="@samplingRate.t:sequences" rootLength="0.2445398" tree="@Tree.t:sequences">
 
-                    <parameter id="RealParameter.77" spec="parameter.RealParameter" lower="0.0" name="mu" upper="0.0">1.0</parameter>
-
-                    <parameter id="RealParameter.78" spec="parameter.RealParameter" lower="0.0" name="p" upper="0.0">0.5</parameter>
-
-                    <parameter id="RealParameter.79" spec="parameter.RealParameter" lower="0.0" name="rootLength" upper="0.0">0.2445398</parameter>
+                    <parameter id="RealParameter.77" spec="parameter.RealParameter" lower="0.0" name="p" upper="0.0">0.5</parameter>
 
                     <catastropheTimes id="catastropheSchedule.t:sequences" spec="beast.evolution.tree.birthdeath.BackwardsSchedule">0.0</catastropheTimes>
 
@@ -358,9 +356,21 @@
 
                     <Gamma id="Gamma.8" name="distr">
 
-                        <parameter id="RealParameter.80" spec="parameter.RealParameter" estimate="false" name="alpha">6.0</parameter>
+                        <parameter id="RealParameter.78" spec="parameter.RealParameter" estimate="false" name="alpha">6.0</parameter>
 
-                        <parameter id="RealParameter.81" spec="parameter.RealParameter" estimate="false" name="beta">0.5</parameter>
+                        <parameter id="RealParameter.79" spec="parameter.RealParameter" estimate="false" name="beta">0.5</parameter>
+
+                    </Gamma>
+
+                </prior>
+
+                <prior id="deathRatePrior.t:sequences" name="distribution" x="@deathRate.t:sequences">
+
+                    <Gamma id="Gamma.9" name="distr">
+
+                        <parameter id="RealParameter.80" spec="parameter.RealParameter" estimate="false" name="alpha">100.0</parameter>
+
+                        <parameter id="RealParameter.81" spec="parameter.RealParameter" estimate="false" name="beta">0.005</parameter>
 
                     </Gamma>
 
@@ -368,11 +378,11 @@
 
                 <prior id="occurrenceRatePrior.t:sequences" name="distribution" x="@occurrenceRate.t:sequences">
 
-                    <Gamma id="Gamma.9" name="distr">
+                    <Gamma id="Gamma.10" name="distr">
 
-                        <parameter id="RealParameter.82" spec="parameter.RealParameter" estimate="false" name="alpha">2.0</parameter>
+                        <parameter id="RealParameter.82" spec="parameter.RealParameter" estimate="false" name="alpha">10.0</parameter>
 
-                        <parameter id="RealParameter.83" spec="parameter.RealParameter" estimate="false" name="beta">0.25</parameter>
+                        <parameter id="RealParameter.83" spec="parameter.RealParameter" estimate="false" name="beta">0.05</parameter>
 
                     </Gamma>
 
@@ -380,11 +390,11 @@
 
                 <prior id="samplingRatePrior.t:sequences" name="distribution" x="@samplingRate.t:sequences">
 
-                    <Gamma id="Gamma.10" name="distr">
+                    <Gamma id="Gamma.11" name="distr">
 
-                        <parameter id="RealParameter.84" spec="parameter.RealParameter" estimate="false" name="alpha">2.0</parameter>
+                        <parameter id="RealParameter.86" spec="parameter.RealParameter" estimate="false" name="alpha">10.0</parameter>
 
-                        <parameter id="RealParameter.85" spec="parameter.RealParameter" estimate="false" name="beta">0.25</parameter>
+                        <parameter id="RealParameter.87" spec="parameter.RealParameter" estimate="false" name="beta">0.05</parameter>
 
                     </Gamma>
 
@@ -394,9 +404,14 @@
 
         </distribution>
 
+
         <operator id="birthRateScaler.t:sequences" spec="ScaleOperator" parameter="@birthRate.t:sequences" weight="3.0" />
 
         <operator id="birthRateWalk.t:sequences" spec="RealRandomWalkOperator" parameter="@birthRate.t:sequences" useGaussian="true" weight="3.0" windowSize="0.1" />
+
+        <operator id="deathRateScaler.t:sequences" spec="ScaleOperator" parameter="@deathRate.t:sequences" weight="3.0" />
+
+        <operator id="deathRateWalk.t:sequences" spec="RealRandomWalkOperator" parameter="@deathRate.t:sequences" useGaussian="true" weight="3.0" windowSize="0.1" />
 
         <operator id="samplingRateScaler.t:sequences" spec="ScaleOperator" parameter="@samplingRate.t:sequences" weight="3.0" />
 
@@ -412,6 +427,8 @@
 
             <log idref="prior" />
 
+            <log idref="deathRate.t:sequences" />
+
             <log idref="samplingRate.t:sequences" />
 
             <log idref="occurrenceRate.t:sequences" />
@@ -422,7 +439,7 @@
 
         </logger>
 
-        <logger id="screenlog" spec="Logger" logEvery="10000">
+        <logger id="screenlog" spec="Logger" logEvery="1000">
 
             <log idref="posterior" />
 
