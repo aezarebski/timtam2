@@ -13,10 +13,11 @@ posterior_samples$prevalence <- rnbinom(
   n = nrow(posterior_samples),
   size = exp(posterior_samples$TimTam.prevalence.lnR),
   prob = 1 - exp(posterior_samples$TimTam.prevalence.lnP))
+posterior_samples$rNaught <- posterior_samples$birthRate / (posterior_samples$deathRate + posterior_samples$samplingRate + posterior_samples$occurrenceRate)
 
-g <- ggplot() +
+g1 <- ggplot() +
   geom_hex(data = posterior_samples,
-           mapping = aes(x = birthRate / (deathRate + samplingRate + occurrenceRate), y = prevalence),
+           mapping = aes(x = rNaught, y = prevalence),
            bins = 20) +
   geom_point(data = true_parameters,
              mapping = aes(x = rNaught, y = prevalence),
@@ -29,8 +30,25 @@ g <- ggplot() +
 
 ggsave(
   filename = "./out/posterior-plot.png",
-  plot = g,
+  plot = g1,
   height = 10.5,
   width = 10.5,
   units = "cm"
 )
+
+bdsky_posterior_samples <- read.csv("out/fixed-tree-with-rho-again.log",
+                                    sep = "\t", comment.char = "#")
+plot_df <- data.frame(model = rep(c("timtam", "bdsky"), each = nrow(posterior_samples)),
+                      rNaught = c(posterior_samples$rNaught, bdsky_posterior_samples$reproductiveNumber_BDSKY_Serial))
+
+g2 <- ggplot() +
+  geom_histogram(data = plot_df, mapping = aes(x = rNaught)) +
+  geom_vline(xintercept = true_parameters$rNaught, linetype = "dashed") +
+  labs(x = "R-naught", y = "Posterior samples") +
+  facet_wrap(~model) +
+  theme_classic()
+
+ggsave(filename = "./out/r-naught-comparison.png",
+       plot = g2,
+       height = 14.8, width = 21.0,
+       units = "cm")
