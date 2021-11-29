@@ -5,7 +5,7 @@
 The tool, =ape-sim.R=, can be used to simulate a dataset.
 
 #+begin_src sh
-  ./ape-sim.R --seed 1 -p my-params.json -o out --duration 4.0 --rho 0.5 --write-newick --verbose
+  ./ape-sim.R --seed 1 -p my-params.json -o out --duration 4.0 --rho 0.5 --write-newick -v --make-plots
 #+end_src
 
 The parameters for this are specified in the following JSON. They are not very
@@ -57,20 +57,13 @@ and save the resulting XML, the settings are fine for our purposes here.
 
 To turn the XML into one that uses TimTam we need to make some edits:
 
-- include a =beast.util.TreeParser= input to read the Newick string of our
-  reconstructed tree from the simulation above,
-- include a =BackwardsSchedule= input to describe when the \(\rho\)-sample
-  occurred,
-- include a =BackwardsPointProcess= input using the occurrence times from the
-  simulation,
-- include a =TimTam= input to act as out target distribution,
-- and include two parameters for \(\lambda\) and \(\psi\)
-
-Once we have set the model up, we need to edit the =run= block. This involves
-re-defining the =state= to be out \(\lambda\) and \(\psi\) nodes and removing all
-the material associated with the default analysis. Two =RealRandomWalkOperator=
-operators are used for these parameters. After updating the loggers to return
-the desired values we are right to run the analysis.
+- copy the Newick string representation of the tree into a =beast.util.TreeParser=
+  and make sure that the TimTam is referencing this,
+- include the catastrophe time, 0.0, into the =BackwardsSchedule= slot of the
+  TimTam,
+- include the occurrence times into the =BackwardsPointProcess= input,
+- and finally delete references to anything relating to sequences and tree
+  estimation.
 
 ** MCMC and results
 
