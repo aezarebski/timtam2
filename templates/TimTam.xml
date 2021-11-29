@@ -18,23 +18,27 @@
                    spec="beast.evolution.speciation.TimTam"
                    mu="1.0"
                    p="0.5"
-                   omega="0.5"
                    rootLength="0.2445398"
                    catastropheTimes="@catastropheSchedule.t:$(n)"
                    points="@occurrenceTimes.t:$(n)"
                    tree='@Tree.t:$(n)'>
             	     <lambda spec='parameter.RealParameter' id="birthRate.t:$(n)" value='1.0' lower='0' upper='100' />
                    <psi spec='parameter.RealParameter' id="samplingRate.t:$(n)" value='0.5' lower='0' upper='100' />
+                   <omega spec='parameter.RealParameter' id="occurrenceRate.t:$(n)" value='0.5' lower='0' upper='100' />
                    </distribution>
 
                    <prior id='birthRatePrior.t:$(n)' x='@birthRate.t:$(n)'><distr spec="beast.math.distributions.Uniform" lower='0' upper='100'/></prior>
                    <prior id='samplingRatePrior.t:$(n)' x='@samplingRate.t:$(n)'><distr spec="beast.math.distributions.Uniform" lower='0' upper='100'/></prior>
+                   <prior id='occurrenceRatePrior.t:$(n)' x='@occurrenceRate.t:$(n)'><distr spec="beast.math.distributions.Uniform" lower='0' upper='100'/></prior>
 
   		             <scale id='birthRateScaler.t:$(n)' spec='ScaleOperator' scaleFactor="0.75" weight="3" parameter="@birthRate.t:$(n)"/>
                    <input id='birthRateWalk.t:$(n)' spec="RealRandomWalkOperator" windowSize="0.1" useGaussian="true" weight="3" parameter="@birthRate.t:$(n)"/>
 
   		             <scale id='samplingRateScaler.t:$(n)' spec='ScaleOperator' scaleFactor="0.75" weight="3" parameter="@samplingRate.t:$(n)"/>
                    <input id='samplingRateWalk.t:$(n)' spec="RealRandomWalkOperator" windowSize="0.1" useGaussian="true" weight="3" parameter="@samplingRate.t:$(n)"/>
+
+  		             <scale id='occurrenceRateScaler.t:$(n)' spec='ScaleOperator' scaleFactor="0.75" weight="3" parameter="@occurrenceRate.t:$(n)"/>
+                   <input id='occurrenceRateWalk.t:$(n)' spec="RealRandomWalkOperator" windowSize="0.1" useGaussian="true" weight="3" parameter="@occurrenceRate.t:$(n)"/>
 
                    <input spec="beast.evolution.speciation.TimTamLogger" id="TimTamLogger.t:$(n)" />
                    ]]>
@@ -46,12 +50,16 @@
             </connect>
             <connect srcID='birthRate.t:$(n)' targetID='state' inputName='stateNode' if='inposterior(TimTam.t:$(n)) and inposterior(birthRate.t:$(n)) and birthRate.t:$(n)/estimate=true' />
             <connect srcID='samplingRate.t:$(n)' targetID='state' inputName='stateNode' if='inposterior(TimTam.t:$(n)) and inposterior(samplingRate.t:$(n)) and samplingRate.t:$(n)/estimate=true' />
+            <connect srcID='occurrenceRate.t:$(n)' targetID='state' inputName='stateNode' if='inposterior(TimTam.t:$(n)) and inposterior(occurrenceRate.t:$(n)) and occurrenceRate.t:$(n)/estimate=true' />
 
             <connect srcID='birthRatePrior.t:$(n)' targetID='prior' inputName='distribution' if='inposterior(TimTam.t:$(n)) and inposterior(birthRate.t:$(n)) and birthRate.t:$(n)/estimate=true'>
                 birth rate of the TimTam model on partition t:$(n)
             </connect>
             <connect srcID='samplingRatePrior.t:$(n)' targetID='prior' inputName='distribution' if='inposterior(TimTam.t:$(n)) and inposterior(samplingRate.t:$(n)) and samplingRate.t:$(n)/estimate=true'>
                 sampling rate of the TimTam model on partition t:$(n)
+            </connect>
+            <connect srcID='occurrenceRatePrior.t:$(n)' targetID='prior' inputName='distribution' if='inposterior(TimTam.t:$(n)) and inposterior(occurrenceRate.t:$(n)) and occurrenceRate.t:$(n)/estimate=true'>
+                occurrence rate of the TimTam model on partition t:$(n)
             </connect>
 
             <connect srcID='birthRateScaler.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTam.t:$(n)) and inposterior(birthRate.t:$(n)) and birthRate.t:$(n)/estimate=true'>
@@ -70,9 +78,17 @@
                 Random walk operator on sampling rate of TimTam prior of tree t:$(n)
             </connect>
 
-            <connect srcID='birthRate.t:$(n)' targetID='tracelog' inputName='log' if='inposterior(TimTam.t:$(n)) and inposterior(birthRate.t:$(n)) and birthRate.t:$(n)/estimate=true' />
+            <connect srcID='occurrenceRateScaler.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTam.t:$(n)) and inposterior(occurrenceRate.t:$(n)) and occurrenceRate.t:$(n)/estimate=true'>
+                Scale occurrence rate of TimTam prior of tree t:$(n)
+            </connect>
 
+            <connect srcID='occurrenceRateWalk.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTam.t:$(n)) and inposterior(occurrenceRate.t:$(n)) and occurrenceRate.t:$(n)/estimate=true'>
+                Random walk operator on occurrence rate of TimTam prior of tree t:$(n)
+            </connect>
+
+            <connect srcID='birthRate.t:$(n)' targetID='tracelog' inputName='log' if='inposterior(TimTam.t:$(n)) and inposterior(birthRate.t:$(n)) and birthRate.t:$(n)/estimate=true' />
             <connect srcID='samplingRate.t:$(n)' targetID='tracelog' inputName='log' if='inposterior(TimTam.t:$(n)) and inposterior(samplingRate.t:$(n)) and samplingRate.t:$(n)/estimate=true' />
+            <connect srcID='occurrenceRate.t:$(n)' targetID='tracelog' inputName='log' if='inposterior(TimTam.t:$(n)) and inposterior(occurrenceRate.t:$(n)) and occurrenceRate.t:$(n)/estimate=true' />
 
             <connect srcID='TimTamLogger.t:$(n)' targetID='tracelog' inputName='log' if='inposterior(TimTam.t:$(n)) and inposterior(samplingRate.t:$(n)) and samplingRate.t:$(n)/estimate=true' />
             <connect srcID='TimTam.t:$(n)' targetID='TimTamLogger.t:$(n)' inputName='timtam' if='inposterior(TimTam.t:$(n)) and inposterior(samplingRate.t:$(n)) and samplingRate.t:$(n)/estimate=true' />
