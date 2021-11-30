@@ -16,6 +16,46 @@ public class TestTimTam {
 
     private final BiPredicate<Double, Double> approxEqual = (x, y) -> Math.abs(x - y) < 1e-5;
     private final BiPredicate<Double, Double> roughlyEqual = (x, y) -> Math.abs(x - y) < 1e-1;
+    // check if within 5% of the second value.
+    private final BiPredicate<Double, Double> kindaEqual = (x, y) -> (Math.abs(x - y) / Math.abs(y)) < 5e-2;
+
+    @Test
+    public void testLikelihoodCalculationSimple() {
+        /**
+         * This test draws on a similar one in BDSKY and checks that the TimTam values look similar in a special case.
+         *
+         * | R0  | lBDSKY | lambda |
+         * |-----+--------+--------|
+         * | 1.5 | -26.1  |  2.25  |
+         * | 1.6 | -27.4  |  2.40  |
+         * | 1.7 | -28.8  |  2.55  |
+         * | 1.8 | -30.2  |  2.70  |
+          */
+
+        TimTam tt =  new TimTam();
+
+        Tree tree = new TreeParser("((3 : 1.5, 4 : 0.5) : 1 , (1 : 2, 2 : 1) : 3);",false);
+        tt.setInputValue("tree", tree);
+        tt.setInputValue("rootLength", new RealParameter("5.0"));
+        tt.setInputValue("mu", new RealParameter("1.05"));
+        tt.setInputValue("psi", new RealParameter("0.45"));
+
+        tt.setInputValue("lambda", new RealParameter("2.25"));
+        tt.initAndValidate();
+        assertTrue(kindaEqual.test(-26.1 - 2, tt.calculateLogP()));
+
+        tt.setInputValue("lambda", new RealParameter("2.40"));
+        tt.initAndValidate();
+        assertTrue(kindaEqual.test(-27.4 - 2, tt.calculateLogP()));
+
+        tt.setInputValue("lambda", new RealParameter("2.55"));
+        tt.initAndValidate();
+        assertTrue(kindaEqual.test(-28.8 - 2, tt.calculateLogP()));
+
+        tt.setInputValue("lambda", new RealParameter("2.70"));
+        tt.initAndValidate();
+        assertTrue(kindaEqual.test(-30.2 - 2, tt.calculateLogP()));
+    }
 
     @Test
     public void testLikelihood() {

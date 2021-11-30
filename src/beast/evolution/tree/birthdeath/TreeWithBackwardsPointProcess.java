@@ -18,7 +18,7 @@ public class TreeWithBackwardsPointProcess extends CalculationNode {
 
     final public Input<RealParameter> rootLengthInput = new Input<>("rootLength", "the time between the origin and the MRCA of the tree", Input.Validate.REQUIRED);
     final public Input<Tree> treeInput = new Input<>("tree", "the tree", Input.Validate.REQUIRED);
-    final public Input<BackwardsPointProcess> bwdPointsInput = new Input<>("bwdPoints", "the points in the point process", Input.Validate.REQUIRED);
+    final public Input<BackwardsPointProcess> bwdPointsInput = new Input<>("bwdPoints", "the points in the point process", Input.Validate.OPTIONAL);
     final public Input<BackwardsSchedule> bwdCatastropheTimesInput = new Input<>("bwdCatastropheTimes", "the times at which there was a catastrophe", Input.Validate.OPTIONAL);
 
     private Tree tree;
@@ -111,8 +111,17 @@ public class TreeWithBackwardsPointProcess extends CalculationNode {
             catastropheSizes = new int[0];
         }
 
-        double[] fwdPointTimes = bwdPointsInput.get().valuesInput.get().stream().mapToDouble(x -> maxTreeNodeTime - x).sorted().toArray();
-        int pointCount = fwdPointTimes.length;
+        // we need to handle the edge case where there are no backwards points in which case we do not expect this input
+        // to be provided.
+        double[] fwdPointTimes;
+        int pointCount;
+        if (bwdPointsInput.get() != null) {
+            fwdPointTimes = bwdPointsInput.get().valuesInput.get().stream().mapToDouble(x -> maxTreeNodeTime - x).sorted().toArray();
+            pointCount = fwdPointTimes.length;
+        } else {
+            fwdPointTimes = new double[]{};
+            pointCount = 0;
+        }
 
         // The number of intervals needs to account for catastrophes where there are no sequences collected and
         // catastrophes where multiple leaves correspond to a single interval.

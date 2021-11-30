@@ -36,6 +36,7 @@ public class TimTam extends TreeDistribution {
 
     // occurrence rate
     RealParameter omega;
+    private boolean hasPositiveOmega;
 
     // length of the edge from origin to MRCA node.
     RealParameter rootLength;
@@ -101,7 +102,12 @@ public class TimTam extends TreeDistribution {
         }
 
         this.omega = omegaInput.get();
-        omega.setBounds(0.0, Double.POSITIVE_INFINITY);
+        if (this.omega != null) {
+            omega.setBounds(0.0, Double.POSITIVE_INFINITY);
+            hasPositiveOmega = true;
+        } else {
+            hasPositiveOmega = false;
+        }
 
         this.rootLength= rootLengthInput.get();
         rootLength.setBounds(0.0, Double.POSITIVE_INFINITY);
@@ -137,7 +143,12 @@ public class TimTam extends TreeDistribution {
         }
 
         this.omega = omega;
-        omega.setBounds(0.0, Double.POSITIVE_INFINITY);
+        if (this.omega != null) {
+            omega.setBounds(0.0, Double.POSITIVE_INFINITY);
+            hasPositiveOmega = true;
+        } else {
+            hasPositiveOmega = false;
+        }
 
         this.rootLength= rootLength;
         rootLength.setBounds(0.0, Double.POSITIVE_INFINITY);
@@ -162,7 +173,11 @@ public class TimTam extends TreeDistribution {
     }
 
     public double omega() {
-        return omega.getValue(0);
+        if (hasPositiveOmega) {
+            return omega.getValue(0);
+        } else {
+            throw new RuntimeException("Omega was not provided hence should not be requested.");
+        }
     }
 
     public double p() {
@@ -383,7 +398,12 @@ public class TimTam extends TreeDistribution {
     }
 
     private double[] odeHelpers(double intervalDuration) {
-        double gamma = birth() + death() + psi() + omega();
+        double gamma;
+        if (hasPositiveOmega) {
+            gamma = birth() + death() + psi() + omega();
+        } else {
+            gamma = birth() + death() + psi();
+        }
         double discriminant = Math.pow(gamma, 2.0) - 4.0 * birth() * death();
         double sqrtDisc = Math.sqrt(discriminant);
         double x1 = (gamma - sqrtDisc) / (2 * birth());
