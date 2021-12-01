@@ -193,6 +193,32 @@ public class TestTreeWithBackwardsPointProcess {
     }
 
     @Test
+    public void canGetTotalTimeSpan() {
+        RealParameter rootLength = new RealParameter("1.5");
+        Tree tree = new TreeParser("(1:2.5, 2:2.5);", false);
+        BackwardsSchedule catastropheTimes = new BackwardsSchedule();
+        catastropheTimes.initByName("value", "0.0");
+
+        BackwardsPointProcess points = new BackwardsPointProcess();
+        points.initByName("value", "1.0");
+        TreeWithBackwardsPointProcess tpp = new TreeWithBackwardsPointProcess(rootLength, tree, points, catastropheTimes);
+
+        assertEquals(4.0, tpp.getTotalTimeSpan(), 1e-5);
+
+        points.initByName("value", "1.0 -1.0");
+        tpp = new TreeWithBackwardsPointProcess(rootLength, tree, points, catastropheTimes);
+        assertEquals(5.0, tpp.getTotalTimeSpan(), 1e-5);
+
+        points.initByName("value", "5.0 1.0");
+        tpp = new TreeWithBackwardsPointProcess(rootLength, tree, points, catastropheTimes);
+        assertEquals(5.0, tpp.getTotalTimeSpan(), 1e-5);
+
+        points.initByName("value", "5.0 -1.0");
+        tpp = new TreeWithBackwardsPointProcess(rootLength, tree, points, catastropheTimes);
+        assertEquals(6.0, tpp.getTotalTimeSpan(), 1e-5);
+    }
+
+    @Test
     public void canRecoverCatastrophe() {
 
         RealParameter rootLength = new RealParameter("1.0");
@@ -205,6 +231,8 @@ public class TestTreeWithBackwardsPointProcess {
         catastropheTimes.initByName("value", "0.0");
 
         TreeWithBackwardsPointProcess tpp = new TreeWithBackwardsPointProcess(rootLength, tree, points, catastropheTimes);
+
+        assertEquals(7, tpp.getTotalTimeSpan(), 1e-5);
 
         // There are two occurrences, three leaves and two internal nodes.
         assertEquals(7, tpp.getIntervalCount());
@@ -243,6 +271,9 @@ public class TestTreeWithBackwardsPointProcess {
         points.initByName("value", "3.5 2.5");
 
         TreeWithBackwardsPointProcess tpp = new TreeWithBackwardsPointProcess(rootLength, tree, points, null);
+
+        // check that it can recover the total duration
+        assertEquals(tpp.getTotalTimeSpan(), 5.0, 1e-5);
 
         // There are two occurrences, three leaves and two internal nodes.
         assertEquals(tpp.getIntervalCount(),2 + 3 + (3 - 1));

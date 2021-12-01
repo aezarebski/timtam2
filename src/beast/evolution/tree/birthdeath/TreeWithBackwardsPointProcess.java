@@ -30,6 +30,8 @@ public class TreeWithBackwardsPointProcess extends CalculationNode {
     private int[] treeNodeOutdegree;
     private List<Double> fwdCatastropheTimes;
 
+    private double totalTimeSpan; // the duration of time from the origin until the most recent observation.
+
     public TreeWithBackwardsPointProcess() {
         super();
     }
@@ -118,9 +120,26 @@ public class TreeWithBackwardsPointProcess extends CalculationNode {
         if (bwdPointsInput.get() != null) {
             fwdPointTimes = bwdPointsInput.get().valuesInput.get().stream().mapToDouble(x -> maxTreeNodeTime - x).sorted().toArray();
             pointCount = fwdPointTimes.length;
+
+            double mostRecentPoint = Arrays.stream(bwdPointsInput.get().getDoubleValues()).min().getAsDouble();
+            double mostDistantPoint = Arrays.stream(bwdPointsInput.get().getDoubleValues()).max().getAsDouble();
+            if (mostRecentPoint < 0) {
+                if (mostDistantPoint > maxTreeNodeTime) {
+                    setTotalTimeSpan(mostDistantPoint - mostRecentPoint);
+                } else {
+                    setTotalTimeSpan(maxTreeNodeTime - mostRecentPoint);
+                }
+            } else {
+                if (mostDistantPoint > maxTreeNodeTime) {
+                    setTotalTimeSpan(mostDistantPoint);
+                } else {
+                    setTotalTimeSpan(maxTreeNodeTime);
+                }
+            }
         } else {
             fwdPointTimes = new double[]{};
             pointCount = 0;
+            setTotalTimeSpan(maxTreeNodeTime);
         }
 
         // The number of intervals needs to account for catastrophes where there are no sequences collected and
@@ -275,4 +294,17 @@ public class TreeWithBackwardsPointProcess extends CalculationNode {
         if (i < 0 || i >= intervalCount) throw new IllegalArgumentException();
         return intervals[i];
     }
+
+    /**
+     * This is the total amount of time from the origin of the process until the time of the final observation.
+     * @return total duration of time from origin to last observation
+     */
+    public double getTotalTimeSpan() {
+        return totalTimeSpan;
+    }
+
+    public void setTotalTimeSpan(double totalTimeSpan) {
+        this.totalTimeSpan = totalTimeSpan;
+    }
+
 }
