@@ -355,7 +355,7 @@ public class TimTam extends TreeDistribution {
                 - 4 * Math.log((x2 - expFact * (x1 - 1.0) - 1.0));
     }
 
-    private double p0(double intervalDuration) {
+    double p0(double intervalDuration) {
         double[] tmp = odeHelpers(intervalDuration);
         double x1 = tmp[0];
         double x2 = tmp[1];

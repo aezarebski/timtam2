@@ -22,14 +22,25 @@ public class TestTimTam {
     @Test
     public void testLikelihoodCalculationSimple() {
         /**
-         * This test draws on a similar one in BDSKY and checks that the TimTam values look similar in a special case.
+         * This test draws on a similar one in BDSKY and checks that the TimTam
+         * values look similar in a special case.
          *
-         * | R0  | lBDSKY | lambda |
-         * |-----+--------+--------|
-         * | 1.5 | -26.1  |  2.25  |
-         * | 1.6 | -27.4  |  2.40  |
-         * | 1.7 | -28.8  |  2.55  |
-         * | 1.8 | -30.2  |  2.70  |
+         * | R0  | lBDSKY             |lambda|
+         * |-----+--------------------+------|
+         * | 1.5 | -26.10536013426608 | 2.25 |
+         * | 1.6 | -27.39912704449781 | 2.40 |
+         * | 1.7 | -28.76692080906782 | 2.55 |
+         * | 1.8 | -30.19926984491369 | 2.70 |
+         * | 2.0 | -33.22625199062580 | 3.00 |
+         * | 3.0 | -50.33479549906616 | 4.50 |
+         * | 4.0 | -68.99855263104962 | 6.00 |
+         *
+         * |  R0 |             p0BDSKY | lambda |
+         * |-----+---------------------+--------|
+         * | 1.5 | 0.35607263215566554 |   2.25 |
+         * | 1.6 |  0.3406353481143964 |   2.40 |
+         * | 1.7 | 0.32629489067558237 |   2.55 |
+         * | 1.8 | 0.31296665195860446 |   2.70 |
           */
 
         TimTam tt =  new TimTam();
@@ -42,19 +53,35 @@ public class TestTimTam {
 
         tt.setInputValue("lambda", new RealParameter("2.25"));
         tt.initAndValidate();
+        assertTrue(approxEqual.test(0.356072632, tt.p0(10.0)));
         assertTrue(kindaEqual.test(-26.1 - 2, tt.calculateLogP()));
 
         tt.setInputValue("lambda", new RealParameter("2.40"));
         tt.initAndValidate();
+        assertTrue(approxEqual.test(0.340635348, tt.p0(10.0)));
         assertTrue(kindaEqual.test(-27.4 - 2, tt.calculateLogP()));
 
         tt.setInputValue("lambda", new RealParameter("2.55"));
         tt.initAndValidate();
+        assertTrue(approxEqual.test(0.326294890, tt.p0(10.0)));
         assertTrue(kindaEqual.test(-28.8 - 2, tt.calculateLogP()));
 
         tt.setInputValue("lambda", new RealParameter("2.70"));
         tt.initAndValidate();
+        assertTrue(approxEqual.test(0.312966651, tt.p0(10.0)));
         assertTrue(kindaEqual.test(-30.2 - 2, tt.calculateLogP()));
+
+        tt.setInputValue("lambda", new RealParameter("3.00"));
+        tt.initAndValidate();
+        assertTrue(kindaEqual.test(-33.2 - 2, tt.calculateLogP()));
+
+        tt.setInputValue("lambda", new RealParameter("4.50"));
+        tt.initAndValidate();
+        assertTrue(kindaEqual.test(-50.3 - 2, tt.calculateLogP()));
+
+        tt.setInputValue("lambda", new RealParameter("6.00"));
+        tt.initAndValidate();
+        assertTrue(kindaEqual.test(-69.0 - 2, tt.calculateLogP()));
     }
 
     @Test
