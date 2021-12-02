@@ -10,6 +10,7 @@ import org.junit.Test;
 import java.util.function.BiPredicate;
 import java.util.function.DoubleFunction;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class TestTimTam {
@@ -102,7 +103,7 @@ public class TestTimTam {
         BackwardsSchedule catastropheTimes = new BackwardsSchedule();
         catastropheTimes.initByName("value", "0.0");
 
-        TimTam tt = new TimTam(birthRate, deathRate, samplingRate, rhoProb, occurrenceRate, rootLength, catastropheTimes, points);
+        TimTam tt = new TimTam(birthRate, deathRate, samplingRate, rhoProb, occurrenceRate, rootLength, catastropheTimes, points, false);
         tt.setInputValue("tree", tree);
 
         double fx, fxh, h, fxDash;
@@ -115,9 +116,24 @@ public class TestTimTam {
         assertTrue(
                 roughlyEqual.test(
                         -47.0,
-                        tt.calculateLogP()
-                )
-        );
+                        tt.calculateLogP()));
+
+        // if we repeat this using an instance that conditions upon observation then the value should be different.
+        TimTam ttConditioned = new TimTam(
+                birthRate,
+                deathRate,
+                samplingRate,
+                rhoProb,
+                occurrenceRate,
+                rootLength,
+                catastropheTimes,
+                points,
+                true);
+        ttConditioned.setInputValue("tree", tree);
+        assertFalse(
+                roughlyEqual.test(
+                        -47.0,
+                        ttConditioned.calculateLogP()));
     }
 
     @Test
