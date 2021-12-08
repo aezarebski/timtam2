@@ -2,6 +2,7 @@ package beast.evolution.speciation;
 
 import beast.core.parameter.RealParameter;
 import beast.evolution.tree.Tree;
+import beast.evolution.tree.birthdeath.BackwardsCounts;
 import beast.evolution.tree.birthdeath.BackwardsPointProcess;
 import beast.evolution.tree.birthdeath.BackwardsSchedule;
 import beast.util.TreeParser;
@@ -97,13 +98,30 @@ public class TestTimTam {
         RealParameter rootLength = new RealParameter("1.0");
         Tree tree = new TreeParser("(((1:3,2:1):1,3:4):2,4:6);",false);
 
-        BackwardsPointProcess points = new BackwardsPointProcess();
-        points.initByName("value", "5.0 1.0");
-
         BackwardsSchedule catastropheTimes = new BackwardsSchedule();
         catastropheTimes.initByName("value", "0.0");
 
-        TimTam tt = new TimTam(birthRate, deathRate, samplingRate, rhoProb, occurrenceRate, rootLength, catastropheTimes, points, false);
+        BackwardsPointProcess points = new BackwardsPointProcess();
+        points.initByName("value", "5.0 1.0");
+
+        // set up some dummy variables so the program will type check...
+        RealParameter nuProb = new RealParameter("0.0");
+        BackwardsSchedule disasterTimes = new BackwardsSchedule();
+        BackwardsCounts disasterCounts = new BackwardsCounts();
+
+        TimTam tt = new TimTam(
+                birthRate,
+                deathRate,
+                samplingRate,
+                rhoProb,
+                occurrenceRate,
+                rootLength,
+                catastropheTimes,
+                points,
+                nuProb,
+                disasterTimes,
+                disasterCounts,
+                false);
         tt.setInputValue("tree", tree);
 
         double fx, fxh, h, fxDash;
@@ -128,6 +146,9 @@ public class TestTimTam {
                 rootLength,
                 catastropheTimes,
                 points,
+                nuProb,
+                disasterTimes,
+                disasterCounts,
                 true);
         ttConditioned.setInputValue("tree", tree);
         assertFalse(

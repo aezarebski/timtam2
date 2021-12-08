@@ -5,10 +5,7 @@ import beast.core.Input;
 import beast.core.parameter.RealParameter;
 import beast.evolution.tree.Tree;
 import beast.evolution.tree.TreeDistribution;
-import beast.evolution.tree.birthdeath.EventType;
-import beast.evolution.tree.birthdeath.BackwardsPointProcess;
-import beast.evolution.tree.birthdeath.BackwardsSchedule;
-import beast.evolution.tree.birthdeath.TreeWithBackwardsPointProcess;
+import beast.evolution.tree.birthdeath.*;
 
 import java.util.Arrays;
 
@@ -38,11 +35,18 @@ public class TimTam extends TreeDistribution {
     RealParameter omega;
     private boolean hasPositiveOmega;
 
+    // scheduled unsequenced sampling probability
+    RealParameter nu;
+
     // length of the edge from origin to MRCA node.
     RealParameter rootLength;
 
     // the times at which a scheduled sequenced sample was attempted
     BackwardsSchedule catastropheTimes;
+
+    // the times and size of any disasters
+    BackwardsSchedule disasterTimes;
+    BackwardsCounts disasterCounts;
 
     // the times at which there was an occurrence sample.
     BackwardsPointProcess points;
@@ -73,8 +77,12 @@ public class TimTam extends TreeDistribution {
             RealParameter rootLength,
             BackwardsSchedule catastropheTimes,
             BackwardsPointProcess points,
+            RealParameter nu,
+            BackwardsSchedule disasterTimes,
+            BackwardsCounts disasterCounts,
             Boolean conditionOnObservation) {
-        this("timTamModel", lambda, mu, psi, p, omega, rootLength, catastropheTimes, points, conditionOnObservation);
+        this("timTamModel", lambda, mu, psi, p, omega, rootLength, catastropheTimes, points, nu,
+                disasterTimes, disasterCounts, conditionOnObservation);
     }
 
     final public Input<RealParameter> lambdaInput = new Input<>("lambda", "the birth rate of new infections");
@@ -85,6 +93,9 @@ public class TimTam extends TreeDistribution {
     final public Input<RealParameter> rootLengthInput = new Input<>("rootLength", "the length of the edge between the origin and the MRCA");
     final public Input<BackwardsSchedule> catastropheTimesInput = new Input<>("catastropheTimes", "the times at which a scheduled sequenced sample was attempted");
     final public Input<BackwardsPointProcess> pointsInput = new Input<>("points", "the points in the point process");
+    final public Input<RealParameter> nuInput = new Input<>("nu", "the probability of unsequenced scheduled sampling", Input.Validate.OPTIONAL);
+    final public Input<BackwardsSchedule> disasterTimesInput = new Input<>("disasterTimes", "the times at which a scheduled unsequenced sample was attempted", Input.Validate.OPTIONAL);
+    final public Input<BackwardsCounts> disasterCountsInput = new Input<>("disasterCounts", "the size of each scheduled unsequenced sample", Input.Validate.OPTIONAL);
     final public Input<Boolean> conditionOnObservationInput = new Input<>("conditionOnObservation", "if is true then condition on sampling at least one individual (psi-sampling). The default value is true.", true);
 
     @Override
@@ -120,6 +131,13 @@ public class TimTam extends TreeDistribution {
 
         this.points = pointsInput.get();
 
+        this.nu = nuInput.get();
+        if (this.nu != null) {
+            this.nu.setBounds(0.0, 1.0);
+        }
+        this.disasterTimes = disasterTimesInput.get();
+        this.disasterCounts = disasterCountsInput.get();
+
         this.conditionOnObservation = conditionOnObservationInput.get();
     }
 
@@ -133,6 +151,9 @@ public class TimTam extends TreeDistribution {
             RealParameter rootLength,
             BackwardsSchedule catastropheTimes,
             BackwardsPointProcess points,
+            RealParameter nu,
+            BackwardsSchedule disasterTimes,
+            BackwardsCounts disasterCounts,
             Boolean conditionOnObservation) {
 
         this.lambda = lambda;
@@ -166,6 +187,13 @@ public class TimTam extends TreeDistribution {
 
         this.points = points;
 
+        this.nu = nu;
+        if (this.nu != null) {
+            nu.setBounds(0.0, 1.0);
+        }
+        this.disasterTimes = disasterTimes;
+        this.disasterCounts = disasterCounts;
+
         this.conditionOnObservation = conditionOnObservation;
     }
 
@@ -193,6 +221,9 @@ public class TimTam extends TreeDistribution {
         return p.getValue(0);
     }
 
+    public double nu() {
+        return nu.getValue(0);
+    }
 
     @Override
     public double calculateLogP() {
@@ -206,7 +237,13 @@ public class TimTam extends TreeDistribution {
      * @param tree the tree to calculate likelihood of
      */
     public final void calculateTreeLogLikelihood(Tree tree) {
-        TreeWithBackwardsPointProcess ti = new TreeWithBackwardsPointProcess(rootLength, tree, points, catastropheTimes);
+        TreeWithBackwardsPointProcess ti = new TreeWithBackwardsPointProcess(
+                rootLength,
+                tree,
+                points,
+                disasterTimes,
+                disasterCounts,
+                catastropheTimes);
         int numIntervals = ti.getIntervalCount();
 
         // if the likelihood conditions upon the observation of the process then we need to account for this in the
@@ -233,7 +270,7 @@ public class TimTam extends TreeDistribution {
     /**
      * This method should mutate the input to account for the observation that occurred.
      *
-     * @param intervalType
+     * @param intervalType the type of observation that was made
      *
      * @see beast.evolution.tree.birthdeath.EventType
      *
@@ -265,6 +302,15 @@ public class TimTam extends TreeDistribution {
                 this.nb.setLnPAndLnR(Math.log(1 - rho) + this.nb.getLnP(),
                         this.nb.getLnR());
 
+            }
+            case "disaster" -> {
+                int h = intervalType.getCount().getAsInt();
+                double nu = nu();
+                lnL = this.k * Math.log(1 - nu)
+                        + h * Math.log(nu)
+                        + this.nb.lnPGFDash(h, 1 - nu);
+                this.nb.setLnPAndLnR(Math.log(1 - nu) * this.nb.getLnP(),
+                        this.nb.getLnR() + h);
             }
             default -> throw new IllegalStateException("Unexpected value: " + intervalType);
         }
@@ -618,6 +664,7 @@ public class TimTam extends TreeDistribution {
                 || psiInput.get().somethingIsDirty()
                 || pInput.get().somethingIsDirty()
                 || omegaInput.get().somethingIsDirty()
+                || nuInput.get().somethingIsDirty()
                 || rootLengthInput.get().somethingIsDirty();
     }
 }
