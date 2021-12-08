@@ -36,6 +36,7 @@ public class TimTam extends TreeDistribution {
 
     // occurrence rate
     RealParameter omega;
+    private boolean hasPositiveOmega;
 
     // length of the edge from origin to MRCA node.
     RealParameter rootLength;
@@ -45,6 +46,8 @@ public class TimTam extends TreeDistribution {
 
     // the times at which there was an occurrence sample.
     BackwardsPointProcess points;
+
+    boolean conditionOnObservation;
 
     // we use this attribute to accumulate the log-likelihood in the calculation.
     private double lnL;
@@ -69,8 +72,9 @@ public class TimTam extends TreeDistribution {
             RealParameter omega,
             RealParameter rootLength,
             BackwardsSchedule catastropheTimes,
-            BackwardsPointProcess points) {
-        this("timTamModel", lambda, mu, psi, p, omega, rootLength, catastropheTimes, points);
+            BackwardsPointProcess points,
+            Boolean conditionOnObservation) {
+        this("timTamModel", lambda, mu, psi, p, omega, rootLength, catastropheTimes, points, conditionOnObservation);
     }
 
     final public Input<RealParameter> lambdaInput = new Input<>("lambda", "the birth rate of new infections");
@@ -81,6 +85,7 @@ public class TimTam extends TreeDistribution {
     final public Input<RealParameter> rootLengthInput = new Input<>("rootLength", "the length of the edge between the origin and the MRCA");
     final public Input<BackwardsSchedule> catastropheTimesInput = new Input<>("catastropheTimes", "the times at which a scheduled sequenced sample was attempted");
     final public Input<BackwardsPointProcess> pointsInput = new Input<>("points", "the points in the point process");
+    final public Input<Boolean> conditionOnObservationInput = new Input<>("conditionOnObservation", "if is true then condition on sampling at least one individual (psi-sampling). The default value is true.", true);
 
     @Override
     public void initAndValidate() {
@@ -101,7 +106,12 @@ public class TimTam extends TreeDistribution {
         }
 
         this.omega = omegaInput.get();
-        omega.setBounds(0.0, Double.POSITIVE_INFINITY);
+        if (this.omega != null) {
+            omega.setBounds(0.0, Double.POSITIVE_INFINITY);
+            hasPositiveOmega = true;
+        } else {
+            hasPositiveOmega = false;
+        }
 
         this.rootLength= rootLengthInput.get();
         rootLength.setBounds(0.0, Double.POSITIVE_INFINITY);
@@ -109,6 +119,8 @@ public class TimTam extends TreeDistribution {
         this.catastropheTimes = catastropheTimesInput.get();
 
         this.points = pointsInput.get();
+
+        this.conditionOnObservation = conditionOnObservationInput.get();
     }
 
     public TimTam(
@@ -120,7 +132,8 @@ public class TimTam extends TreeDistribution {
             RealParameter omega,
             RealParameter rootLength,
             BackwardsSchedule catastropheTimes,
-            BackwardsPointProcess points) {
+            BackwardsPointProcess points,
+            Boolean conditionOnObservation) {
 
         this.lambda = lambda;
         lambda.setBounds(0.0, Double.POSITIVE_INFINITY);
@@ -137,7 +150,12 @@ public class TimTam extends TreeDistribution {
         }
 
         this.omega = omega;
-        omega.setBounds(0.0, Double.POSITIVE_INFINITY);
+        if (this.omega != null) {
+            omega.setBounds(0.0, Double.POSITIVE_INFINITY);
+            hasPositiveOmega = true;
+        } else {
+            hasPositiveOmega = false;
+        }
 
         this.rootLength= rootLength;
         rootLength.setBounds(0.0, Double.POSITIVE_INFINITY);
@@ -147,6 +165,8 @@ public class TimTam extends TreeDistribution {
         this.catastropheTimes = catastropheTimes;
 
         this.points = points;
+
+        this.conditionOnObservation = conditionOnObservation;
     }
 
     public double birth() {
@@ -162,7 +182,11 @@ public class TimTam extends TreeDistribution {
     }
 
     public double omega() {
-        return omega.getValue(0);
+        if (hasPositiveOmega) {
+            return omega.getValue(0);
+        } else {
+            throw new RuntimeException("Omega was not provided hence should not be requested.");
+        }
     }
 
     public double p() {
@@ -185,8 +209,16 @@ public class TimTam extends TreeDistribution {
         TreeWithBackwardsPointProcess ti = new TreeWithBackwardsPointProcess(rootLength, tree, points, catastropheTimes);
         int numIntervals = ti.getIntervalCount();
 
-        this.lnL = 0.0;
-        // TODO this assumes a fixed initial condition which should be movied
+        // if the likelihood conditions upon the observation of the process then we need to account for this in the
+        // log-likelihood.
+        if (this.conditionOnObservation) {
+            double probUnobserved = p0(ti.getTotalTimeSpan());
+            this.lnL = - Math.log(1 - probUnobserved);
+        } else {
+            this.lnL = 0.0;
+        }
+
+        // TODO this assumes a fixed initial condition which should be moved
         //  into something that gets specified by the client.
         this.k = 1;
 
@@ -340,7 +372,7 @@ public class TimTam extends TreeDistribution {
                 - 4 * Math.log((x2 - expFact * (x1 - 1.0) - 1.0));
     }
 
-    private double p0(double intervalDuration) {
+    double p0(double intervalDuration) {
         double[] tmp = odeHelpers(intervalDuration);
         double x1 = tmp[0];
         double x2 = tmp[1];
@@ -383,7 +415,12 @@ public class TimTam extends TreeDistribution {
     }
 
     private double[] odeHelpers(double intervalDuration) {
-        double gamma = birth() + death() + psi() + omega();
+        double gamma;
+        if (hasPositiveOmega) {
+            gamma = birth() + death() + psi() + omega();
+        } else {
+            gamma = birth() + death() + psi();
+        }
         double discriminant = Math.pow(gamma, 2.0) - 4.0 * birth() * death();
         double sqrtDisc = Math.sqrt(discriminant);
         double x1 = (gamma - sqrtDisc) / (2 * birth());

@@ -10,12 +10,80 @@ import org.junit.Test;
 import java.util.function.BiPredicate;
 import java.util.function.DoubleFunction;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class TestTimTam {
 
     private final BiPredicate<Double, Double> approxEqual = (x, y) -> Math.abs(x - y) < 1e-5;
     private final BiPredicate<Double, Double> roughlyEqual = (x, y) -> Math.abs(x - y) < 1e-1;
+    // check if within 5% of the second value.
+    private final BiPredicate<Double, Double> kindaEqual = (x, y) -> (Math.abs(x - y) / Math.abs(y)) < 5e-2;
+
+    @Test
+    public void testLikelihoodCalculationSimple() {
+        /**
+         * This test draws on a similar one in BDSKY and checks that the TimTam
+         * values look similar in a special case.
+         *
+         * | R0  | lBDSKY             |lambda|
+         * |-----+--------------------+------|
+         * | 1.5 | -26.10536013426608 | 2.25 |
+         * | 1.6 | -27.39912704449781 | 2.40 |
+         * | 1.7 | -28.76692080906782 | 2.55 |
+         * | 1.8 | -30.19926984491369 | 2.70 |
+         * | 2.0 | -33.22625199062580 | 3.00 |
+         * | 3.0 | -50.33479549906616 | 4.50 |
+         * | 4.0 | -68.99855263104962 | 6.00 |
+         *
+         * |  R0 |             p0BDSKY | lambda |
+         * |-----+---------------------+--------|
+         * | 1.5 | 0.35607263215566554 |   2.25 |
+         * | 1.6 |  0.3406353481143964 |   2.40 |
+         * | 1.7 | 0.32629489067558237 |   2.55 |
+         * | 1.8 | 0.31296665195860446 |   2.70 |
+          */
+
+        TimTam tt =  new TimTam();
+
+        Tree tree = new TreeParser("((3 : 1.5, 4 : 0.5) : 1 , (1 : 2, 2 : 1) : 3);",false);
+        tt.setInputValue("tree", tree);
+        tt.setInputValue("rootLength", new RealParameter("5.0"));
+        tt.setInputValue("mu", new RealParameter("1.05"));
+        tt.setInputValue("psi", new RealParameter("0.45"));
+
+        tt.setInputValue("lambda", new RealParameter("2.25"));
+        tt.initAndValidate();
+        assertTrue(approxEqual.test(0.356072632, tt.p0(10.0)));
+        assertTrue(kindaEqual.test(-26.1 - 2, tt.calculateLogP()));
+
+        tt.setInputValue("lambda", new RealParameter("2.40"));
+        tt.initAndValidate();
+        assertTrue(approxEqual.test(0.340635348, tt.p0(10.0)));
+        assertTrue(kindaEqual.test(-27.4 - 2, tt.calculateLogP()));
+
+        tt.setInputValue("lambda", new RealParameter("2.55"));
+        tt.initAndValidate();
+        assertTrue(approxEqual.test(0.326294890, tt.p0(10.0)));
+        assertTrue(kindaEqual.test(-28.8 - 2, tt.calculateLogP()));
+
+        tt.setInputValue("lambda", new RealParameter("2.70"));
+        tt.initAndValidate();
+        assertTrue(approxEqual.test(0.312966651, tt.p0(10.0)));
+        assertTrue(kindaEqual.test(-30.2 - 2, tt.calculateLogP()));
+
+        tt.setInputValue("lambda", new RealParameter("3.00"));
+        tt.initAndValidate();
+        assertTrue(kindaEqual.test(-33.2 - 2, tt.calculateLogP()));
+
+        tt.setInputValue("lambda", new RealParameter("4.50"));
+        tt.initAndValidate();
+        assertTrue(kindaEqual.test(-50.3 - 2, tt.calculateLogP()));
+
+        tt.setInputValue("lambda", new RealParameter("6.00"));
+        tt.initAndValidate();
+        assertTrue(kindaEqual.test(-69.0 - 2, tt.calculateLogP()));
+    }
 
     @Test
     public void testLikelihood() {
@@ -35,7 +103,7 @@ public class TestTimTam {
         BackwardsSchedule catastropheTimes = new BackwardsSchedule();
         catastropheTimes.initByName("value", "0.0");
 
-        TimTam tt = new TimTam(birthRate, deathRate, samplingRate, rhoProb, occurrenceRate, rootLength, catastropheTimes, points);
+        TimTam tt = new TimTam(birthRate, deathRate, samplingRate, rhoProb, occurrenceRate, rootLength, catastropheTimes, points, false);
         tt.setInputValue("tree", tree);
 
         double fx, fxh, h, fxDash;
@@ -48,9 +116,24 @@ public class TestTimTam {
         assertTrue(
                 roughlyEqual.test(
                         -47.0,
-                        tt.calculateLogP()
-                )
-        );
+                        tt.calculateLogP()));
+
+        // if we repeat this using an instance that conditions upon observation then the value should be different.
+        TimTam ttConditioned = new TimTam(
+                birthRate,
+                deathRate,
+                samplingRate,
+                rhoProb,
+                occurrenceRate,
+                rootLength,
+                catastropheTimes,
+                points,
+                true);
+        ttConditioned.setInputValue("tree", tree);
+        assertFalse(
+                roughlyEqual.test(
+                        -47.0,
+                        ttConditioned.calculateLogP()));
     }
 
     @Test

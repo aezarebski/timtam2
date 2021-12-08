@@ -18,7 +18,7 @@ public class TreeWithBackwardsPointProcess extends CalculationNode {
 
     final public Input<RealParameter> rootLengthInput = new Input<>("rootLength", "the time between the origin and the MRCA of the tree", Input.Validate.REQUIRED);
     final public Input<Tree> treeInput = new Input<>("tree", "the tree", Input.Validate.REQUIRED);
-    final public Input<BackwardsPointProcess> bwdPointsInput = new Input<>("bwdPoints", "the points in the point process", Input.Validate.REQUIRED);
+    final public Input<BackwardsPointProcess> bwdPointsInput = new Input<>("bwdPoints", "the points in the point process", Input.Validate.OPTIONAL);
     final public Input<BackwardsSchedule> bwdCatastropheTimesInput = new Input<>("bwdCatastropheTimes", "the times at which there was a catastrophe", Input.Validate.OPTIONAL);
 
     private Tree tree;
@@ -29,6 +29,8 @@ public class TreeWithBackwardsPointProcess extends CalculationNode {
     private double[] treeNodeTimes;
     private int[] treeNodeOutdegree;
     private List<Double> fwdCatastropheTimes;
+
+    private double totalTimeSpan; // the duration of time from the origin until the most recent observation.
 
     public TreeWithBackwardsPointProcess() {
         super();
@@ -111,8 +113,34 @@ public class TreeWithBackwardsPointProcess extends CalculationNode {
             catastropheSizes = new int[0];
         }
 
-        double[] fwdPointTimes = bwdPointsInput.get().valuesInput.get().stream().mapToDouble(x -> maxTreeNodeTime - x).sorted().toArray();
-        int pointCount = fwdPointTimes.length;
+        // we need to handle the edge case where there are no backwards points in which case we do not expect this input
+        // to be provided.
+        double[] fwdPointTimes;
+        int pointCount;
+        if (bwdPointsInput.get() != null) {
+            fwdPointTimes = bwdPointsInput.get().valuesInput.get().stream().mapToDouble(x -> maxTreeNodeTime - x).sorted().toArray();
+            pointCount = fwdPointTimes.length;
+
+            double mostRecentPoint = Arrays.stream(bwdPointsInput.get().getDoubleValues()).min().getAsDouble();
+            double mostDistantPoint = Arrays.stream(bwdPointsInput.get().getDoubleValues()).max().getAsDouble();
+            if (mostRecentPoint < 0) {
+                if (mostDistantPoint > maxTreeNodeTime) {
+                    setTotalTimeSpan(mostDistantPoint - mostRecentPoint);
+                } else {
+                    setTotalTimeSpan(maxTreeNodeTime - mostRecentPoint);
+                }
+            } else {
+                if (mostDistantPoint > maxTreeNodeTime) {
+                    setTotalTimeSpan(mostDistantPoint);
+                } else {
+                    setTotalTimeSpan(maxTreeNodeTime);
+                }
+            }
+        } else {
+            fwdPointTimes = new double[]{};
+            pointCount = 0;
+            setTotalTimeSpan(maxTreeNodeTime);
+        }
 
         // The number of intervals needs to account for catastrophes where there are no sequences collected and
         // catastrophes where multiple leaves correspond to a single interval.
@@ -266,4 +294,17 @@ public class TreeWithBackwardsPointProcess extends CalculationNode {
         if (i < 0 || i >= intervalCount) throw new IllegalArgumentException();
         return intervals[i];
     }
+
+    /**
+     * This is the total amount of time from the origin of the process until the time of the final observation.
+     * @return total duration of time from origin to last observation
+     */
+    public double getTotalTimeSpan() {
+        return totalTimeSpan;
+    }
+
+    public void setTotalTimeSpan(double totalTimeSpan) {
+        this.totalTimeSpan = totalTimeSpan;
+    }
+
 }
