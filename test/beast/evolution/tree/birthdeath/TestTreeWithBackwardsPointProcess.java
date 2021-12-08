@@ -8,7 +8,6 @@ import beast.evolution.tree.RandomTree;
 import beast.evolution.tree.TraitSet;
 import beast.evolution.tree.Tree;
 import beast.evolution.tree.coalescent.ConstantPopulation;
-import beast.math.distributions.MRCAPrior;
 import beast.util.TreeParser;
 import org.junit.Test;
 
@@ -74,6 +73,8 @@ public class TestTreeWithBackwardsPointProcess {
                 rootLength,
                 myTree,
                 points,
+                null,
+                null,
                 null);
 
         // There are two occurrences, two leaves and one internal nodes. The "present" is the time of the last tip.
@@ -158,6 +159,8 @@ public class TestTreeWithBackwardsPointProcess {
                 rootLength,
                 myTree,
                 points,
+                null,
+                null,
                 null);
 
         // There are two occurrences, two leaves and one internal nodes. The "present" is the time of the last tip.
@@ -201,21 +204,108 @@ public class TestTreeWithBackwardsPointProcess {
 
         BackwardsPointProcess points = new BackwardsPointProcess();
         points.initByName("value", "1.0");
-        TreeWithBackwardsPointProcess tpp = new TreeWithBackwardsPointProcess(rootLength, tree, points, catastropheTimes);
+        TreeWithBackwardsPointProcess tpp = new TreeWithBackwardsPointProcess(
+                rootLength,
+                tree,
+                points,
+                null,
+                null,
+                catastropheTimes);
 
         assertEquals(4.0, tpp.getTotalTimeSpan(), 1e-5);
 
         points.initByName("value", "1.0 -1.0");
-        tpp = new TreeWithBackwardsPointProcess(rootLength, tree, points, catastropheTimes);
+        tpp = new TreeWithBackwardsPointProcess(
+                rootLength,
+                tree,
+                points,
+                null,
+                null,
+                catastropheTimes);
         assertEquals(5.0, tpp.getTotalTimeSpan(), 1e-5);
 
         points.initByName("value", "5.0 1.0");
-        tpp = new TreeWithBackwardsPointProcess(rootLength, tree, points, catastropheTimes);
+        tpp = new TreeWithBackwardsPointProcess(
+                rootLength,
+                tree,
+                points,
+                null,
+                null,
+                catastropheTimes);
         assertEquals(5.0, tpp.getTotalTimeSpan(), 1e-5);
 
         points.initByName("value", "5.0 -1.0");
-        tpp = new TreeWithBackwardsPointProcess(rootLength, tree, points, catastropheTimes);
+        tpp = new TreeWithBackwardsPointProcess(
+                rootLength,
+                tree,
+                points,
+                null,
+                null,
+                catastropheTimes);
         assertEquals(6.0, tpp.getTotalTimeSpan(), 1e-5);
+    }
+
+    @Test
+    public void canRecoverDisaster() {
+
+        RealParameter rootLength = new RealParameter("1.0");
+        Tree tree = new TreeParser("(((1:3,2:1):1,3:4):2,4:6);",false);
+
+        BackwardsPointProcess points = new BackwardsPointProcess();
+        points.initByName("value", "5.0 1.0");
+
+        BackwardsSchedule catastropheTimes = new BackwardsSchedule();
+        catastropheTimes.initByName("value", "0.0");
+
+        BackwardsSchedule disasterTimes = new BackwardsSchedule();
+        disasterTimes.initByName("value", "-1.0 1.5");
+
+        BackwardsCounts disasterCounts = new BackwardsCounts();
+        disasterCounts.initByName("value", "2 3");
+
+        TreeWithBackwardsPointProcess tpp = new TreeWithBackwardsPointProcess(
+                rootLength,
+                tree,
+                points,
+                disasterTimes,
+                disasterCounts,
+                catastropheTimes);
+
+        assertEquals(8, tpp.getTotalTimeSpan(), 1e-5);
+
+        // There are two occurrences, three leaves and two internal nodes.
+        assertEquals(9, tpp.getIntervalCount());
+
+        // the first event is a birth at time 1.0
+        assertEquals("birth", tpp.getIntervalType(0).toString());
+        assertTrue(approxEqual.test(tpp.getIntervalDuration(0), 1.0));
+
+        assertEquals("occurrence", tpp.getIntervalType(1).toString());
+        assertTrue(approxEqual.test(tpp.getIntervalDuration(1), 1.0));
+
+        assertEquals("birth", tpp.getIntervalType(2).toString());
+        assertTrue(approxEqual.test(tpp.getIntervalDuration(2), 1.0));
+
+        assertEquals("birth", tpp.getIntervalType(3).toString());
+        assertTrue(approxEqual.test(tpp.getIntervalDuration(3), 1.0));
+
+        assertEquals("sample", tpp.getIntervalType(4).toString());
+        assertTrue(approxEqual.test(tpp.getIntervalDuration(4), 1.0));
+
+        assertEquals("disaster", tpp.getIntervalType(5).toString());
+        assertTrue(approxEqual.test(tpp.getIntervalDuration(5), 0.5));
+        assertEquals(tpp.getIntervalType(5).getCount().getAsInt(), 3);
+
+        assertEquals("occurrence", tpp.getIntervalType(6).toString());
+        assertTrue(approxEqual.test(tpp.getIntervalDuration(6), 0.5));
+
+        assertEquals("catastrophe", tpp.getIntervalType(7).toString());
+        assertEquals(tpp.getIntervalType(7).getCount().getAsInt(), 3);
+        assertTrue(approxEqual.test(tpp.getIntervalDuration(7), 1.0));
+
+        assertEquals("disaster", tpp.getIntervalType(8).toString());
+        assertTrue(approxEqual.test(tpp.getIntervalDuration(8), 1.0));
+        assertEquals(tpp.getIntervalType(8).getCount().getAsInt(), 2);
     }
 
     @Test
@@ -230,7 +320,7 @@ public class TestTreeWithBackwardsPointProcess {
         BackwardsSchedule catastropheTimes = new BackwardsSchedule();
         catastropheTimes.initByName("value", "0.0");
 
-        TreeWithBackwardsPointProcess tpp = new TreeWithBackwardsPointProcess(rootLength, tree, points, catastropheTimes);
+        TreeWithBackwardsPointProcess tpp = new TreeWithBackwardsPointProcess(rootLength, tree, points, null, null, catastropheTimes);
 
         assertEquals(7, tpp.getTotalTimeSpan(), 1e-5);
 
@@ -270,7 +360,7 @@ public class TestTreeWithBackwardsPointProcess {
         BackwardsPointProcess points = new BackwardsPointProcess();
         points.initByName("value", "3.5 2.5");
 
-        TreeWithBackwardsPointProcess tpp = new TreeWithBackwardsPointProcess(rootLength, tree, points, null);
+        TreeWithBackwardsPointProcess tpp = new TreeWithBackwardsPointProcess(rootLength, tree, points, null, null, null);
 
         // check that it can recover the total duration
         assertEquals(tpp.getTotalTimeSpan(), 5.0, 1e-5);
