@@ -2,9 +2,10 @@ library(ggplot2)
 library(cowplot)
 library(jsonlite)
 
-posterior_samples <- read.csv("out/fixed-tree-with-rho.log",
+posterior_samples <- read.csv("out/fixed-tree-with-rho-01.log",
                               sep = "\t", comment.char = "#")
 true_parameters <- as.data.frame(read_json("my-params.json"))
+posterior_samples$deathRate <- true_parameters$deathRate
 true_parameters$rNaught <- true_parameters$birthRate / (true_parameters$deathRate + true_parameters$samplingRate + true_parameters$occurrenceRate)
 true_parameters$prevalence <- read_json("out/ape-sim-final-prevalence.json",
                              simplifyVector = TRUE)
@@ -36,7 +37,7 @@ ggsave(
   units = "cm"
 )
 
-bdsky_posterior_samples <- read.csv("out/fixed-tree-with-rho-again.log",
+bdsky_posterior_samples <- read.csv("out/fixed-tree-with-rho-03.log",
                                     sep = "\t", comment.char = "#")
 plot_df <- data.frame(model = rep(c("timtam", "bdsky"), each = nrow(posterior_samples)),
                       rNaught = c(posterior_samples$rNaught, bdsky_posterior_samples$reproductiveNumber_BDSKY_Serial))
