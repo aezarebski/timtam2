@@ -48,7 +48,7 @@ public class TreeWithBackwardsPointProcess extends CalculationNode {
         tree = treeInput.get();
         treeNodes = tree.getNodesAsArray();
         treeNodeCount = tree.getNodeCount();
-        treeNodeTimes = new double[treeNodeCount+1]; // one extra time for the origin to tMCRA.
+        treeNodeTimes = new double[treeNodeCount + 1]; // one extra time for the origin to tMCRA.
         treeNodeOutdegree = new int[treeNodeCount];
         rootLength = rootLengthInput.get().getDoubleValues()[0];
         bwdCatastropheTraits = bwdCatastropheTimesInput.get();
@@ -193,15 +193,15 @@ public class TreeWithBackwardsPointProcess extends CalculationNode {
             } else {
                 throw new IllegalArgumentException(
                         "It appears that a tree event and a point process event occurred at the same time:\n\ttree time " +
-                        treeET +
-                        ", point time " +
-                        pointET +
-                        "\n\tcatastET: " + catastET +
-                        "\n\tintIx: " + intIx +
-                        "\n\tintervalCount: " + intervalCount +
-                        "\n\tcurrentTime: " + currTime +
-                        "\n\ttreeJx: " + treeJx +
-                        "\n\tpointJx: " + pointJx);
+                                treeET +
+                                ", point time " +
+                                pointET +
+                                "\n\tcatastET: " + catastET +
+                                "\n\tintIx: " + intIx +
+                                "\n\tintervalCount: " + intervalCount +
+                                "\n\tcurrentTime: " + currTime +
+                                "\n\ttreeJx: " + treeJx +
+                                "\n\tpointJx: " + pointJx);
             }
             intIx++;
         }
@@ -214,7 +214,6 @@ public class TreeWithBackwardsPointProcess extends CalculationNode {
      *
      * @param maxTime
      * @param catastropheSizes
-     *
      * @see TreeWithBackwardsPointProcess#collectTimes
      */
     private void measureCatastrophes(double maxTime, int[] catastropheSizes) {
@@ -268,7 +267,8 @@ public class TreeWithBackwardsPointProcess extends CalculationNode {
         if (!intervalsKnown) {
             calculateIntervals();
         }
-        if (i < 0 || i >= intervalCount) throw new IllegalArgumentException("intervalCount is " + intervalCount + " but interval " + i + " requested.");
+        if (i < 0 || i >= intervalCount)
+            throw new IllegalArgumentException("intervalCount is " + intervalCount + " but interval " + i + " requested.");
         return intervals[i];
     }
 
@@ -297,6 +297,7 @@ public class TreeWithBackwardsPointProcess extends CalculationNode {
 
     /**
      * This is the total amount of time from the origin of the process until the time of the final observation.
+     *
      * @return total duration of time from origin to last observation
      */
     public double getTotalTimeSpan() {
