@@ -105,7 +105,6 @@ public class TreeWithBackwardsPointProcess extends CalculationNode {
         int[] treeJxs = new int[treeNodeCount];
         HeapSort.sort(treeNodeTimes, treeJxs);
 
-        int numCatastrophes, totalInCatastrophes;
         int[] catastropheSizes;
         if (bwdCatastropheTraits != null) {
             // we make a list of the (forward) times at which there was a catastrophe so that we can collect this
@@ -114,13 +113,9 @@ public class TreeWithBackwardsPointProcess extends CalculationNode {
             catastropheSizes = new int[fwdCatastropheTimes.size()];
             Arrays.fill(catastropheSizes, 0);
             measureCatastrophes(totalTreeHeight, catastropheSizes);
-            numCatastrophes = catastropheSizes.length;
-            totalInCatastrophes = Arrays.stream(catastropheSizes).sum();
         } else {
             // the catastrophe times are null which is used as a signal that there were no catastrophes.
             fwdCatastropheTimes = new ArrayList<>();
-            numCatastrophes = 0;
-            totalInCatastrophes = 0;
             catastropheSizes = new int[0];
         }
 
@@ -179,8 +174,8 @@ public class TreeWithBackwardsPointProcess extends CalculationNode {
         // The number of intervals needs to account for catastrophes where there are no sequences collected and
         // catastrophes where multiple leaves correspond to a single interval.
         intervalCount = fwdPointTimes.length +
-                treeNodeCount - totalInCatastrophes +
-                numCatastrophes + fwdDisasterTimes.length;
+                treeNodeCount - Arrays.stream(catastropheSizes).sum() +
+                fwdCatastropheTimes.size() + fwdDisasterTimes.length;
         intervals = new double[intervalCount];
         intervalTypes = new EventType[intervalCount];
         EventType birthEvent = new EventType("birth", OptionalInt.empty());
