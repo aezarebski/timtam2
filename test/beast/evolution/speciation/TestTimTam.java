@@ -106,8 +106,6 @@ public class TestTimTam {
 
         // set up some dummy variables so the program will type check...
         RealParameter nuProb = new RealParameter("0.0");
-        BackwardsSchedule disasterTimes = new BackwardsSchedule();
-        BackwardsCounts disasterCounts = new BackwardsCounts();
 
         TimTam tt = new TimTam(
                 birthRate,
@@ -119,8 +117,8 @@ public class TestTimTam {
                 catastropheTimes,
                 points,
                 nuProb,
-                disasterTimes,
-                disasterCounts,
+                null,
+                null,
                 false);
         tt.setInputValue("tree", tree);
 
@@ -147,8 +145,8 @@ public class TestTimTam {
                 catastropheTimes,
                 points,
                 nuProb,
-                disasterTimes,
-                disasterCounts,
+                null,
+                null,
                 true);
         ttConditioned.setInputValue("tree", tree);
         assertFalse(
