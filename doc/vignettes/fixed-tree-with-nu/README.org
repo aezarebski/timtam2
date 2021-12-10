@@ -1,0 +1,99 @@
+#+title: Fixed Tree Example With Nu
+
+** Simulating the dataset
+
+The tool, =ape-sim.R=, can be used to simulate a dataset.
+
+#+begin_src sh
+  ./ape-sim.R --seed 1 -p my-params.json -o out --duration 4.0 --nu 0.5 --write-newick -v --make-plots
+#+end_src
+
+The parameters for this are specified in the following JSON. They are not very
+realistic, but they are convenient for a simple example.
+
+#+begin_src json :tangle my-params.json
+  {
+    "birthRate": 3.0,
+    "deathRate": 1.0,
+    "samplingRate": 0.5,
+    "occurrenceRate": 0.5
+  }
+#+end_src
+
+The simulated data is shown in Figure [[fig:simulation][Y]].
+
+#+caption: Full transmission tree and event counts
+#+name: fig:simulation
+#+attr_org: :width 700
+[[./out/ape-simulation-figure.png]]
+
+** Making the XML
+
+*** Data munging
+
+The file =out/ape-sim-reconstructed-tree.newick= contains a Newick string
+describing the reconstructed tree. We can use this to generate a dummy FASTA
+file describing the tips of the reconstructed tree.
+
+#+begin_src R
+  library(ape)
+  library(phangorn)
+  x <- read.tree("out/ape-sim-reconstructed-tree.newick")
+  seqs <- simSeq(x, l = 1, rate = 0)
+  write.phyDat(seqs, file = "out/sequences.fasta", format = "fasta")
+#+end_src
+
+And this snippet demonstrates how to extract the occurrence times, reverse them
+and write them to a text file.
+
+#+begin_src R
+  x <- read.csv("out/ape-sim-event-times.csv")
+  duration <- 4.0
+  root_length <- abs(x[x$event == "origin", "time"])
+  occurrence_times <- sort(x[x$event == "occurrence", "time"] + root_length)
+  bwd_occurrence_times <- duration - occurrence_times
+  writeLines(text = paste(bwd_occurrence_times,collapse = " "),
+             con = "out/occurrence-times.txt")
+#+end_src
+
+*** Beauti for TimTam
+
+The FASTA file can then be provided to Beauti to set up a scaffold for our
+analysis file. All we need to do here is load the alignment, parse the tip dates
+and save the resulting XML, the settings are fine for our purposes here.
+
+#+begin_src sh
+  java -cp <path/to/beast.jar> beast.app.beauti.Beauti
+#+end_src
+
+To turn the XML into one that uses TimTam we need to make some edits:
+
+1. copy the Newick string representation of the tree into a
+   =beast.util.TreeParser= and make sure that the TimTam is referencing this,
+2. include the disaster time relative to the last sequenced sample, into the
+   =BackwardsSchedule= slot of the TimTam (it takes this value by default but it
+   is nice to double check) and include the =BackwardsCounts= to describe how many
+   cases were observed.
+3. include the occurrence times into the =BackwardsPointProcess= input,
+4. and finally delete references to anything relating to sequences and tree
+   estimation since this is using a fixed tree
+5. double check the log writes to =ft-with-nu-02.log=,
+6. save the result to =ft-with-nu-02.xml=.
+
+** MCMC and results
+
+Run the analysis defined in the XML
+
+#+begin_src sh
+  java -cp <path/to/beast.jar> beast.app.beastapp.BeastMain -seed 1 -overwrite ft-with-nu-02.xml
+#+end_src
+
+We can get a quick inspection of the results using Tracer. The script
+=posterior-visualisation.R= generates the visualisation of the posterior samples
+shown below. See Figure [[fig:r-naught-prevalence][X]] for the posterior distribution of key summary
+statistics and the \(\nu)-sampling probability.
+
+#+caption: Posterior distribution of R-naught and the prevalence and the prior and posterior distributions of the nu-sampling probability.
+#+name: fig:r-naught-prevalence
+#+attr_org: :width 500
+[[./out/posterior-plot.png]]

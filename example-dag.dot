@@ -2,46 +2,68 @@
  Usage
  -----
  $ dot example-dag.dot -Tpng -o example-dag.png
+
 */
 digraph G {
+  node[color="#54278f",
+       fillcolor="#cbc9e2"];
   TimTam [shape=box,
-          style=filled,
-          color="#54278f",
-          fillcolor="#f2f0f7"];
+          style=filled];
   TimTamLogger [shape=box,
-                style=filled,
-                color="#54278f",
-                fillcolor="#f2f0f7"];
+                style=filled];
   TreeWithBackwardsPointProcess [shape=box,
-                                 style=filled,
-                                 color="#54278f",
-                                 fillcolor="#f2f0f7"];
-  BackwardsPointProcess [shape=box,
-                         style=filled,
-                         color="#54278f",
-                         fillcolor="#f2f0f7"];
-  BackwardsSchedule [shape=box,
-                     style=filled,
-                     color="#54278f",
-                     fillcolor="#f2f0f7"];
+                                 style=filled];
   RootLength [shape=box,
               style=filled,
               color="#e6550d",
               fillcolor="#fee6ce"];
-  Tree [shape=box];
+  node[color=black]
   RealParameters [shape=box];
   MCMC [shape=box];
 
-  RootLength -> TimTam;
-  RootLength -> TreeWithBackwardsPointProcess;
-  BackwardsPointProcess -> TreeWithBackwardsPointProcess;
-  BackwardsSchedule -> TreeWithBackwardsPointProcess;
-  TreeWithBackwardsPointProcess -> TimTam;
-  RealParameters -> TimTam;
-  Tree -> TreeWithBackwardsPointProcess;
-  Tree -> TimTam;
-  TimTam -> MCMC;
+  subgraph clusterB {
+    color="#54278f";
+    label="Sequenced observations";
+    style=filled;
+    fillcolor="#f2f0f7";
+    node[color="#54278f",
+         fillcolor="#cbc9e2"];
+    BackwardsScheduleSequenced [shape=box,
+                                label="BackwardsSchedule\n(Sequenced)"
+                                style=filled];
+    Tree [shape=box,
+          style=filled,
+          color=black,
+          fillcolor=white];
 
-  TimTam -> TimTamLogger;
-  TimTamLogger -> MCMC;
+    };
+  subgraph clusterA {
+    color="#54278f";
+    label="Unsequenced observations";
+    style=filled;
+    fillcolor="#f2f0f7";
+    node[color="#54278f",
+         fillcolor="#cbc9e2"];
+    BackwardsCount [shape=box,
+                    style=filled];
+    BackwardsScheduleNotSequenced [shape=box,
+                                   label="BackwardsSchedule\n(Not sequenced)"
+                                   style=filled];
+    BackwardsPointProcess [shape=box,
+                           style=filled];
+    };
+
+    RootLength -> TimTam;
+    RootLength -> TreeWithBackwardsPointProcess;
+    BackwardsPointProcess -> TreeWithBackwardsPointProcess;
+    BackwardsCount -> TreeWithBackwardsPointProcess;
+    BackwardsScheduleNotSequenced -> TreeWithBackwardsPointProcess;
+    BackwardsScheduleSequenced -> TreeWithBackwardsPointProcess;
+    TreeWithBackwardsPointProcess -> TimTam;
+    RealParameters -> TimTam;
+    Tree -> TreeWithBackwardsPointProcess;
+    Tree -> TimTam;
+    TimTam -> MCMC;
+    TimTam -> TimTamLogger;
+    TimTamLogger -> MCMC;
 }

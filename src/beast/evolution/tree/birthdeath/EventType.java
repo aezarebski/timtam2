@@ -9,11 +9,16 @@ import java.util.OptionalInt;
  *
  * <p>This uses a class rather than an enumeration because we do not know ahead
  * of time how many samples may have been generated in a catastrophe (which is a
- * scheduled sequenced sample).</p>
+ * scheduled sequenced sample) or a dissaster (which is a scheduled unsequenced
+ * sample)</p>
  */
 public class EventType {
 
-    static final List<String> eventTypes = Arrays.asList("birth", "sample", "occurrence", "catastrophe");
+    static final List<String> eventTypes = Arrays.asList("birth", "sample", "occurrence", "catastrophe", "disaster");
+
+    private final String type;
+
+    private final OptionalInt count;
 
     EventType(String type, OptionalInt count) {
         if (eventTypes.contains(type)) {
@@ -26,9 +31,6 @@ public class EventType {
 
     @Override
     public String toString() { return type; }
-
-    private final String type;
-    private final OptionalInt count;
 
     public OptionalInt getCount() {
         return count;
