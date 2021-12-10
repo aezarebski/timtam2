@@ -156,6 +156,34 @@ public class TestTimTam {
     }
 
     @Test
+    public void testLogSumExp() {
+
+        // > log(sum(exp(c(1.17,0.95,0.10,1.58))))
+        // [1] 2.465369
+        // > log(sum(exp(c(1.17,0.95,0.10))))
+        // [1] 1.933385
+
+        double[] xs = {1.17,0.95,0.10,1.58};
+
+        assertTrue(approxEqual.test(2.465369, TimTam.logSumExp(xs, 4)));
+        assertTrue(approxEqual.test(1.933385, TimTam.logSumExp(xs, 3)));
+
+
+        // > log(sum(exp(c(-1.0,0.95,0.10,1.58))))
+        // [1] 2.187591
+        xs[0] = -1.0;
+        assertTrue(approxEqual.test(2.187591, TimTam.logSumExp(xs)));
+        // > log(sum(exp(c(1.0,0.95,0.10,1.58))))
+        // [1] 2.421622
+        xs[0] = 1.0;
+        assertTrue(approxEqual.test(2.421622, TimTam.logSumExp(xs)));
+        // > log(sum(exp(c(10.0,0.95,0.10,1.58))))
+        // [1] 10.00039
+        xs[0] = 10.0;
+        assertTrue(approxEqual.test(10.00039, TimTam.logSumExp(xs)));
+    }
+
+    @Test
     public void testNegativeBinomial() {
 
         TimTam tt = new TimTam();
