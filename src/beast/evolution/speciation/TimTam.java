@@ -19,6 +19,8 @@ import java.util.Arrays;
  */
 public class TimTam extends TreeDistribution {
 
+    Tree tree;
+
     // birth rate
     RealParameter lambda;
 
@@ -63,7 +65,7 @@ public class TimTam extends TreeDistribution {
     private NegativeBinomial nb = new NegativeBinomial();
 
     private TreeWithBackwardsPointProcess ti;
-
+    private int numIntervals;
     // Unclear why it is necessary, but BEAST expects there to be a zero-argument
     // constructor and if there isn't one it freaks out.
     public TimTam() {
@@ -143,6 +145,16 @@ public class TimTam extends TreeDistribution {
         this.conditionOnObservation = conditionOnObservationInput.get();
 
         this.nb.setZero();
+
+        this.tree = (Tree) treeInput.get();
+        this.ti = new TreeWithBackwardsPointProcess(
+                rootLength,
+                tree,
+                points,
+                disasterTimes,
+                disasterCounts,
+                catastropheTimes);
+        this.numIntervals = this.ti.getIntervalCount();
     }
 
     public TimTam(
@@ -231,29 +243,18 @@ public class TimTam extends TreeDistribution {
 
     @Override
     public double calculateLogP() {
-        calculateTreeLogLikelihood((Tree) treeInput.get());
+        calculateTreeLogLikelihood();
         return this.lnL;
     }
 
     /**
      * Generic likelihood calculation
-     *
-     * @param tree the tree to calculate likelihood of
      */
-    public final void calculateTreeLogLikelihood(Tree tree) {
-        this.ti = new TreeWithBackwardsPointProcess(
-                rootLength,
-                tree,
-                points,
-                disasterTimes,
-                disasterCounts,
-                catastropheTimes);
-        int numIntervals = ti.getIntervalCount();
-
+    public final void calculateTreeLogLikelihood() {
         // if the likelihood conditions upon the observation of the process then we need to account for this in the
         // log-likelihood.
         if (this.conditionOnObservation) {
-            double probUnobserved = p0(ti.getTotalTimeSpan());
+            double probUnobserved = p0(this.ti.getTotalTimeSpan());
             this.lnL = - Math.log(1 - probUnobserved);
         } else {
             this.lnL = 0.0;
@@ -280,26 +281,24 @@ public class TimTam extends TreeDistribution {
      *
      */
     private void processObservation(EventType intervalType) {
-        double lnL;
-
         switch (intervalType.toString()) {
             case "birth" -> {
-                lnL = Math.log(birth());
+                this.lnL += Math.log(birth());
                 this.k += 1;
             }
             case "sample" -> {
-                lnL = Math.log(psi());
+                this.lnL += Math.log(psi());
                 this.k -= 1;
             }
             case "occurrence" -> {
-                lnL = Math.log(omega()) + this.nb.lnPGFDash1(1.0);
+                this.lnL += Math.log(omega()) + this.nb.lnPGFDash1(1.0);
                 double lnRp1 = Math.log(Math.exp(this.nb.getLnR()) + 1.0);
                 this.nb.setLnPAndLnR(this.nb.getLnP(), lnRp1);
             }
             case "catastrophe" -> {
                 int n = intervalType.getCount().getAsInt();
                 double rho = p();
-                lnL = (this.k - n) * Math.log(1 - rho)
+                this.lnL += (this.k - n) * Math.log(1 - rho)
                         + n * Math.log(rho)
                         + this.nb.lnPGF(1 - rho);
                 this.k -= n;
@@ -310,7 +309,7 @@ public class TimTam extends TreeDistribution {
             case "disaster" -> {
                 int h = intervalType.getCount().getAsInt();
                 double nu = nu();
-                lnL = this.k * Math.log(1 - nu)
+                this.lnL += this.k * Math.log(1 - nu)
                         + h * Math.log(nu)
                         + this.nb.lnPGFDash(h, 1 - nu);
                 this.nb.setLnPAndLnR(
@@ -319,9 +318,10 @@ public class TimTam extends TreeDistribution {
             }
             default -> throw new IllegalStateException("Unexpected value: " + intervalType);
         }
-
-        this.lnL+=lnL;
     }
+
+    // this variable is just here in an attempt to resolve a memory leak...
+    private double[] tmpArry = {0,0,0,0,0};
 
     /**
      * This method should mutate the input to adjust for the interval during which there was no observation.
@@ -338,9 +338,6 @@ public class TimTam extends TreeDistribution {
         double lnRVal = lnR(intervalDuration);
         double lnRDash1Val = lnRDash1(intervalDuration);
         double lnRDash2Val = lnRDash2(intervalDuration);
-
-        // this variable is just here in an attempt to resolve a memory leak...
-        double[] tmpArry = {0,0,0,0,0};
 
         double lnFM0, lnFM1, lnFM2;
         if (!this.nb.isZero) {
