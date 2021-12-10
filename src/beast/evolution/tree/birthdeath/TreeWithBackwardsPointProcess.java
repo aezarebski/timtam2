@@ -344,4 +344,31 @@ public class TreeWithBackwardsPointProcess extends CalculationNode {
         this.totalTimeSpan = totalTimeSpan;
     }
 
+    /**
+     * Predicate to check that the values are non-decreasing.
+     */
+    static boolean isMonotonicIncreasing(double[] xs) {
+        if (xs.length > 1) {
+            for (int i = 1; i < xs.length; i++) {
+                if (xs[i-1] > xs[i]) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Predicate to check that the values are non-increasing.
+     */
+    static boolean isMonotonicDecreasing(double[] xs) {
+        if (xs.length > 1) {
+            for (int i = 1; i < xs.length; i++) {
+                if (xs[i-1] < xs[i]) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
 }

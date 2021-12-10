@@ -11,14 +11,13 @@ import beast.evolution.tree.coalescent.ConstantPopulation;
 import beast.util.TreeParser;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiPredicate;
+
+import static org.junit.Assert.*;
 
 public class TestTreeWithBackwardsPointProcess {
 
@@ -193,6 +192,22 @@ public class TestTreeWithBackwardsPointProcess {
         assertEquals(tpp.getIntervalType(4).toString(), "sample");
         assertTrue(approxEqual.test(tpp.getIntervalDuration(4), 0.5));
 
+    }
+
+    @Test
+    public void testMonotonicPredicates() {
+        double[] isMInc = {1.0, 1.0, 2.0};
+        double[] isMDec = {2.0, 1.0, 1.0};
+        double[] notMono = {2.0, 1.0, 2.0};
+
+        assertTrue(TreeWithBackwardsPointProcess.isMonotonicDecreasing(isMDec));
+        assertFalse(TreeWithBackwardsPointProcess.isMonotonicIncreasing(isMDec));
+
+        assertFalse(TreeWithBackwardsPointProcess.isMonotonicDecreasing(isMInc));
+        assertTrue(TreeWithBackwardsPointProcess.isMonotonicIncreasing(isMInc));
+
+        assertFalse(TreeWithBackwardsPointProcess.isMonotonicDecreasing(notMono));
+        assertFalse(TreeWithBackwardsPointProcess.isMonotonicIncreasing(notMono));
     }
 
     @Test
