@@ -89,13 +89,6 @@ public class TestTimTam {
     @Test
     public void testLikelihood() {
 
-        RealParameter birthRate = new RealParameter("2.0");
-        RealParameter deathRate = new RealParameter("1.0");
-        RealParameter samplingRate = new RealParameter("0.3");
-        RealParameter rhoProb = new RealParameter("0.5");
-        RealParameter occurrenceRate = new RealParameter("0.6");
-
-        RealParameter rootLength = new RealParameter("1.0");
         Tree tree = new TreeParser("(((1:3,2:1):1,3:4):2,4:6);",false);
 
         BackwardsSchedule catastropheTimes = new BackwardsSchedule();
@@ -104,23 +97,19 @@ public class TestTimTam {
         BackwardsPointProcess points = new BackwardsPointProcess();
         points.initByName("value", "5.0 1.0");
 
-        // set up some dummy variables so the program will type check...
-        RealParameter nuProb = new RealParameter("0.0");
-
-        TimTam tt = new TimTam(
-                birthRate,
-                deathRate,
-                samplingRate,
-                rhoProb,
-                occurrenceRate,
-                rootLength,
-                catastropheTimes,
-                points,
-                nuProb,
-                null,
-                null,
-                false);
+        TimTam tt = new TimTam();
+        tt.setInputValue("lambda", "2.0");
+        tt.setInputValue("mu", "1.0");
+        tt.setInputValue("psi", "0.3");
+        tt.setInputValue("p", "0.5");
+        tt.setInputValue("omega", "0.6");
+        tt.setInputValue("rootLength", "1.0");
+        tt.setInputValue("catastropheTimes", catastropheTimes);
+        tt.setInputValue("points", points);
         tt.setInputValue("tree", tree);
+        tt.setInputValue("conditionOnObservation", "false");
+        tt.initAndValidate();
+
 
         double fx, fxh, h, fxDash;
         h = 1e-6;
@@ -135,20 +124,18 @@ public class TestTimTam {
                         tt.calculateLogP()));
 
         // if we repeat this using an instance that conditions upon observation then the value should be different.
-        TimTam ttConditioned = new TimTam(
-                birthRate,
-                deathRate,
-                samplingRate,
-                rhoProb,
-                occurrenceRate,
-                rootLength,
-                catastropheTimes,
-                points,
-                nuProb,
-                null,
-                null,
-                true);
+        TimTam ttConditioned = new TimTam();
+        ttConditioned.setInputValue("lambda", "2.0");
+        ttConditioned.setInputValue("mu", "1.0");
+        ttConditioned.setInputValue("psi", "0.3");
+        ttConditioned.setInputValue("p", "0.5");
+        ttConditioned.setInputValue("omega", "0.6");
+        ttConditioned.setInputValue("rootLength", "1.0");
+        ttConditioned.setInputValue("catastropheTimes", catastropheTimes);
+        ttConditioned.setInputValue("points", points);
         ttConditioned.setInputValue("tree", tree);
+        ttConditioned.setInputValue("conditionOnObservation", "true");
+        ttConditioned.initAndValidate();
         assertFalse(
                 roughlyEqual.test(
                         -47.0,
