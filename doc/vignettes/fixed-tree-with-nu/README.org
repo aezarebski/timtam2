@@ -5,19 +5,31 @@
 The tool, =ape-sim.R=, can be used to simulate a dataset.
 
 #+begin_src sh
-  ./ape-sim.R --seed 1 -p my-params.json -o out --duration 4.0 --nu 0.5 --write-newick -v --make-plots
+  ./ape-sim.R -v my-params.xml
 #+end_src
 
 The parameters for this are specified in the following JSON. They are not very
 realistic, but they are convenient for a simple example.
 
-#+begin_src json :tangle my-params.json
-  {
-    "birthRate": 3.0,
-    "deathRate": 1.0,
-    "samplingRate": 0.5,
-    "occurrenceRate": 0.5
-  }
+#+begin_src xml :tangle my-params.xml
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<ape version="0.1.2">
+ <configuration>
+  <parameters birthRate="3.0"
+              deathRate="1.0"
+              samplingRate="0.5"
+              occurrenceRate="0.5"
+              duration="4.0"
+              nu="0.5" />
+  <options seed="1"
+           writeNewick="true"
+           makePlots="true"
+           outputDirectory="out"
+           simulateSequences="false"
+           seq_agg_times=""
+           occ_agg_times=""/>
+ </configuration>
+</ape>
 #+end_src
 
 The simulated data is shown in Figure [[fig:simulation][Y]].
