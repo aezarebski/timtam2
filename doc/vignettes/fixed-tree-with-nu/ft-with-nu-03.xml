@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<beast beautitemplate='Standard' beautistatus='' namespace="beast.core:beast.evolution.alignment:beast.evolution.tree.coalescent:beast.core.util:beast.evolution.nuc:beast.evolution.operators:beast.evolution.sitemodel:beast.evolution.substitutionmodel:beast.evolution.likelihood" required="" version="2.6">
+
+    <data id="sequences" spec="Alignment" name="alignment">
+
+        <sequence id="seq_t103_2.295543" spec="Sequence" taxon="t103_2.295543" totalcount="4" value="t" />
+
+        <sequence id="seq_t104_2.356309" spec="Sequence" taxon="t104_2.356309" totalcount="4" value="t" />
+
+        <sequence id="seq_t10_2.096036" spec="Sequence" taxon="t10_2.096036" totalcount="4" value="t" />
+
+        <sequence id="seq_t113_3.292234" spec="Sequence" taxon="t113_3.292234" totalcount="4" value="t" />
+
+        <sequence id="seq_t115_3.322183" spec="Sequence" taxon="t115_3.322183" totalcount="4" value="t" />
+
+        <sequence id="seq_t119_3.192426" spec="Sequence" taxon="t119_3.192426" totalcount="4" value="t" />
+
+        <sequence id="seq_t120_2.261305" spec="Sequence" taxon="t120_2.261305" totalcount="4" value="t" />
+
+        <sequence id="seq_t125_3.943011" spec="Sequence" taxon="t125_3.943011" totalcount="4" value="t" />
+
+        <sequence id="seq_t128_3.268861" spec="Sequence" taxon="t128_3.268861" totalcount="4" value="t" />
+
+        <sequence id="seq_t129_2.979303" spec="Sequence" taxon="t129_2.979303" totalcount="4" value="t" />
+
+        <sequence id="seq_t131_3.783774" spec="Sequence" taxon="t131_3.783774" totalcount="4" value="t" />
+
+        <sequence id="seq_t139_3.272414" spec="Sequence" taxon="t139_3.272414" totalcount="4" value="t" />
+
+        <sequence id="seq_t141_3.819753" spec="Sequence" taxon="t141_3.819753" totalcount="4" value="t" />
+
+        <sequence id="seq_t147_3.624062" spec="Sequence" taxon="t147_3.624062" totalcount="4" value="t" />
+
+        <sequence id="seq_t153_0.546735" spec="Sequence" taxon="t153_0.546735" totalcount="4" value="t" />
+
+        <sequence id="seq_t158_1.090652" spec="Sequence" taxon="t158_1.090652" totalcount="4" value="t" />
+
+        <sequence id="seq_t20_3.961294" spec="Sequence" taxon="t20_3.961294" totalcount="4" value="t" />
+
+        <sequence id="seq_t36_3.999127" spec="Sequence" taxon="t36_3.999127" totalcount="4" value="t" />
+
+        <sequence id="seq_t40_3.940367" spec="Sequence" taxon="t40_3.940367" totalcount="4" value="t" />
+
+        <sequence id="seq_t47_3.707670" spec="Sequence" taxon="t47_3.707670" totalcount="4" value="t" />
+
+        <sequence id="seq_t57_1.142607" spec="Sequence" taxon="t57_1.142607" totalcount="4" value="t" />
+
+        <sequence id="seq_t58_1.561215" spec="Sequence" taxon="t58_1.561215" totalcount="4" value="t" />
+
+        <sequence id="seq_t5_1.198371" spec="Sequence" taxon="t5_1.198371" totalcount="4" value="t" />
+
+        <sequence id="seq_t60_1.272931" spec="Sequence" taxon="t60_1.272931" totalcount="4" value="t" />
+
+        <sequence id="seq_t66_1.027623" spec="Sequence" taxon="t66_1.027623" totalcount="4" value="t" />
+
+        <sequence id="seq_t68_1.060478" spec="Sequence" taxon="t68_1.060478" totalcount="4" value="t" />
+
+        <sequence id="seq_t69_1.097544" spec="Sequence" taxon="t69_1.097544" totalcount="4" value="t" />
+
+        <sequence id="seq_t70_0.694435" spec="Sequence" taxon="t70_0.694435" totalcount="4" value="t" />
+
+        <sequence id="seq_t83_3.613508" spec="Sequence" taxon="t83_3.613508" totalcount="4" value="t" />
+
+        <sequence id="seq_t89_3.861298" spec="Sequence" taxon="t89_3.861298" totalcount="4" value="t" />
+
+    </data>
+
+
+
+
+
+
+
+
+    <map name="Uniform">beast.math.distributions.Uniform</map>
+
+    <map name="Exponential">beast.math.distributions.Exponential</map>
+
+    <map name="LogNormal">beast.math.distributions.LogNormalDistributionModel</map>
+
+    <map name="Normal">beast.math.distributions.Normal</map>
+
+    <map name="Beta">beast.math.distributions.Beta</map>
+
+    <map name="Gamma">beast.math.distributions.Gamma</map>
+
+    <map name="LaplaceDistribution">beast.math.distributions.LaplaceDistribution</map>
+
+    <map name="prior">beast.math.distributions.Prior</map>
+
+    <map name="InverseGamma">beast.math.distributions.InverseGamma</map>
+
+    <map name="OneOnX">beast.math.distributions.OneOnX</map>
+
+    <run id="mcmc" spec="MCMC" chainLength="1000000">
+
+        <state id="state" spec="State" storeEvery="5000">
+
+            <parameter id="samplingRate.t:sequences" spec="parameter.RealParameter" lower="0.0" name="stateNode" upper="100.0">0.5</parameter>
+
+            <parameter id="nuProb.t:sequences" spec="parameter.RealParameter" lower="0.0" name="stateNode" upper="1.0">0.5</parameter>
+
+            <parameter id="birthRate.t:sequences" spec="parameter.RealParameter" name="stateNode">3.0</parameter>
+
+        </state>
+
+<init spec='beast.util.TreeParser' taxa='@sequences' id='Tree.t:sequences' IsLabelledNewick="true" adjustTipHeights="false" newick="((((t5_1.198371:0.1812269442,(t10_2.096036:0.0727983565,(t20_3.961294:1.856177911,(t36_3.999127:1.032119074,(t40_3.940367:0.4021553066,t47_3.707670:0.1694584393):0.5712031631):0.8618926182):0.0818782422):1.006093465):0.4691022883,(t57_1.142607:0.1402720058,(t58_1.561215:0.4252086826,t60_1.272931:0.1369252892):0.1336713956):0.454292966):0.0633526556,((t66_1.027623:0.4129318477,(t68_1.060478:0.3466255772,t69_1.097544:0.3836916314):0.0991610332):0.0145998217,(t70_0.694435:0.0903578908,(((t83_3.613508:0.4442523281,t89_3.861298:0.6920425282):1.770592041,(t103_2.295543:0.0652346663,t104_2.356309:0.1260009819):0.8316441827):0.1803388385,((((t113_3.292234:0.1235425861,t115_3.322183:0.1534917726):0.9428064749,t119_3.192426:0.9665411901):0.0958297358,t120_2.261305:0.1312499076):0.6448179691,(t125_3.943011:1.364562499,(t128_3.268861:0.3616088977,((t129_2.979303:0.0284560364,(t131_3.783774:0.6553814432,t139_3.272414:0.1440216579):0.177545499):0.0430919418,(t141_3.819753:0.3888875117,t147_3.624062:0.1931972563):0.5231100533):0.000503092):0.3288033287):1.093211315):0.2669124895):0.6142477744):0.0039858188):0.1154023239):0.1643723836,(t153_0.546735:0.0264787295,t158_1.090652:0.570396579):0.1999393022);" />
+
+        <distribution id="posterior" spec="util.CompoundDistribution">
+
+            <distribution id="prior" spec="util.CompoundDistribution">
+
+                <distribution id="TimTam.t:sequences" spec="beast.evolution.speciation.TimTam" lambda="@birthRate.t:sequences" nu="@nuProb.t:sequences" psi="@samplingRate.t:sequences" tree="@Tree.t:sequences">
+
+                    <parameter id="deathRate.t:sequences" spec="parameter.RealParameter" estimate="false" lower="0.0" name="mu" upper="100.0">1.0</parameter>
+
+                    <parameter id="rootLength.t:sequences" spec="parameter.RealParameter" estimate="false" lower="0.0" name="rootLength" upper="100.0">0.219143496072831</parameter>
+
+                    <disasterTimes id="disasterSchedule.t:sequences" spec="beast.evolution.tree.birthdeath.BackwardsSchedule">3.50 3.00 2.50 2.00 1.50 1.00 0.50 -0.00087</disasterTimes>
+
+                    <disasterCounts id="disasterCounts.t:sequences" spec="beast.evolution.tree.birthdeath.BackwardsCounts">0 5 4 3 7 4 5 4</disasterCounts>
+
+                </distribution>
+
+                <prior id="birthRatePrior.t:sequences" name="distribution" x="@birthRate.t:sequences">
+
+                    <Uniform id="Uniform.17" name="distr" upper="100.0" />
+
+                </prior>
+
+                <prior id="nuProbPrior.t:sequences" name="distribution" x="@nuProb.t:sequences">
+
+                    <Uniform id="Uniform.22" name="distr" />
+
+                </prior>
+
+                <prior id="samplingRatePrior.t:sequences" name="distribution" x="@samplingRate.t:sequences">
+
+                    <Uniform id="Uniform.19" name="distr" upper="100.0" />
+
+                </prior>
+
+            </distribution>
+
+        </distribution>
+
+        <operator id="birthRateScaler.t:sequences" spec="ScaleOperator" parameter="@birthRate.t:sequences" weight="3.0" />
+
+        <operator id="birthRateWalk.t:sequences" spec="RealRandomWalkOperator" parameter="@birthRate.t:sequences" useGaussian="true" weight="3.0" windowSize="0.1" />
+
+        <operator id="samplingRateScaler.t:sequences" spec="ScaleOperator" parameter="@samplingRate.t:sequences" weight="3.0" />
+
+        <operator id="samplingRateWalk.t:sequences" spec="RealRandomWalkOperator" parameter="@samplingRate.t:sequences" useGaussian="true" weight="3.0" windowSize="0.1" />
+
+        <operator id="nuProbWalk.t:sequences" spec="RealRandomWalkOperator" parameter="@nuProb.t:sequences" useGaussian="true" weight="3.0" windowSize="0.1" />
+
+        <logger id="tracelog" spec="Logger" fileName="ft-with-nu-03.log" logEvery="1000" model="@posterior" sanitiseHeaders="true" sort="smart">
+
+            <log idref="posterior" />
+
+            <log idref="prior" />
+
+            <log idref="samplingRate.t:sequences" />
+
+            <log idref="nuProb.t:sequences" />
+
+            <log id="TimTamLogger.t:sequences" spec="beast.evolution.speciation.TimTamLogger" timtam="@TimTam.t:sequences" />
+
+            <log idref="birthRate.t:sequences" />
+
+        </logger>
+
+        <logger id="screenlog" spec="Logger" logEvery="1000">
+
+            <log idref="posterior" />
+
+            <log idref="prior" />
+
+        </logger>
+
+        <operatorschedule id="OperatorSchedule" spec="OperatorSchedule" />
+
+    </run>
+
+</beast>

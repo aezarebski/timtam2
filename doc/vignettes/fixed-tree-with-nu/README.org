@@ -1,17 +1,19 @@
 #+title: Fixed Tree Example With Nu
 
+* Single \(\nu\)-sample
+
 ** Simulating the dataset
 
 The tool, =ape-sim.R=, can be used to simulate a dataset.
 
 #+begin_src sh
-  ./ape-sim.R -v my-params.xml
+  ./ape-sim.R -v single-nu-params.xml
 #+end_src
 
 The parameters for this are specified in the following JSON. They are not very
 realistic, but they are convenient for a simple example.
 
-#+begin_src xml :tangle my-params.xml
+#+begin_src xml :tangle single-nu-params.xml
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <ape version="0.1.2">
  <configuration>
@@ -92,6 +94,14 @@ To turn the XML into one that uses TimTam we need to make some edits:
 5. double check the log writes to =ft-with-nu-02.log=,
 6. save the result to =ft-with-nu-02.xml=.
 
+The following snippet is useful for specifying the known tree.
+
+#+begin_src xml
+  <init spec='beast.util.TreeParser' taxa='@sequences' id='Tree.t:sequences'
+  IsLabelledNewick="true" adjustTipHeights="false" newick="" />
+#+end_src
+
+
 ** MCMC and results
 
 Run the analysis defined in the XML
@@ -109,3 +119,103 @@ statistics and the \(\nu)-sampling probability.
 #+name: fig:r-naught-prevalence
 #+attr_org: :width 500
 [[./out/posterior-plot.png]]
+
+* Multiple \(\nu\)-samples
+
+** Simulating the dataset
+
+The tool, =ape-sim.R=, can be used to simulate a dataset in which the occurrence
+data is aggregated in to counts in intervals. Technically this is not multiple
+\(\nu\)-samples, but it is probably closer to what happens in reality so it is a
+useful way to consider the problem.
+
+#+begin_src sh
+  ./ape-sim.R -v multi-nu-params.xml
+#+end_src
+
+The parameters for this are specified in the following JSON. They are not very
+realistic, but they are convenient for a simple example. Note that now the data
+is stored in =out/multi/=.
+
+#+begin_src xml :tangle multi-nu-params.xml
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<ape version="0.1.2">
+ <configuration>
+  <parameters birthRate="3.0"
+              deathRate="1.0"
+              samplingRate="0.5"
+              occurrenceRate="0.5"
+              duration="4.0" />
+  <options seed="2"
+           writeNewick="true"
+           makePlots="true"
+           outputDirectory="out/multi"
+           simulateSequences="false"
+           seq_agg_times=""
+           occ_agg_times="0.0 4.0 0.5" />
+ </configuration>
+</ape>
+#+end_src
+
+The simulated data is shown in Figure [[fig:multi-nu-simulation][XY]] and the aggregated occurrence data is shown in Figure [[fig:multi-nu-simulation-agg][YY]]
+
+#+caption: Simulation of transmission tree with histogram of leaf types.
+#+name: fig:multi-nu-simulation
+#+attr_org: :width 500
+[[./out/multi/ape-simulation-figure.png]]
+
+#+caption: Aggregated occurrence counts from the simulation shown in Figure [[fig:multi-nu-simulation][XY]].
+#+name: fig:multi-nu-simulation-agg
+#+attr_org: :width 500
+[[./out/multi/ape-simulation-figure-aggregated.png]]
+
+** Making the XML
+
+*** Data munging
+
+The file =out/multi/ape-sim-reconstructed-tree.newick= contains a Newick string
+describing the reconstructed tree. We can use this to generate a dummy FASTA
+file describing the tips of the reconstructed tree.
+
+#+begin_src R
+  library(ape)
+  library(phangorn)
+  x <- read.tree("out/multi/ape-sim-reconstructed-tree.newick")
+  seqs <- simSeq(x, l = 1, rate = 0)
+  write.phyDat(seqs, file = "out/multi/sequences.fasta", format = "fasta")
+#+end_src
+
+And this snippet demonstrates how to extract the aggregated occurrence events,
+and write them to a text file.
+
+#+begin_src R
+    x <- read.csv("out/multi/ape-sim-aggregated-event-times.csv")
+    duration <- 4.0
+    root_length <- abs(x[x$event == "origin", "time"])
+    disaster_times <- x[x$event == "nu", "time"] + root_length
+    disaster_counts <- x[x$event == "nu", "size"]
+    bwd_disaster_times <- duration - disaster_times
+
+    writeLines(text = c(paste(sprintf("%.2f", bwd_disaster_times),collapse = " "),
+                        paste(sprintf("%d", disaster_counts),collapse = " ")),
+               con = "out/multi/disasters.txt")
+#+end_src
+
+*** Beauti for TimTam
+
+The FASTA file can then be provided to Beauti to set up a scaffold for our
+analysis file. All we need to do here is load the alignment, parse the tip dates
+and save the resulting XML, the settings are fine for our purposes here.
+
+#+begin_src sh
+  java -cp <path/to/beast.jar> beast.app.beauti.Beauti
+#+end_src
+
+To turn the XML into one that uses TimTam we need to make some edits:
+
+1. Copy the Newick string representation in as above.
+2. Include the disaster times and counts after looking up these values in
+   =disasters.txt= generated above.
+3. Remove any references to trees, sequences, and occurrences since they are not
+   relevant here.
+4. Use =ft-with-nu-03.log= as the log file and save this as =ft-with-nu-03.xml=.
