@@ -101,7 +101,6 @@ The following snippet is useful for specifying the known tree.
   IsLabelledNewick="true" adjustTipHeights="false" newick="" />
 #+end_src
 
-
 ** MCMC and results
 
 Run the analysis defined in the XML
@@ -219,3 +218,28 @@ To turn the XML into one that uses TimTam we need to make some edits:
 3. Remove any references to trees, sequences, and occurrences since they are not
    relevant here.
 4. Use =ft-with-nu-03.log= as the log file and save this as =ft-with-nu-03.xml=.
+
+** MCMC and results
+
+Run the analysis defined in the XML
+
+#+begin_src sh
+  java -cp <path/to/beast.jar> beast.app.beastapp.BeastMain -seed 1 -overwrite ft-with-nu-03.xml
+#+end_src
+
+We can look at the posterior estimates of the prevalence of infection and the
+rates to see how well this has recovered the parameters used in the simulation.
+One complication with this is that we now have scheduled samples rather than
+occurrences. We can get a crude estimate of the rate of occurrences from the
+frequency of the scheduled samples. The frequency is two scheduled samples per
+unit time so we need to multiply the probability by two to get our crude
+estimate of the occurrence rate. This occurrence rate then allows us to extract
+an estimate of the basic reproduction number.
+
+The =posterior-visualisation-multi.R= script generates some figures to look at the
+posterior samples.
+
+#+caption: Posterior distribution of R-naught and the prevalence and the posterior distribution of the occurrence rate.
+#+name: fig:r-naught-prevalence-multi
+#+attr_org: :width 500
+[[./out/posterior-plot-multi.png]]
