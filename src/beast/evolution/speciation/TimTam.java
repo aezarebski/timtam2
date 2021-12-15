@@ -309,9 +309,16 @@ public class TimTam extends TreeDistribution {
             case "disaster" -> {
                 int h = intervalType.getCount().getAsInt();
                 double nu = nu();
-                this.lnL += this.k * Math.log(1 - nu)
-                        + h * Math.log(nu)
-                        + this.nb.lnPGFDash(h, 1 - nu);
+                if (h > 0) {
+                    this.lnL += this.k * Math.log(1 - nu)
+                            + h * Math.log(nu)
+                            + this.nb.lnPGFDash(h, 1 - nu);
+                } else if (h == 0) {
+                    this.lnL += this.k * Math.log(1 - nu)
+                            + this.nb.lnPGFDash(h, 1 - nu); // this should just be the lnPGF.
+                } else {
+                    throw new RuntimeException("a disaster with a negative number of cases should never happen.");
+                }
                 this.nb.setLnPAndLnR(
                         Math.log(1 - nu) + this.nb.getLnP(),
                         Math.log(Math.exp(this.nb.getLnR()) + h));
@@ -582,7 +589,10 @@ public class TimTam extends TreeDistribution {
          * @return the logarithm of the n-th partial derivative of the probability generating function
          */
         public double lnPGFDash(int n, double z, double r, double p) {
-            if (n < 1) {
+            if (n == 0) {
+                return lnPGF(z, r, p);
+            }
+            if (n < 0) {
                 throw new IllegalArgumentException("lnPGFDash expected n > 0 but got " + n);
             }
 

@@ -24,9 +24,8 @@ public class TreeWithBackwardsPointProcess extends CalculationNode {
     private Tree tree;
     private double[] bwdPoints;
     private double[] fwdPoints;
-//    private BackwardsPointProcess bwdPoints;
-    private BackwardsSchedule bwdDisasterTimes;
-    private BackwardsCounts bwdDisasterCounts;
+    private double[] bwdDisasterTimes;
+    private int[] bwdDisasterCounts;
     private int numDisasters;
 
     private double rootLength;
@@ -78,9 +77,13 @@ public class TreeWithBackwardsPointProcess extends CalculationNode {
 //        bwdPoints = bwdPointsInput.get();
 
         if (bwdDisasterTimesInput.get() != null) {
-            bwdDisasterTimes = bwdDisasterTimesInput.get();
-            bwdDisasterCounts = bwdDisasterCountsInput.get();
-            numDisasters = bwdDisasterTimes.getDoubleValues().length;
+            numDisasters = bwdDisasterTimesInput.get().getDimension();
+            bwdDisasterTimes = new double[numDisasters];
+            bwdDisasterCounts = new int[numDisasters];
+            for (int i = 0; i < numDisasters; i++) {
+                bwdDisasterTimes[i] = bwdDisasterTimesInput.get().getArrayValue(i);
+                bwdDisasterCounts[i] = bwdDisasterCountsInput.get().getNativeValue(i);
+            }
         } else {
             numDisasters = 0;
         }
@@ -167,35 +170,47 @@ public class TreeWithBackwardsPointProcess extends CalculationNode {
 
     /**
      * Calculate the intervals.
+     *
+     * When this method is called it populates the member variables @intervals@ and @intervalTypes@ and sets
+     * @intervalsKnown@ to true.
      */
     protected void calculateIntervals() {
 
         // we need to handle the edge case where there are no backwards points in which case we do not expect this input
         // to be provided.
-        double[] fwdDisasterTimes;
+        double[] fwdDisasterTimes = new double[numDisasters];
         if (bwdPoints != null && bwdDisasterTimes != null) {
-            fwdDisasterTimes = bwdDisasterTimes.valuesInput.get().stream().mapToDouble(x -> totalTreeHeight - x).sorted().toArray();
-            double newestDisasterTime,
-                   oldestDisasterTime,
-                    newestUnsequenced, oldestUnsequenced;
+            for (int i = 0; i < numDisasters; i++) {
+                fwdDisasterTimes[i] = totalTreeHeight - bwdDisasterTimes[i];
+            }
+            // TODO Having a sort call here is incredibly wasteful, it would be much better to enforce sorted input
+            //  during initialisation and validation!
+            Arrays.sort(fwdDisasterTimes);
 
             double newestPointTime = Double.POSITIVE_INFINITY;
             double oldestPointTime = Double.NEGATIVE_INFINITY;
-            for (int i = 0; i < bwdPoints.length; i++) {
-                if (bwdPoints[i] < newestPointTime) {
-                    newestPointTime = bwdPoints[i];
+            for (double bwdPoint : bwdPoints) {
+                if (bwdPoint < newestPointTime) {
+                    newestPointTime = bwdPoint;
                 }
-                if (bwdPoints[i] > oldestPointTime) {
-                    oldestPointTime = bwdPoints[i];
+                if (bwdPoint > oldestPointTime) {
+                    oldestPointTime = bwdPoint;
                 }
             }
-            // we have to use two streams here because the first one gets exhausted while calculating the min.
-//            newestPointTime = Arrays.stream(bwdPoints.getDoubleValues()).min().getAsDouble();
-            newestDisasterTime = Arrays.stream(bwdDisasterTimes.getDoubleValues()).min().getAsDouble();
-            newestUnsequenced = Math.min(newestPointTime, newestDisasterTime);
-//            oldestPointTime = Arrays.stream(bwdPoints.getDoubleValues()).max().getAsDouble();
-            oldestDisasterTime = Arrays.stream(bwdDisasterTimes.getDoubleValues()).max().getAsDouble();
-            oldestUnsequenced = Math.max(oldestPointTime, oldestDisasterTime);
+
+            double newestDisasterTime = Double.POSITIVE_INFINITY;
+            double oldestDisasterTime = Double.NEGATIVE_INFINITY;
+            for (double bwdDTime : bwdDisasterTimes) {
+                if (bwdDTime < newestDisasterTime) {
+                    newestDisasterTime = bwdDTime;
+                }
+                if (bwdDTime > oldestDisasterTime) {
+                    oldestPointTime = bwdDTime;
+                }
+            }
+
+            double newestUnsequenced = Math.min(newestPointTime, newestDisasterTime);
+            double oldestUnsequenced = Math.max(oldestPointTime, oldestDisasterTime);
 
             if (newestUnsequenced < 0 && oldestUnsequenced > totalTreeHeight) {
                 setTotalTimeSpan(oldestUnsequenced - newestUnsequenced);
@@ -211,18 +226,14 @@ public class TreeWithBackwardsPointProcess extends CalculationNode {
 
             double newestPointTime = Double.POSITIVE_INFINITY;
             double oldestPointTime = Double.NEGATIVE_INFINITY;
-            for (int i = 0; i < bwdPoints.length; i++) {
-                if (bwdPoints[i] < newestPointTime) {
-                    newestPointTime = bwdPoints[i];
+            for (double bwdPoint : bwdPoints) {
+                if (bwdPoint < newestPointTime) {
+                    newestPointTime = bwdPoint;
                 }
-                if (bwdPoints[i] > oldestPointTime) {
-                    oldestPointTime = bwdPoints[i];
+                if (bwdPoint > oldestPointTime) {
+                    oldestPointTime = bwdPoint;
                 }
             }
-            // we have to use two streams here because the first one gets exhausted while calculating the min.
-//            double newestPointTime, oldestPointTime;
-//            newestPointTime = Arrays.stream(bwdPoints.getDoubleValues()).min().getAsDouble();
-//            oldestPointTime = Arrays.stream(bwdPoints.getDoubleValues()).max().getAsDouble();
 
             if (newestPointTime < 0 && oldestPointTime > totalTreeHeight) {
                 setTotalTimeSpan(oldestPointTime - newestPointTime);
@@ -234,7 +245,33 @@ public class TreeWithBackwardsPointProcess extends CalculationNode {
                 setTotalTimeSpan(totalTreeHeight);
             }
         } else if (bwdDisasterTimes != null) {
-            throw new RuntimeException("not implemented yet.");
+            for (int i = 0; i < numDisasters; i++) {
+                fwdDisasterTimes[i] = totalTreeHeight - bwdDisasterTimes[i];
+            }
+            // TODO Having a sort call here is incredibly wasteful, it would be much better to enforce sorted input
+            //  during initialisation and validation!
+            Arrays.sort(fwdDisasterTimes);
+
+            double newestDisasterTime = Double.POSITIVE_INFINITY;
+            double oldestDisasterTime = Double.NEGATIVE_INFINITY;
+            for (double bwdDTime : bwdDisasterTimes) {
+                if (bwdDTime < newestDisasterTime) {
+                    newestDisasterTime = bwdDTime;
+                }
+                if (bwdDTime > oldestDisasterTime) {
+                    oldestDisasterTime = bwdDTime;
+                }
+            }
+
+            if (newestDisasterTime < 0 && oldestDisasterTime > totalTreeHeight) {
+                setTotalTimeSpan(oldestDisasterTime - newestDisasterTime);
+            } else if (newestDisasterTime >= 0 && oldestDisasterTime > totalTreeHeight) {
+                setTotalTimeSpan(oldestDisasterTime);
+            } else if (newestDisasterTime < 0 && oldestDisasterTime <= totalTreeHeight) {
+                setTotalTimeSpan(totalTreeHeight - newestDisasterTime);
+            } else { // if (newestDisasterTime >= 0 && oldestDisasterTime <= totalTreeHeight) {
+                setTotalTimeSpan(totalTreeHeight);
+            }
         } else {
             fwdDisasterTimes = new double[]{};
             setTotalTimeSpan(totalTreeHeight);
@@ -297,7 +334,7 @@ public class TreeWithBackwardsPointProcess extends CalculationNode {
                 // the next event must have been a disaster.
                 intervals[intIx] = disastET - currTime;
                 currTime = disastET;
-                intervalTypes[intIx] = new EventType("disaster", OptionalInt.of(bwdDisasterCounts.getNativeValue(fwdDisasterTimes.length - disastJx - 1)));
+                intervalTypes[intIx] = new EventType("disaster", OptionalInt.of(bwdDisasterCounts[fwdDisasterTimes.length - disastJx - 1]));
                 disastJx++;
             }
             intIx++;
