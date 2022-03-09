@@ -1,7 +1,9 @@
 #+title: TimTam
+#+author: Alexander E. Zarebski
 
-This repository is an attempt to implement the [[https://github.com/aezarebski/timtam][TimTam]] likelihood as a BEAST2
-package. There is a [[*Vignette][vignette]] demonstrating how to use this.
+This repository is an attempt to implement the [[https://github.com/aezarebski/timtam][TimTam]] likelihood (described in
+the PLOS Computational Biology [[https://doi.org/10.1371/journal.pcbi.1009805][paper]]) as a BEAST2 package. There are [[*Vignettes][vignettes]]
+demonstrating how to use this.
 
 * Remaining tasks and open problems
 
@@ -20,7 +22,7 @@ package. There is a [[*Vignette][vignette]] demonstrating how to use this.
 5. Support heterogeneous rates
 6. Include support for occurrence times in Beauti.
 
-* Vignette
+* Vignettes
 
 - [[file:./doc/vignettes/fixed-tree-with-rho/README.org][Fixed tree with \(\rho\)-sample]]
 - [[file:./doc/vignettes/fixed-tree-with-nu/README.org][Fixed tree with \(\nu\)-sample]]
@@ -31,7 +33,7 @@ package. There is a [[*Vignette][vignette]] demonstrating how to use this.
 * Structure
 
 Figure [[example-dag]] shows an example of how the classes provided by the package
-fit together to define an analysis. The =RootLength= is really a =RealParameter= but
+fit together to define a model. The =RootLength= is really a =RealParameter= but
 this has not been given its own class yet.
 
 #+name: example-dag
