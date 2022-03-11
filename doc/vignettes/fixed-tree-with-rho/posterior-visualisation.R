@@ -2,7 +2,8 @@ library(ggplot2)
 library(cowplot)
 library(jsonlite)
 
-posterior_samples <- read.csv("out/fixed-tree-with-rho-01.log",
+## posterior_samples <- read.csv("out/fixed-tree-with-rho-01.log",
+posterior_samples <- read.csv("out/timtam-posterior.log",
                               sep = "\t", comment.char = "#")
 true_parameters <- as.data.frame(read_json("my-params.json"))
 posterior_samples$deathRate <- true_parameters$deathRate
@@ -37,7 +38,8 @@ ggsave(
   units = "cm"
 )
 
-bdsky_posterior_samples <- read.csv("out/fixed-tree-with-rho-03.log",
+## bdsky_posterior_samples <- read.csv("out/fixed-tree-with-rho-03.log",
+bdsky_posterior_samples <- read.csv("out/bdsky-posterior.log",
                                     sep = "\t", comment.char = "#")
 plot_df <- data.frame(model = rep(c("timtam", "bdsky"), each = nrow(posterior_samples)),
                       rNaught = c(posterior_samples$rNaught, bdsky_posterior_samples$reproductiveNumber_BDSKY_Serial))
