@@ -62,7 +62,7 @@ and write them to a text file.
 
 This code can be found in the =data-munge.R= script.
 
-*** Beauti for TimTam
+*** Running Beauti
 
 The FASTA file (=out/sequences.fasta=) can then be provided to Beauti to set up a
 scaffold for our analysis file; because we are going to fix the tree and due to
@@ -72,6 +72,8 @@ need to have the TimTam package installed for this to work.
 #+begin_src sh
   java -cp <path/to/beast.jar> beast.app.beauti.Beauti
 #+end_src
+
+*** Beauti for TimTam
 
 1. Load =out/sequences.fasta= into Beauti as a nucleotide alignment.
 2. Use tip dates and click through auto-configure to parse out the dates.
@@ -87,12 +89,18 @@ need to have the TimTam package installed for this to work.
 
 *** Beauti for BDSky
 
-Use BDSky serial sampling to create =fixed-tree-with-rho-02.xml= and tweak it to
-use the same fixed tree and origin as the TimTam file. Then use BDSky
-Contemporaneous sampling to create =fixed-tree-with-rho-03.xml= and then modify it
-to include serial sampling based on the content of =fixed-tree-with-rho-02.xml=.
-The result is an XML file for serial sampling with a single contemporaneous
-sample.
+1. Load =out/sequences.fasta= into Beauti as a nucleotide alignment.
+2. Use tip dates and click through auto-configure to parse out the dates.
+3. Set up the prior in the *Priors* tab
+   * Select BDSKY serial as the tree prior
+   * Set the priors for the becoming uninfectious rate, reproductive number and
+     sampling proportion as two gamma distributions and a beta distribution with
+     parameters \((4,0.25)\), \((3,0.5)\), and \((2,6)\) respectively.
+4. Save this as a suitable XML file, e.g., =bdsky-serial-2022-03-11.xml=
+   * (Optional:) use a tool such as =js-beautify= to format the XML.
+5. Use the =xml-munge-bdsky.R= script to do some boring edits to obtain
+   =bdsky-serial-2022-03-11-edited.xml= and =bdsky-2022-03-11-edited.xml=, the
+   latter of which handles the contemporaneous sample as well.
 
 ** MCMC and results
 

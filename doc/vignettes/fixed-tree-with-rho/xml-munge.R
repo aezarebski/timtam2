@@ -107,6 +107,18 @@ xml_remove(xml_find_first(beauti_output, "//log[@idref='rootLength.t:sequences']
 xml_remove(xml_find_first(beauti_output, "//log[@idref='nuProb.t:sequences']"))
 xml_remove(xml_find_first(beauti_output, "//logger[@id='treelog.t:sequences']"))
 
+
+xml_set_attr(
+  xml_find_first(beauti_output, "//logger[@id='tracelog']"),
+  attr = "fileName",
+  value = "timtam-posterior.log")
+
+xml_set_attr(
+  xml_find_first(beauti_output, "//run[@id='mcmc']"),
+  attr = "chainLength",
+  value = "1000000"
+)
+
 ## Write the result to file
 write_xml(x = beauti_output, file = output_xml)
 
