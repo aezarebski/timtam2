@@ -1,4 +1,5 @@
 #+title: Fixed Tree Example With Rho
+#+author: Alexander E. Zarebski
 
 ** Simulating the dataset
 
@@ -33,11 +34,14 @@ The simulated data is shown in Figure [[fig:simulation][Y]].
 
 The file =out/ape-sim-reconstructed-tree.newick= contains a Newick string
 describing the reconstructed tree. We can use this to generate a dummy FASTA
-file describing the tips of the reconstructed tree.
+file describing the tips of the reconstructed tree. Note that we set the seed so
+that =simSeq= will always generate the same sequence (admittedly it is only of
+length one.)
 
-#+begin_src R
+#+begin_src R :tangle data-munge.R
   library(ape)
   library(phangorn)
+  set.seed(1)
   x <- read.tree("out/ape-sim-reconstructed-tree.newick")
   seqs <- simSeq(x, l = 1, rate = 0)
   write.phyDat(seqs, file = "out/sequences.fasta", format = "fasta")
@@ -46,7 +50,7 @@ file describing the tips of the reconstructed tree.
 And this snippet demonstrates how to extract the occurrence times, reverse them
 and write them to a text file.
 
-#+begin_src R
+#+begin_src R :tangle data-munge.R
   x <- read.csv("out/ape-sim-event-times.csv")
   duration <- 4.0
   root_length <- abs(x[x$event == "origin", "time"])
@@ -56,27 +60,30 @@ and write them to a text file.
              con = "out/occurrence-times.txt")
 #+end_src
 
+This code can be found in the =data-munge.R= script.
+
 *** Beauti for TimTam
 
-The FASTA file can then be provided to Beauti to set up a scaffold for our
-analysis file. All we need to do here is load the alignment, parse the tip dates
-and save the resulting XML, the settings are fine for our purposes here.
+The FASTA file (=out/sequences.fasta=) can then be provided to Beauti to set up a
+scaffold for our analysis file; because we are going to fix the tree and due to
+some quirks of Beauti, this seems to be the easiest way to do this. You will
+need to have the TimTam package installed for this to work.
 
 #+begin_src sh
   java -cp <path/to/beast.jar> beast.app.beauti.Beauti
 #+end_src
 
-To turn the XML into one that uses TimTam we need to make some edits:
-
-1. copy the Newick string representation of the tree into a =beast.util.TreeParser=
-   and make sure that the TimTam is referencing this,
-2. include the catastrophe time, 0.0, into the =BackwardsSchedule= slot of the
-   TimTam (it takes this value by default but it is nice to double check).
-3. include the occurrence times into the =BackwardsPointProcess= input,
-4. and finally delete references to anything relating to sequences and tree
-   estimation.
-5. double check the log writes to =fixed-tree-with-rho-01.log=,
-6. save the result to =fixed-tree-with-rho-01.xml=.
+1. Load =out/sequences.fasta= into Beauti as a nucleotide alignment.
+2. Use tip dates and click through auto-configure to parse out the dates.
+3. Set up the prior in the *Priors* tab
+   * Select TimTam as the tree prior
+   * Set the priors for the birth rate, occurrence rate and sampling rate to
+     gamma distributions with parameters \((6,0.5)\), \((2,0.25)\),
+     and\((2,0.25)\) respectively.
+4. Save this as a suitable XML file, e.g., =fixed-tree-with-rho-2022-03-11.xml=
+   * (Optional:) use a tool such as =js-beautify= to format the XML.
+5. Use the =xml-munge.R= script to do some boring edits to obtain
+   =fixed-tree-with-rho-2022-03-11-edited.xml=
 
 *** Beauti for BDSky
 
