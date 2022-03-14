@@ -1,0 +1,19 @@
+<ape version="0.1.2">
+    <configuration>
+        <parameters
+            birthRate="3.0"
+            deathRate="1.0"
+            samplingRate="0.5"
+            occurrenceRate="0.5"
+            rho="0.5"
+            duration="4.0" />
+        <options
+            seed="1"
+            writeNewick="true"
+            makePlots="true"
+            outputDirectory="out"
+            simulateSequences="false"
+            seq_agg_times=""
+            occ_agg_times="" />
+    </configuration>
+</ape>
