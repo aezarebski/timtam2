@@ -3,8 +3,11 @@ library(xml2)
 input_times_csv <- "out/ape-sim-event-times.csv"
 input_occ_csv <- "out/occurrence-times.txt"
 input_newick <- "out/ape-sim-reconstructed-tree.newick"
-input_xml <-"fixed-tree-with-rho-2022-03-11.xml"
-output_xml <- "fixed-tree-with-rho-2022-03-11-edited.xml"
+input_xml <- "fixed-tree-with-rho-2022-03-14.xml"
+output_xml <- gsub(
+  pattern = ".xml",
+  replacement = "-edited.xml",
+  x = input_xml)
 
 beauti_output <- read_xml(input_xml)
 
@@ -66,10 +69,6 @@ xml_remove(xml_find_first(timtam_dist_node, "//disasterCounts"))
 xml_remove(xml_find_first(timtam_dist_node, "//disasterTimes"))
 xml_remove(xml_find_first(beauti_output, "//distribution[@id='MultiMonophyleticConstraint.sequences']"))
 xml_remove(xml_find_first(beauti_output, "//distribution[@id='likelihood']"))
-
-## Fix the known death rate.
-death_rate_node <- read_xml("<parameter id=\"deathRate.t:sequences\" spec=\"parameter.RealParameter\" estimate=\"false\" lower=\"0.0\" name=\"mu\" upper=\"100.0\">1.0</parameter>")
-xml_add_child(timtam_dist_node, death_rate_node, .where = 0)
 
 ## points id="occurrenceTimes.t:sequences"
 xml_set_text(xml_find_first(timtam_dist_node, "//points[@id='occurrenceTimes.t:sequences']"), readLines(input_occ_csv))

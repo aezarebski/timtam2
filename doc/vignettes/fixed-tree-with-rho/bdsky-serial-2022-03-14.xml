@@ -346,17 +346,13 @@ name="alignment">
                     
             <parameter id="clockRate.c:sequences" spec="parameter.RealParameter" name="stateNode">1.0</parameter>
                     
-            <parameter id="deathRate.t:sequences" spec="parameter.RealParameter" lower="0.0" name="stateNode" upper="100.0">0.5</parameter>
+            <parameter id="origin_BDSKY_Serial.t:sequences" spec="parameter.RealParameter" lower="0.0" name="stateNode" upper="Infinity">1000.0</parameter>
                     
-            <parameter id="samplingRate.t:sequences" spec="parameter.RealParameter" lower="0.0" name="stateNode" upper="100.0">0.5</parameter>
+            <parameter id="becomeUninfectiousRate_BDSKY_Serial.t:sequences" spec="parameter.RealParameter" lower="0.0" name="stateNode" upper="Infinity">1.0</parameter>
                     
-            <parameter id="occurrenceRate.t:sequences" spec="parameter.RealParameter" lower="0.0" name="stateNode" upper="100.0">0.5</parameter>
+            <parameter id="reproductiveNumber_BDSKY_Serial.t:sequences" spec="parameter.RealParameter" dimension="10" lower="0.0" name="stateNode" upper="Infinity">2.0</parameter>
                     
-            <parameter id="rootLength.t:sequences" spec="parameter.RealParameter" lower="0.0" name="stateNode" upper="100.0">0.1</parameter>
-                    
-            <parameter id="nuProb.t:sequences" spec="parameter.RealParameter" lower="0.0" name="stateNode" upper="1.0">0.5</parameter>
-                    
-            <parameter id="birthRate.t:sequences" spec="parameter.RealParameter" name="stateNode">1.0</parameter>
+            <parameter id="samplingProportion_BDSKY_Serial.t:sequences" spec="parameter.RealParameter" lower="0.0" name="stateNode" upper="1.0">0.01</parameter>
                 
         </state>
             
@@ -374,29 +370,17 @@ name="alignment">
                     
             <distribution id="prior" spec="util.CompoundDistribution">
                             
-                <distribution id="TimTam.t:sequences" spec="beast.evolution.speciation.TimTam" lambda="@birthRate.t:sequences" mu="@deathRate.t:sequences" nu="@nuProb.t:sequences" omega="@occurrenceRate.t:sequences" psi="@samplingRate.t:sequences" rootLength="@rootLength.t:sequences" tree="@Tree.t:sequences">
-                                    
-                    <parameter id="RealParameter.79" spec="parameter.RealParameter" lower="0.0" name="p" upper="0.0">0.5</parameter>
-                                    
-                    <catastropheTimes id="catastropheSchedule.t:sequences" spec="beast.evolution.tree.birthdeath.BackwardsSchedule">0.0</catastropheTimes>
-                                    
-                    <points id="occurrenceTimes.t:sequences" spec="beast.evolution.tree.birthdeath.BackwardsPointProcess" dimension="2">0.0 0.1</points>
-                                    
-                    <disasterTimes id="disasterSchedule.t:sequences" spec="beast.evolution.tree.birthdeath.BackwardsSchedule">0.0</disasterTimes>
-                                    
-                    <disasterCounts id="disasterCounts.t:sequences" spec="beast.evolution.tree.birthdeath.BackwardsCounts">1</disasterCounts>
-                                
-                </distribution>
+                <distribution id="BDSKY_Serial.t:sequences" spec="beast.evolution.speciation.BirthDeathSkylineModel" becomeUninfectiousRate="@becomeUninfectiousRate_BDSKY_Serial.t:sequences" origin="@origin_BDSKY_Serial.t:sequences" reproductiveNumber="@reproductiveNumber_BDSKY_Serial.t:sequences" samplingProportion="@samplingProportion_BDSKY_Serial.t:sequences" tree="@Tree.t:sequences"/>
                             
                 <distribution id="MultiMonophyleticConstraint.sequences" spec="beast.math.distributions.MultiMonophyleticConstraint" newick="()" tree="@Tree.t:sequences"/>
                             
-                <prior id="birthRatePrior.t:sequences" name="distribution" x="@birthRate.t:sequences">
+                <prior id="becomeUninfectiousRatePrior_BDSKY_Serial.t:sequences" name="distribution" x="@becomeUninfectiousRate_BDSKY_Serial.t:sequences">
                                     
-                    <Gamma id="Gamma.8" name="distr">
+                    <Gamma id="Gamma.0" name="distr" offset="1.0">
                                             
-                        <parameter id="RealParameter.80" spec="parameter.RealParameter" estimate="false" name="alpha">6.0</parameter>
+                        <parameter id="RealParameter.9" spec="parameter.RealParameter" estimate="false" name="alpha">4.0</parameter>
                                             
-                        <parameter id="RealParameter.81" spec="parameter.RealParameter" estimate="false" name="beta">0.5</parameter>
+                        <parameter id="RealParameter.10" spec="parameter.RealParameter" estimate="false" name="beta">0.25</parameter>
                                         
                     </Gamma>
                                 
@@ -408,45 +392,33 @@ name="alignment">
                                 
                 </prior>
                             
-                <prior id="deathRatePrior.t:sequences" name="distribution" x="@deathRate.t:sequences">
+                <prior id="originPrior_BDSKY_Serial.t:sequences" name="distribution" x="@origin_BDSKY_Serial.t:sequences">
                                     
-                    <Uniform id="Uniform.18" name="distr" upper="100.0"/>
+                    <Uniform id="Uniform.3" name="distr" upper="Infinity"/>
                                 
                 </prior>
                             
-                <prior id="nuProbPrior.t:sequences" name="distribution" x="@nuProb.t:sequences">
+                <prior id="reproductiveNumberPrior_BDSKY_Serial.t:sequences" name="distribution" x="@reproductiveNumber_BDSKY_Serial.t:sequences">
                                     
-                    <Uniform id="Uniform.22" name="distr"/>
-                                
-                </prior>
-                            
-                <prior id="occurrenceRatePrior.t:sequences" name="distribution" x="@occurrenceRate.t:sequences">
-                                    
-                    <Gamma id="Gamma.9" name="distr">
+                    <Gamma id="Gamma.1" name="distr" offset="1.0">
                                             
-                        <parameter id="RealParameter.82" spec="parameter.RealParameter" estimate="false" name="alpha">2.0</parameter>
+                        <parameter id="RealParameter.11" spec="parameter.RealParameter" estimate="false" name="alpha">3.0</parameter>
                                             
-                        <parameter id="RealParameter.83" spec="parameter.RealParameter" estimate="false" name="beta">0.25</parameter>
+                        <parameter id="RealParameter.12" spec="parameter.RealParameter" estimate="false" name="beta">0.5</parameter>
                                         
                     </Gamma>
                                 
                 </prior>
                             
-                <prior id="rootLengthPrior.t:sequences" name="distribution" x="@rootLength.t:sequences">
+                <prior id="samplingProportionPrior_BDSKY_Serial.t:sequences" name="distribution" x="@samplingProportion_BDSKY_Serial.t:sequences">
                                     
-                    <Uniform id="Uniform.21" name="distr" upper="100.0"/>
-                                
-                </prior>
-                            
-                <prior id="samplingRatePrior.t:sequences" name="distribution" x="@samplingRate.t:sequences">
-                                    
-                    <Gamma id="Gamma.10" name="distr">
+                    <Beta id="Beta.1" name="distr">
                                             
-                        <parameter id="RealParameter.84" spec="parameter.RealParameter" estimate="false" name="alpha">2.0</parameter>
+                        <parameter id="RealParameter.7" spec="parameter.RealParameter" estimate="false" name="alpha">2.0</parameter>
                                             
-                        <parameter id="RealParameter.85" spec="parameter.RealParameter" estimate="false" name="beta">0.25</parameter>
+                        <parameter id="RealParameter.8" spec="parameter.RealParameter" estimate="false" name="beta">6.0</parameter>
                                         
-                    </Gamma>
+                    </Beta>
                                 
                 </prior>
                         
@@ -486,41 +458,35 @@ name="alignment">
                 
         </operator>
             
-        <operator id="TimTamTreeScaler.t:sequences" spec="ScaleOperator" scaleFactor="0.5" tree="@Tree.t:sequences" weight="3.0"/>
+        <operator id="BDSKY_SerialTreeScaler.t:sequences" spec="ScaleOperator" scaleFactor="0.5" tree="@Tree.t:sequences" weight="3.0"/>
             
-        <operator id="TimTamTreeRootScaler.t:sequences" spec="ScaleOperator" rootOnly="true" scaleFactor="0.5" tree="@Tree.t:sequences" weight="3.0"/>
+        <operator id="BDSKY_SerialTreeRootScaler.t:sequences" spec="ScaleOperator" rootOnly="true" scaleFactor="0.5" tree="@Tree.t:sequences" weight="3.0"/>
             
-        <operator id="TimTamUniformOperator.t:sequences" spec="Uniform" tree="@Tree.t:sequences" weight="30.0"/>
+        <operator id="BDSKY_SerialUniformOperator.t:sequences" spec="Uniform" tree="@Tree.t:sequences" weight="30.0"/>
             
-        <operator id="TimTamSubtreeSlide.t:sequences" spec="SubtreeSlide" tree="@Tree.t:sequences" weight="15.0"/>
+        <operator id="BDSKY_SerialSubtreeSlide.t:sequences" spec="SubtreeSlide" tree="@Tree.t:sequences" weight="15.0"/>
             
-        <operator id="TimTamNarrow.t:sequences" spec="Exchange" tree="@Tree.t:sequences" weight="15.0"/>
+        <operator id="BDSKY_SerialNarrow.t:sequences" spec="Exchange" tree="@Tree.t:sequences" weight="15.0"/>
             
-        <operator id="TimTamWide.t:sequences" spec="Exchange" isNarrow="false" tree="@Tree.t:sequences" weight="3.0"/>
+        <operator id="BDSKY_SerialWide.t:sequences" spec="Exchange" isNarrow="false" tree="@Tree.t:sequences" weight="3.0"/>
             
-        <operator id="TimTamWilsonBalding.t:sequences" spec="WilsonBalding" tree="@Tree.t:sequences" weight="3.0"/>
+        <operator id="BDSKY_SerialWilsonBalding.t:sequences" spec="WilsonBalding" tree="@Tree.t:sequences" weight="3.0"/>
             
-        <operator id="birthRateScaler.t:sequences" spec="ScaleOperator" parameter="@birthRate.t:sequences" weight="3.0"/>
+        <operator id="becomeUninfectiousRateScaler_BDSKY_Serial.t:sequences" spec="ScaleOperator" parameter="@becomeUninfectiousRate_BDSKY_Serial.t:sequences" weight="2.0"/>
             
-        <operator id="birthRateWalk.t:sequences" spec="RealRandomWalkOperator" parameter="@birthRate.t:sequences" useGaussian="true" weight="3.0" windowSize="0.1"/>
+        <operator id="reproductiveNumberScaler_BDSKY_Serial.t:sequences" spec="ScaleOperator" parameter="@reproductiveNumber_BDSKY_Serial.t:sequences" weight="10.0"/>
             
-        <operator id="deathRateScaler.t:sequences" spec="ScaleOperator" parameter="@deathRate.t:sequences" weight="3.0"/>
+        <operator id="samplingProportionScaler_BDSKY_Serial.t:sequences" spec="ScaleOperator" parameter="@samplingProportion_BDSKY_Serial.t:sequences" weight="10.0"/>
             
-        <operator id="deathRateWalk.t:sequences" spec="RealRandomWalkOperator" parameter="@deathRate.t:sequences" useGaussian="true" weight="3.0" windowSize="0.1"/>
+        <operator id="updownBD_BDSKY_Serial.t:sequences" spec="UpDownOperator" scaleFactor="0.75" weight="2.0">
+                    
+            <up idref="reproductiveNumber_BDSKY_Serial.t:sequences"/>
+                    
+            <down idref="becomeUninfectiousRate_BDSKY_Serial.t:sequences"/>
+                
+        </operator>
             
-        <operator id="samplingRateScaler.t:sequences" spec="ScaleOperator" parameter="@samplingRate.t:sequences" weight="3.0"/>
-            
-        <operator id="samplingRateWalk.t:sequences" spec="RealRandomWalkOperator" parameter="@samplingRate.t:sequences" useGaussian="true" weight="3.0" windowSize="0.1"/>
-            
-        <operator id="occurrenceRateScaler.t:sequences" spec="ScaleOperator" parameter="@occurrenceRate.t:sequences" weight="3.0"/>
-            
-        <operator id="occurrenceRateWalk.t:sequences" spec="RealRandomWalkOperator" parameter="@occurrenceRate.t:sequences" useGaussian="true" weight="3.0" windowSize="0.1"/>
-            
-        <operator id="rootLengthScaler.t:sequences" spec="ScaleOperator" parameter="@rootLength.t:sequences" weight="3.0"/>
-            
-        <operator id="rootLengthWalk.t:sequences" spec="RealRandomWalkOperator" parameter="@rootLength.t:sequences" useGaussian="true" weight="3.0" windowSize="0.1"/>
-            
-        <operator id="nuProbWalk.t:sequences" spec="RealRandomWalkOperator" parameter="@nuProb.t:sequences" useGaussian="true" weight="3.0" windowSize="0.1"/>
+        <operator id="origScaler_BDSKY_Serial.t:sequences" spec="ScaleOperator" parameter="@origin_BDSKY_Serial.t:sequences" weight="1.0"/>
             
         <logger id="tracelog" spec="Logger" fileName="sequences.log" logEvery="1000" model="@posterior" sanitiseHeaders="true" sort="smart">
                     
@@ -536,19 +502,15 @@ name="alignment">
                     
             <log idref="clockRate.c:sequences"/>
                     
-            <log idref="deathRate.t:sequences"/>
+            <log idref="BDSKY_Serial.t:sequences"/>
                     
-            <log idref="samplingRate.t:sequences"/>
+            <log idref="origin_BDSKY_Serial.t:sequences"/>
                     
-            <log idref="occurrenceRate.t:sequences"/>
+            <log idref="becomeUninfectiousRate_BDSKY_Serial.t:sequences"/>
                     
-            <log idref="rootLength.t:sequences"/>
+            <log idref="reproductiveNumber_BDSKY_Serial.t:sequences"/>
                     
-            <log idref="nuProb.t:sequences"/>
-                    
-            <log id="TimTamLogger.t:sequences" spec="beast.evolution.speciation.TimTamLogger" timtam="@TimTam.t:sequences"/>
-                    
-            <log idref="birthRate.t:sequences"/>
+            <log idref="samplingProportion_BDSKY_Serial.t:sequences"/>
                 
         </logger>
             

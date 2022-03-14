@@ -4,9 +4,15 @@ input_times_csv <- "out/ape-sim-event-times.csv"
 input_occ_csv <- "out/occurrence-times.txt"
 input_newick <- "out/ape-sim-reconstructed-tree.newick"
 simulation_duration <- "4.0"
-input_xml <- "bdsky-serial-2022-03-11.xml"
-output_xml <- "bdsky-serial-2022-03-11-edited.xml"
-output_again_xml <- "bdsky-2022-03-11-edited.xml"
+input_xml <- "bdsky-serial-2022-03-14.xml"
+output_xml <- gsub(
+  pattern = ".xml",
+  replacement = "-edited.xml",
+  x = input_xml)
+output_again_xml <- gsub(
+  pattern = "-serial",
+  replacement = "",
+  x = output_xml)
 
 bdsky <- read_xml(input_xml)
 
@@ -15,6 +21,8 @@ xml_remove(xml_find_first(bdsky, "//parameter[@id='clockRate.c:sequences']"))
 xml_remove(xml_find_first(bdsky, "//parameter[@id='origin_BDSKY_Serial.t:sequences']"))
 xml_set_attr(xml_find_first(bdsky, "//parameter[@id='reproductiveNumber_BDSKY_Serial.t:sequences']"), attr = "dimension", value = NULL)
 xml_set_text(xml_find_first(bdsky, "//parameter[@id='becomeUninfectiousRate_BDSKY_Serial.t:sequences']"), "3.0")
+
+xml_remove(xml_find_first(bdsky, "//distribution[@id='MultiMonophyleticConstraint.sequences']"))
 
 ## Set the starting tree to be the reconstructed tree.
 fixed_tree_node <- read_xml("<init spec='beast.util.TreeParser' taxa='@sequences' id='Tree.t:sequences' IsLabelledNewick='true' adjustTipHeights='false' />")
