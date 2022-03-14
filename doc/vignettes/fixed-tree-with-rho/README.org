@@ -3,22 +3,35 @@
 
 ** Simulating the dataset
 
-The tool, =ape-sim.R=, can be used to simulate a dataset.
+The tool, =ape-sim.R=, (version =0.1.5=) can be used to simulate a dataset.
 
 #+begin_src sh
-  ./ape-sim.R --seed 1 -p my-params.json -o out --duration 4.0 --rho 0.5 --write-newick -v --make-plots
+  Rscript ape-sim.R --verbose my-params.xml
 #+end_src
 
-The parameters for this are specified in the following JSON. They are not very
+The parameters for this are specified in the following XML. They are not very
 realistic, but they are convenient for a simple example.
 
-#+begin_src json :tangle my-params.json
-  {
-    "birthRate": 3.0,
-    "deathRate": 1.0,
-    "samplingRate": 0.5,
-    "occurrenceRate": 0.5
-  }
+#+begin_src xml :tangle my-params.xml
+  <ape version="0.1.2">
+      <configuration>
+          <parameters
+              birthRate="3.0"
+              deathRate="1.0"
+              samplingRate="0.5"
+              occurrenceRate="0.5"
+              rho="0.5"
+              duration="4.0" />
+          <options
+              seed="1"
+              writeNewick="true"
+              makePlots="true"
+              outputDirectory="out"
+              simulateSequences="false"
+              seq_agg_times=""
+              occ_agg_times="" />
+      </configuration>
+  </ape>
 #+end_src
 
 The simulated data is shown in Figure [[fig:simulation][Y]].
@@ -82,10 +95,11 @@ need to have the TimTam package installed for this to work.
    * Set the priors for the birth rate, occurrence rate and sampling rate to
      gamma distributions with parameters \((6,0.5)\), \((2,0.25)\),
      and\((2,0.25)\) respectively.
-4. Save this as a suitable XML file, e.g., =fixed-tree-with-rho-2022-03-11.xml=
+   * Fix the death rate at the correct known value.
+4. Save this as a suitable XML file, e.g., =fixed-tree-with-rho-2022-03-14.xml=
    * (Optional:) use a tool such as =js-beautify= to format the XML.
 5. Use the =xml-munge.R= script to do some boring edits to obtain
-   =fixed-tree-with-rho-2022-03-11-edited.xml=
+   =fixed-tree-with-rho-2022-03-14-edited.xml=
 
 *** Beauti for BDSky
 
@@ -93,13 +107,14 @@ need to have the TimTam package installed for this to work.
 2. Use tip dates and click through auto-configure to parse out the dates.
 3. Set up the prior in the *Priors* tab
    * Select BDSKY serial as the tree prior
-   * Set the priors for the becoming uninfectious rate, reproductive number and
-     sampling proportion as two gamma distributions and a beta distribution with
-     parameters \((4,0.25)\), \((3,0.5)\), and \((2,6)\) respectively.
-4. Save this as a suitable XML file, e.g., =bdsky-serial-2022-03-11.xml=
+   * Set the priors for the becoming uninfectious rate, reproductive number
+     (with an offset of 0.1) and sampling proportion as two gamma distributions
+     and a beta distribution with parameters \((4,0.25)\), \((3,0.5)\), and
+     \((2,6)\) respectively.
+4. Save this as a suitable XML file, e.g., =bdsky-serial-2022-03-14.xml=
    * (Optional:) use a tool such as =js-beautify= to format the XML.
 5. Use the =xml-munge-bdsky.R= script to do some boring edits to obtain
-   =bdsky-serial-2022-03-11-edited.xml= and =bdsky-2022-03-11-edited.xml=, the
+   =bdsky-serial-2022-03-14-edited.xml= and =bdsky-2022-03-14-edited.xml=, the
    latter of which handles the contemporaneous sample as well.
 
 ** MCMC and results
@@ -110,9 +125,11 @@ Run the analysis defined in the XML
   java -cp <path/to/beast.jar> beast.app.beastapp.BeastMain -seed 1 -overwrite analysis.xml
 #+end_src
 
-We can get a quick inspection of the results using Tracer. The script
-=posterior-visualisation.R= generates the visualisation of the posterior samples
-shown below. See Figure [[fig:r-naught-prevalence][X]] for the posterior distribution.
+Running the analysis with each of the new XML files should produce two log
+files: =timtam-posterior.log= and =bdsky-posterior.log=. We can get a quick
+inspection of the results using Tracer. The script =posterior-visualisation.R=
+generates the visualisation of the posterior samples shown below. See Figure [[fig:r-naught-prevalence][X]]
+for the posterior distribution.
 
 #+caption: Posterior distribution of R-naught and the prevalence.
 #+name: fig:r-naught-prevalence
