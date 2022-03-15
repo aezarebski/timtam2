@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript
 #'
-VERSION <- c(0,1,4)
-#' ape-sim-0.1.4
+VERSION <- c(0,1,5)
+#' ape-sim-0.1.5
 #' =============
 #'
 #' Use the ape package to simulate the BDSCOD process from the command line.
@@ -20,7 +20,6 @@ VERSION <- c(0,1,4)
 #'
 #' where the \code{demo.xml} file should like the following
 #'
-#' <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 #' <ape version="0.1.2">
 #'   <configuration>
 #'     <parameters birthRate="3.0"
@@ -148,23 +147,17 @@ parser$add_argument(
 parser$add_argument(
          "xml",
          type = "character",
-         help = "Filepath to XML configuration")
-## parser$add_argument(
-##          "--seq-agg-times",
-##          type = "character",
-##          default = "",
-##          help = "Specification of aggregation times for sequenced samples: \"FROM TO BY\". These values get read as three numbers then form the arguments for the seq function.")
-## parser$add_argument(
-##          "--occ-agg-times",
-##          type = "character",
-##          default = "",
-##          help = "Specification of aggregation times for unsequenced samples (occurrence data). See the details of --seq-agg-times.")
-## parser$add_argument(
-##          "--simulate-sequences",
-##          action = "store_true",
-##          default = FALSE,
-##          help = "Simulate sequences for each of the leaves of the reconstructed tree. This makes use of the simSeq function from phangorn. If this parameter is given, then it is assumed that there will be a substitutionRate given in the parameters JSON.")
+         help = "Filepath to XML configuration"
+)
 
+#' Repeatedly run the simulation until there is a satisfactory realisation
+#' obtained.
+#'
+#' @param params is a list of the model parameters such as birth rate.
+#' @param options is a list of configuration parameters such as output
+#'   directory.
+#' @param is_verbose is a logical for whether to print messages.
+#'
 run_conditioned_simulation <- function(params, options, is_verbose) {
   max_iterations <- 100
   has_solution <- FALSE
@@ -195,6 +188,13 @@ sequence_simulation <- function(tr, len, sub_rate) {
   return(simSeq(tr, l = len, rate = sub_rate))
 }
 
+#' Run a simulation and stop if something goes wrong.
+#'
+#' @param params is a list of the model parameters such as birth rate.
+#' @param options is a list of configuration parameters such as output
+#'   directory.
+#' @param is_verbose is a logical for whether to print messages.
+#'
 run_simulation <- function(params, options, is_verbose) {
   time_eps <- 1e-10
   if (is_verbose) {
@@ -228,7 +228,7 @@ run_simulation <- function(params, options, is_verbose) {
   ## TODO we can find the tips that are still extant in the simulation but it is
   ## unclear if we can use strict equality here of if we need to account for
   ## potential error in the branch lengths. It seems like this is safe...
-  extant_mask <- tip_times + tmrca == params$duration
+  extant_mask <- (tip_times + tmrca) == params$duration
   extant_labels <- tip_labels[extant_mask]
   num_extant <- length(extant_labels)
   if (is_verbose) {
@@ -251,6 +251,7 @@ run_simulation <- function(params, options, is_verbose) {
   } else if (is.null(params$nu)) {
     if (is_verbose) {
       cat("performing rho sampling...\n")
+      cat("skipping nu-sampling\n")
     }
     num_rho_sampled <- rbinom(
       n = 1,
@@ -266,6 +267,7 @@ run_simulation <- function(params, options, is_verbose) {
     nu_sampled_labels <- NULL
   } else {
     if (is_verbose) {
+      cat("skipping rho-sampling\n")
       cat("performing nu sampling...\n")
     }
     num_rho_sampled <- NULL
@@ -389,7 +391,6 @@ run_simulation <- function(params, options, is_verbose) {
   } else {
     final_prevalence <- num_extant - num_nu_sampled
   }
-
   if (is_verbose) {
     cat("checking output from run_simulation...\n")
   }
@@ -408,16 +409,13 @@ run_simulation <- function(params, options, is_verbose) {
   }
   if (!(abs(dur_0 - dur_2) < fudge * params$duration)) {
     cat("measure 2 is ", dur_2, "\n")
-    stop("measures of simulation duration 2 is too different from requested duration.")
+    stop(c("Measures of simulation duration 2 is too different from requested duration.\n",
+           "Something may have gone wrong with the reconstructed tree."))
   }
   if (!(abs(dur_0 - dur_3) < fudge * params$duration)) {
     cat("measure 3 is ", dur_3, "\n")
     stop("measures of simulation duration 3 is too different from requested duration.")
   }
-  if (!(abs(dur_1 - dur_2) < fudge * params$duration)) {
-    stop("measures of simulation duration seem too different.")
-  }
-
   ## TODO The aggregation code below should probably be refactored and applied
   ## as a post-simulation step rather than being included here.
 
@@ -737,20 +735,8 @@ parse_from_to_by <- function(from_to_by_string) {
 configuration_is_valid <- function(config) {
   params <- config$params
   opts <- config$options
-  if ((!is.null(params$rho)) && (params$seq_agg_times != "")) {
+  if ((!is.null(params$rho)) && (!is.null(params$seq_agg_times))) {
     return(FALSE)
-  }
-  ## If we are being asked to simulate sequences, then there should be a
-  ## substitution rate specified in the parameters JSON.
-  if (opts$simulate_sequences) {
-    if (!is.element("substitution_rate", names(params))) {
-      warning("--simulate-sequences flag was given but there is no substitutionRate in the parameters XML.")
-      return(FALSE)
-    }
-    if (!is.element("seq_length", names(params))) {
-      warning("--simulate-sequences flag was given but there is no seqLength in the parameters XML.")
-      return(FALSE)
-    }
   }
   print(names(params))
   print(opts)
