@@ -7,38 +7,37 @@
 The tool, =ape-sim.R=, can be used to simulate a dataset.
 
 #+begin_src sh
-  ./ape-sim.R -v single-nu-params.xml
+  Rscript ape-sim.R -v single-nu-params.xml
 #+end_src
 
 The parameters for this are specified in the following JSON. They are not very
 realistic, but they are convenient for a simple example.
 
 #+begin_src xml :tangle single-nu-params.xml
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<ape version="0.1.2">
- <configuration>
-  <parameters birthRate="3.0"
-              deathRate="1.0"
-              samplingRate="0.5"
-              occurrenceRate="0.5"
-              duration="4.0"
-              nu="0.5" />
-  <options seed="1"
-           writeNewick="true"
-           makePlots="true"
-           outputDirectory="out"
-           simulateSequences="false"
-           seq_agg_times=""
-           occ_agg_times=""/>
- </configuration>
-</ape>
+  <ape version="0.1.2">
+   <configuration>
+    <parameters birthRate="3.0"
+                deathRate="1.0"
+                samplingRate="0.5"
+                occurrenceRate="0.5"
+                duration="4.0"
+                nu="0.5" />
+    <options seed="1"
+             writeNewick="true"
+             makePlots="true"
+             outputDirectory="out"
+             simulateSequences="false"
+             seq_agg_times=""
+             occ_agg_times=""/>
+   </configuration>
+  </ape>
 #+end_src
 
 The simulated data is shown in Figure [[fig:simulation][Y]].
 
 #+caption: Full transmission tree and event counts
 #+name: fig:simulation
-#+attr_org: :width 700
+#+attr_org: :width 500
 [[./out/ape-simulation-figure.png]]
 
 ** Making the XML
@@ -49,7 +48,7 @@ The file =out/ape-sim-reconstructed-tree.newick= contains a Newick string
 describing the reconstructed tree. We can use this to generate a dummy FASTA
 file describing the tips of the reconstructed tree.
 
-#+begin_src R
+#+begin_src R :tangle munge-sequences-and-times.R
   library(ape)
   library(phangorn)
   x <- read.tree("out/ape-sim-reconstructed-tree.newick")
@@ -60,7 +59,7 @@ file describing the tips of the reconstructed tree.
 And this snippet demonstrates how to extract the occurrence times, reverse them
 and write them to a text file.
 
-#+begin_src R
+#+begin_src R :tangle munge-sequences-and-times.R
   x <- read.csv("out/ape-sim-event-times.csv")
   duration <- 4.0
   root_length <- abs(x[x$event == "origin", "time"])
@@ -70,49 +69,44 @@ and write them to a text file.
              con = "out/occurrence-times.txt")
 #+end_src
 
-*** Beauti for TimTam
+This code can be found in the =munge-sequences-and-times.R= script.
 
-The FASTA file can then be provided to Beauti to set up a scaffold for our
-analysis file. All we need to do here is load the alignment, parse the tip dates
-and save the resulting XML, the settings are fine for our purposes here.
+*** Running Beauti
+
+The FASTA file (=out/sequences.fasta=) can then be provided to Beauti to set up a
+scaffold for our analysis file; because we are going to fix the tree and due to
+some quirks of Beauti, this seems to be the easiest way to do this. You will
+need to have the TimTam package installed for this to work.
 
 #+begin_src sh
   java -cp <path/to/beast.jar> beast.app.beauti.Beauti
 #+end_src
 
-To turn the XML into one that uses TimTam we need to make some edits:
+*** Beauti for TimTam
 
-1. copy the Newick string representation of the tree into a
-   =beast.util.TreeParser= and make sure that the TimTam is referencing this,
-2. include the disaster time relative to the last sequenced sample, into the
-   =BackwardsSchedule= slot of the TimTam (it takes this value by default but it
-   is nice to double check) and include the =BackwardsCounts= to describe how many
-   cases were observed.
-3. include the occurrence times into the =BackwardsPointProcess= input,
-4. and finally delete references to anything relating to sequences and tree
-   estimation since this is using a fixed tree
-5. double check the log writes to =ft-with-nu-02.log=,
-6. save the result to =ft-with-nu-02.xml=.
-
-The following snippet is useful for specifying the known tree.
-
-#+begin_src xml
-  <init spec='beast.util.TreeParser' taxa='@sequences' id='Tree.t:sequences'
-  IsLabelledNewick="true" adjustTipHeights="false" newick="" />
-#+end_src
+1. Load =out/sequences.fasta= into Beauti as a nucleotide alignment.
+2. Use tip dates and click through auto-configure to parse out the dates.
+3. Set up the prior in the *Priors* tab
+   * Select TimTam as the tree prior
+   * Fix the death rate to the known value
+4. Save this as a suitable XML file, e.g., =ft-with-rho-2022-03-15.xml=
+   * (Optional:) use a tool such as =js-beautify= to format the XML.
+5. Use the =munge-xml.R= script to do some boring edits to obtain
+   =ft-with-rho-2022-03-15-edited.xml=
 
 ** MCMC and results
 
 Run the analysis defined in the XML
 
 #+begin_src sh
-  java -cp <path/to/beast.jar> beast.app.beastapp.BeastMain -seed 1 -overwrite ft-with-nu-02.xml
+  java -cp <path/to/beast.jar> beast.app.beastapp.BeastMain -seed 1 -overwrite ft-with-nu-2022-03-15-edited.xml
 #+end_src
 
 We can get a quick inspection of the results using Tracer. The script
 =posterior-visualisation.R= generates the visualisation of the posterior samples
-shown below. See Figure [[fig:r-naught-prevalence][X]] for the posterior distribution of key summary
-statistics and the \(\nu)-sampling probability.
+shown below. Don't forget to copy the log file to =timtam-posterior.log=. See
+Figure [[fig:r-naught-prevalence][X]] for the posterior distribution of key summary statistics and the
+\(\nu)-sampling probability.
 
 #+caption: Posterior distribution of R-naught and the prevalence and the prior and posterior distributions of the nu-sampling probability.
 #+name: fig:r-naught-prevalence

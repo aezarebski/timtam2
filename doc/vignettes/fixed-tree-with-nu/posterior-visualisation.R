@@ -1,14 +1,26 @@
 library(ggplot2)
 library(cowplot)
+library(xml2)
 library(jsonlite)
 
-posterior_samples <- read.csv("out/ft-with-nu-02.log",
+## posterior_samples <- read.csv("out/ft-with-nu-02.log",
+posterior_samples <- read.csv("timtam-posterior.log",
                               sep = "\t", comment.char = "#")
-true_parameters <- as.data.frame(read_json("my-params.json"))
+sim_xml <- read_xml("single-nu-params.xml")
+xml_params <- xml_find_first(sim_xml, "//parameters")
+true_parameters <- list(
+  deathRate = as.numeric(xml_attr(xml_params, attr = "deathRate")),
+  birthRate = as.numeric(xml_attr(xml_params, attr = "birthRate")),
+  samplingRate = as.numeric(xml_attr(xml_params, attr = "samplingRate")),
+  occurrenceRate = as.numeric(xml_attr(xml_params, attr = "occurrenceRate"))
+)
 posterior_samples$deathRate <- true_parameters$deathRate
-true_parameters$rNaught <- true_parameters$birthRate / (true_parameters$deathRate + true_parameters$samplingRate + true_parameters$occurrenceRate)
+true_parameters$rNaught <- with(
+  true_parameters,
+  birthRate / (deathRate + samplingRate + occurrenceRate)
+)
 true_parameters$prevalence <- read_json("out/ape-sim-final-prevalence.json",
-                             simplifyVector = TRUE)
+                                        simplifyVector = TRUE)
 
 posterior_samples$prevalence <- rnbinom(
   n = nrow(posterior_samples),
@@ -20,7 +32,7 @@ g1 <- ggplot() +
   geom_hex(data = posterior_samples,
            mapping = aes(x = rNaught, y = prevalence),
            bins = 20) +
-  geom_point(data = true_parameters,
+  geom_point(data = as.data.frame(true_parameters),
              mapping = aes(x = rNaught, y = prevalence),
              size = 4,
              colour = "red") +
