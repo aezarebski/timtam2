@@ -3,9 +3,10 @@ library(cowplot)
 library(jsonlite)
 library(XML)
 
-posterior_samples <- read.csv("out/ft-with-nu-03.log",
-                              sep = "\t", comment.char = "#")
-## true_parameters <- as.data.frame(read_json("my-params.json"))
+posterior_samples <- read.csv(
+  "timtam-posterior-multi.log",
+  sep = "\t",
+  comment.char = "#")
 true_parameters <- xmlToList(xmlParse("multi-nu-params.xml"))
 
 
@@ -15,7 +16,7 @@ true_parameters <- xmlToList(xmlParse("multi-nu-params.xml"))
 posterior_samples$deathRate <- as.numeric(true_parameters$configuration$parameters["deathRate"])
 true_parameters$rNaught <- as.numeric(true_parameters$configuration$parameters["birthRate"]) / (as.numeric(true_parameters$configuration$parameters["deathRate"]) + as.numeric(true_parameters$configuration$parameters["samplingRate"]) + as.numeric(true_parameters$configuration$parameters["occurrenceRate"]))
 
-true_parameters$prevalence <- read_json("out/multi/ape-sim-final-prevalence.json",
+true_parameters$prevalence <- read_json("out-multi/ape-sim-final-prevalence.json",
                              simplifyVector = TRUE)
 
 posterior_samples$prevalence <- rnbinom(
@@ -48,7 +49,7 @@ g2 <- ggplot() +
   theme_classic()
 
 ggsave(
-  filename = "./out/posterior-plot-multi.png",
+  filename = "out-multi/posterior-plot-multi.png",
   plot = plot_grid(g1, g2),
   height = 10.5,
   width = 21.0,
