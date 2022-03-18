@@ -1,10 +1,28 @@
 library(ggplot2)
 library(cowplot)
 library(jsonlite)
+library(xml2)
 
-posterior_samples <- read.csv("out/estimated-tree-with-rho-via-beauti.log",
+posterior_samples <- read.csv("timtam-posterior.log",
                               sep = "\t", comment.char = "#")
-true_parameters <- as.data.frame(read_json("my-params.json"))
+## posterior_samples <- read.csv("out/estimated-tree-with-rho-via-beauti.log",
+##                               sep = "\t", comment.char = "#")
+
+sim_xml <- read_xml("my-params.xml")
+xml_params <- xml_find_first(sim_xml, "//parameters")
+true_parameters <- list(
+  deathRate = as.numeric(xml_attr(xml_params, attr = "deathRate")),
+  birthRate = as.numeric(xml_attr(xml_params, attr = "birthRate")),
+  samplingRate = as.numeric(xml_attr(xml_params, attr = "samplingRate")),
+  occurrenceRate = as.numeric(xml_attr(xml_params, attr = "occurrenceRate"))
+)
+posterior_samples$deathRate <- true_parameters$deathRate
+true_parameters$rNaught <- with(
+  true_parameters,
+  birthRate / (deathRate + samplingRate + occurrenceRate)
+)
+true_parameters$prevalence <- read_json("out/ape-sim-final-prevalence.json",
+                                        simplifyVector = TRUE)
 true_final_prev <- read_json("out/ape-sim-final-prevalence.json",
                              simplifyVector = TRUE)
 
@@ -18,7 +36,7 @@ g1 <- ggplot() +
   geom_hex(data = posterior_samples,
            mapping = aes(x = birthRate, y = samplingRate),
            bins = 20) +
-  geom_point(data = true_parameters,
+  geom_point(data = as.data.frame(true_parameters),
              mapping = aes(x = birthRate, y = samplingRate),
              size = 4,
              colour = "red") +

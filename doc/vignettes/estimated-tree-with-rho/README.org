@@ -5,57 +5,75 @@
 The tool, =ape-sim.R=, can be used to simulate a dataset.
 
 #+begin_src sh
-  ./ape-sim.R --seed 1 -p my-params.json -o out --duration 4.0 --rho 0.5 --verbose --simulate-sequences
+  Rscript ape-sim.R --verbose my-params.xml
 #+end_src
 
 The parameters for this are specified in the following JSON. They are not very
 realistic, but they are convenient for a simple example.
 
-#+begin_src json :tangle my-params.json
-  {
-    "birthRate": 3.0,
-    "deathRate": 1.0,
-    "samplingRate": 0.5,
-    "occurrenceRate": 0.5,
-    "substitutionRate": 1e-2
-  }
+#+begin_src xml :tangle my-params.xml
+  <ape version="0.1.2">
+    <configuration>
+      <parameters
+          birthRate="3.0"
+          deathRate="1.0"
+          samplingRate="0.5"
+          occurrenceRate="0.5"
+          rho="0.5"
+          duration="4.0"
+          substitutionRate="1e-2"
+          seqLength="1000" />
+      <options
+          seed="1"
+          writeNewick="true"
+          makePlots="true"
+          outputDirectory="out"
+          simulateSequences="true"
+          seq_agg_times=""
+          occ_agg_times="" />
+    </configuration>
+  </ape>
 #+end_src
 
 ** Making the XML
 
-The FASTA file can then be provided to Beauti to set up a scaffold for our
-analysis file. All we need to do here is load the alignment, parse the tip dates
-and save the resulting XML, the settings are fine for our purposes here.
+*** Data munging
 
-#+begin_src sh
-  java -cp <path/to/beast.jar> beast.app.beauti.Beauti
-#+end_src
+#+begin_src R :tangle munge-data.R
+  library(xml2)
 
-And this snippet demonstrates how to extract the occurrence times, reverse them
-and write them to a text file.
-
-#+begin_src R
-  x <- read.csv("out/ape-sim-event-times.csv")
-  duration <- 4.0
+  config <- read_xml("my-params.xml")
+  params <- xml_find_first(config, "//parameters")
+  opts <- xml_find_first(config, "//options")
+  output_dir <- xml_attr(opts, "outputDirectory")
+  duration <- as.numeric(xml_attr(params, "duration"))
+  x <- read.csv(sprintf("%s/ape-sim-event-times.csv", output_dir))
   root_length <- abs(x[x$event == "origin", "time"])
   occurrence_times <- sort(x[x$event == "occurrence", "time"] + root_length)
   bwd_occurrence_times <- duration - occurrence_times
   writeLines(text = paste(bwd_occurrence_times,collapse = " "),
-             con = "out/occurrence-times.txt")
+             con = sprintf("%s/occurrence-times.txt", output_dir))
 #+end_src
 
-To turn the XML into one that uses TimTam we need to make some edits:
+*** Running Beauti
 
-- include a =Schedule= input to describe when the \(\rho\)-sample occurred,
-- include a =PointProcess= input using the occurrence times from the simulation,
-- include a =TimTam= input to act as out target distribution,
-- and include two parameters for \(\lambda\) and \(\psi\)
+Fire up Beauti and carry out the following steps:
 
-Once we have set the model up, we need to edit the =run= block. This involves
-re-defining the =state= to be out \(\lambda\) and \(\psi\) nodes and removing all
-the material associated with the default analysis. Two =RealRandomWalkOperator=
-operators are used for these parameters. After updating the loggers to return
-the desired values we are right to run the analysis.
+1. Load =out/ape-sim-sequences.fasta= and use the tip-dates (via
+   auto-configuration).
+2. Select the TimTam prior and make some tweaks for this example:
+   - Fix the clock rate to \(0.01\) without estimation.
+   - Fix \(\nu = 0.0\) and do not estimate it.
+   - Fix \(\mu\) to the true value (\(\1.0\)) and do not estimate it.
+   - Fix the root length to \(0.2445398\) and do not estimate it. This value can
+     be found in =ape-sim-event-times.csv=.
+   - Set the initial value of \(\lambda\) to \(3.0\) and the prior as
+     \(\Gamma(6.0,0.5)\).
+   - Set the initial value of \(\psi\) to \(0.5\) and the prior as
+     \(\Gamma(2.0,0.5)\).
+3. Save the configuration as =et-with-rho-2022-03-17.xml=.
+4. Run the =munge-xml.R= script to do some find tuning of the XML. This will
+   produce =et-with-rho-2022-03-17-edited.xml=.
 
 ** MCMC and results
 
@@ -71,3 +89,5 @@ shown below.
 
 #+attr_org: :width 500
 [[./out/posterior-plot.png]]
+
+#  LocalWords:  Beauti TimTam
