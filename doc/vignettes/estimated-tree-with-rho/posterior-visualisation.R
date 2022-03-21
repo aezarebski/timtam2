@@ -27,6 +27,7 @@ true_final_prev <- read_json("out/ape-sim-final-prevalence.json",
                              simplifyVector = TRUE)
 
 
+
 prev_post_samples <- rnbinom(
   n = 10 * nrow(posterior_samples),
   size = exp(posterior_samples$TimTam.prevalence.lnR),
@@ -55,7 +56,18 @@ g2 <- ggplot(mapping = aes(x = x, y = ..density..)) +
   labs(x = "Final prevalence", y = "Posterior distribution") +
   theme_classic()
 
-g <- plot_grid(g1, g2)
+g3 <- ggplot(mapping = aes(x = birthRate / (samplingRate + deathRate + true_parameters$occurrenceRate),
+                           y = ..density..)) +
+  geom_histogram(data = posterior_samples,
+                 bins = 20) +
+  geom_vline(xintercept = true_parameters$rNaught,
+             colour = "red",
+             size = 2,
+             linetype = "dashed") +
+  labs(x = "R-naught", y = "Posterior distribution") +
+  theme_classic()
+
+g <- plot_grid(g3, g2)
 
 
 ggsave(
