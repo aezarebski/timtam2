@@ -4,7 +4,7 @@ input_times_csv <- "out/ape-sim-event-times.csv"
 input_occ_csv <- "out/occurrence-times.txt"
 input_newick <- "out/ape-sim-reconstructed-tree.newick"
 simulation_duration <- "4.0"
-input_xml <- "bdsky-serial-2022-03-14.xml"
+input_xml <- "bdsky-serial-2022-03-22.xml"
 output_xml <- gsub(
   pattern = ".xml",
   replacement = "-edited.xml",

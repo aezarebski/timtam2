@@ -3,7 +3,7 @@ library(xml2)
 input_times_csv <- "out/ape-sim-event-times.csv"
 input_occ_csv <- "out/occurrence-times.txt"
 input_newick <- "out/ape-sim-reconstructed-tree.newick"
-input_xml <- "fixed-tree-with-rho-2022-03-14.xml"
+input_xml <- "ft-with-rho-2022-03-22.xml"
 output_xml <- gsub(
   pattern = ".xml",
   replacement = "-edited.xml",
@@ -106,6 +106,7 @@ xml_remove(xml_find_first(beauti_output, "//log[@idref='rootLength.t:sequences']
 xml_remove(xml_find_first(beauti_output, "//log[@idref='nuProb.t:sequences']"))
 xml_remove(xml_find_first(beauti_output, "//logger[@id='treelog.t:sequences']"))
 
+xml_remove(xml_find_first(beauti_output, "//parameter[@id='rootLength.t:sequences']"))
 
 xml_set_attr(
   xml_find_first(beauti_output, "//logger[@id='tracelog']"),

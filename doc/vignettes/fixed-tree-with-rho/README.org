@@ -3,7 +3,7 @@
 
 ** Simulating the dataset
 
-The tool, =ape-sim.R=, (version =0.1.5=) can be used to simulate a dataset.
+The tool, =ape-sim.R=, (version =0.1.6=) can be used to simulate a dataset.
 
 #+begin_src sh
   Rscript ape-sim.R --verbose my-params.xml
@@ -92,14 +92,19 @@ need to have the TimTam package installed for this to work.
 2. Use tip dates and click through auto-configure to parse out the dates.
 3. Set up the prior in the *Priors* tab
    * Select TimTam as the tree prior
-   * Set the priors for the birth rate, occurrence rate and sampling rate to
-     gamma distributions with parameters \((6,0.5)\), \((2,0.25)\),
-     and\((2,0.25)\) respectively.
-   * Fix the death rate at the correct known value.
-4. Save this as a suitable XML file, e.g., =fixed-tree-with-rho-2022-03-14.xml=
-   * (Optional:) use a tool such as =js-beautify= to format the XML.
+   * Set the birth rate prior to \(\Gamma(6.0,0.5)\) and its initial value to
+     \(3.0\).
+   * Set the death rate to \(1.0\) and untick the estimate box.
+   * Set the occurrence rate prior to \(\Gamma(2.0,0.25)\) and its initial value
+     to \(0.5\).
+   * Set the sampling rate prior to \(\Gamma(2.0,0.25)\) and its initial value
+     to \(0.5\).
+   * Set the root length to \(0.244539801768007\) (from =ape-sim-event-times.csv=)
+     and untick the estimate box.
+4. Save this as an XML file called =ft-with-2022-03-22.xml=. The name is important
+   so that =xml-munge.R= knows where it is.
 5. Use the =xml-munge.R= script to do some boring edits to obtain
-   =fixed-tree-with-rho-2022-03-14-edited.xml=
+   =fixed-tree-with-rho-2022-03-22-edited.xml=
 
 *** Beauti for BDSky
 
@@ -107,14 +112,15 @@ need to have the TimTam package installed for this to work.
 2. Use tip dates and click through auto-configure to parse out the dates.
 3. Set up the prior in the *Priors* tab
    * Select BDSKY serial as the tree prior
-   * Set the priors for the becoming uninfectious rate, reproductive number
-     (with an offset of 0.1) and sampling proportion as two gamma distributions
-     and a beta distribution with parameters \((4,0.25)\), \((3,0.5)\), and
-     \((2,6)\) respectively.
-4. Save this as a suitable XML file, e.g., =bdsky-serial-2022-03-14.xml=
-   * (Optional:) use a tool such as =js-beautify= to format the XML.
+   * Set the prior for the becoming uninfectious rate to \(\Gamma(4.0,0.25) +
+     1\) (i.e. with an offset of \(1.0\)).
+   * Set the prior for the reproductive number to \(\Gamma(3.0,0.5) + 1\) (i.e.
+     with an offset of \(1.0\)).
+   * Set the prior for the sampling proportion to \(\Beta(2.0,6.0)\).
+4. Save this as an XML file called =bdsky-serial-2022-03-22.xml=. The name is
+   important so that =xml-munge-bdsky.R= knows where it is.
 5. Use the =xml-munge-bdsky.R= script to do some boring edits to obtain
-   =bdsky-serial-2022-03-14-edited.xml= and =bdsky-2022-03-14-edited.xml=, the
+   =bdsky-serial-2022-03-22-edited.xml= and =bdsky-2022-03-22-edited.xml=, the
    latter of which handles the contemporaneous sample as well.
 
 ** MCMC and results
