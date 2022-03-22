@@ -4,26 +4,26 @@
     <mergewith point='treePriorTemplates'>
 
 
-        <subtemplate id='TimTam' class='beast.evolution.speciation.TimTam' mainid='TimTam.t:$(n)'>
+        <subtemplate id='TimTam' class='timtam.TimTam' mainid='TimTam.t:$(n)'>
             <![CDATA[
-                   <input spec="beast.evolution.tree.birthdeath.BackwardsSchedule"
+                   <input spec="timtam.BackwardsSchedule"
                    id="catastropheSchedule.t:$(n)"
                    value="0.0" />
 
-                   <input spec="beast.evolution.tree.birthdeath.BackwardsSchedule"
+                   <input spec="timtam.BackwardsSchedule"
                    id="disasterSchedule.t:$(n)"
                    value="0.0" />
 
-                   <input spec="beast.evolution.tree.birthdeath.BackwardsCounts"
+                   <input spec="timtam.BackwardsCounts"
                    id="disasterCounts.t:$(n)"
                    value="1" />
 
-                   <input spec="beast.evolution.tree.birthdeath.BackwardsPointProcess"
+                   <input spec="timtam.BackwardsPointProcess"
                    id="occurrenceTimes.t:$(n)"
                    value="0.0 0.1" />
 
                    <distribution id="TimTam.t:$(n)"
-                   spec="beast.evolution.speciation.TimTam"
+                   spec="timtam.TimTam"
                    p="0.5"
                    catastropheTimes="@catastropheSchedule.t:$(n)"
                    points="@occurrenceTimes.t:$(n)"
@@ -62,7 +62,7 @@
 
                    <input id='nuProbWalk.t:$(n)' spec="RealRandomWalkOperator" windowSize="0.1" useGaussian="true" weight="3" parameter="@nuProb.t:$(n)"/>
 
-                   <input spec="beast.evolution.speciation.TimTamLogger" id="TimTamLogger.t:$(n)" />
+                   <input spec="timtam.TimTamLogger" id="TimTamLogger.t:$(n)" />
                    ]]>
 
             <plate fragment="TreeOperators" var="m" range="TimTam" />
