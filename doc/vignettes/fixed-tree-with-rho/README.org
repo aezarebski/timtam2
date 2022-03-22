@@ -1,5 +1,6 @@
 #+title: Fixed Tree Example With Rho
 #+author: Alexander E. Zarebski
+#+date: 2022:03:22
 
 ** Simulating the dataset
 
