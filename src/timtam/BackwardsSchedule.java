@@ -1,4 +1,5 @@
-package beast.evolution.tree.birthdeath;
+package timtam;
+
 
 import beast.core.parameter.RealParameter;
 
