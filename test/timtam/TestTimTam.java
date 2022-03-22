@@ -1,10 +1,8 @@
-package beast.evolution.speciation;
+package timtam;
+
 
 import beast.core.parameter.RealParameter;
 import beast.evolution.tree.Tree;
-import beast.evolution.tree.birthdeath.BackwardsCounts;
-import beast.evolution.tree.birthdeath.BackwardsPointProcess;
-import beast.evolution.tree.birthdeath.BackwardsSchedule;
 import beast.util.TreeParser;
 import org.junit.Test;
 

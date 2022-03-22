@@ -1,4 +1,5 @@
-package beast.evolution.speciation;
+package timtam;
+
 
 import beast.core.BEASTObject;
 import beast.core.Input;

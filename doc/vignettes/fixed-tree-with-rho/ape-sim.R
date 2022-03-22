@@ -1,7 +1,8 @@
 #!/usr/bin/env Rscript
 #'
-VERSION <- c(0,1,5)
-#' ape-sim-0.1.5
+VERSION <- c(0,1,6)
+#' =============
+#' ape-sim-0.1.6
 #' =============
 #'
 #' Use the ape package to simulate the BDSCOD process from the command line.
@@ -12,7 +13,7 @@ VERSION <- c(0,1,5)
 #' demonstrated below.
 #'
 #' Usage
-#' -----
+#' =====
 #'
 #' The following will simulate without either a catastrophe or a disaster:
 #'
@@ -43,9 +44,16 @@ VERSION <- c(0,1,5)
 #' function.
 #'
 #' Help
-#' ----
+#' ====
 #'
 #' $ ./ape-sim.R --help
+#'
+#' ChangeLog
+#' =========
+#'
+#' - 0.1.6
+#'   + Include additional checks that configuration is valid.
+#'   + Fix typo which was breaking sequence simulation.
 #'
 suppressPackageStartupMessages(library(argparse))
 suppressPackageStartupMessages(library(ggplot2))
@@ -89,7 +97,7 @@ parse_xml_configuration <- function(filepath) {
   }
 
   if (is.element("substitutionRate", names(xml_params))) {
-    params$subsitution_rate <- as.numeric(xml_params$substitutionRate)
+    params$substitution_rate <- as.numeric(xml_params$substitutionRate)
   }
 
   if (is.element("seqLength", names(xml_params))) {
@@ -184,8 +192,23 @@ run_conditioned_simulation <- function(params, options, is_verbose) {
   return(result)
 }
 
-sequence_simulation <- function(tr, len, sub_rate) {
-  return(simSeq(tr, l = len, rate = sub_rate))
+#' Simulate sequences on the given tree.
+#'
+#' @param tree is a phylo object
+#' @param len is the length of the sequence
+#' @param sub_rate is the substitution rate
+#'
+#' @details Simulate sequences using the Jukes-Cantor model which is the default
+#'   behaviour of \code{simSeq} when given a \code{phylo} object.
+#'
+sequence_simulation <- function(tree, len, sub_rate) {
+  if (class(tree) != "phylo") {
+    stop("tree must be a phylo object.")
+  }
+  if (is.null(len)) {
+    stop("sequence length must be positive integer.")
+  }
+  return(simSeq(tree, l = len, rate = sub_rate))
 }
 
 #' Run a simulation and stop if something goes wrong.
@@ -307,7 +330,6 @@ run_simulation <- function(params, options, is_verbose) {
     size = num_sampled,
     replace = FALSE
   )
-
   occurrence_labels <- setdiff(observed_labels, sampling_labels)
   num_occurrences <- length(occurrence_labels)
   unobserved_labels <- setdiff(extinct_labels, observed_labels)
@@ -738,8 +760,6 @@ configuration_is_valid <- function(config) {
   if ((!is.null(params$rho)) && (!is.null(params$seq_agg_times))) {
     return(FALSE)
   }
-  print(names(params))
-  print(opts)
   if (is.element("rho", names(params))) {
     if (params$rho > 1.0 || 0.0 > params$rho) {
       warning("rho parameter should be a probability")
@@ -760,11 +780,20 @@ configuration_is_valid <- function(config) {
       return(FALSE)
     }
   }
+  ## If we are being asked to use a particular output directory it should exist.
   if (!dir.exists(opts$output_directory)) {
     warning("missing output directory: ", opts$output_directory)
     return(FALSE)
   }
-  ## If we are being asked to use a particular output directory it should exist.
+  ## If we are simulating sequences we need the data to do this.
+  if (opts$simulate_sequences) {
+    if (is.null(params$substitution_rate)) {
+      stop("cannot simulate sequences without a substitution rate.")
+    }
+    if (is.null(params$seq_length)) {
+      stop("cannot simulate sequences without a sequence length.")
+    }
+  }
   return(TRUE)
 }
 

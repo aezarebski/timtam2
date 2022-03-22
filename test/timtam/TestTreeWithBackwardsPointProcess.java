@@ -1,4 +1,5 @@
-package beast.evolution.tree.birthdeath;
+package timtam;
+
 
 import beast.core.parameter.RealParameter;
 import beast.evolution.alignment.Alignment;

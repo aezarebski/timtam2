@@ -1,4 +1,5 @@
-package beast.evolution.tree.birthdeath;
+package timtam;
+
 
 import java.util.Arrays;
 import java.util.List;

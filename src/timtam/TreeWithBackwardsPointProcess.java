@@ -1,4 +1,5 @@
-package beast.evolution.tree.birthdeath;
+package timtam;
+
 
 import beast.core.CalculationNode;
 import beast.core.Description;
