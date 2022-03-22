@@ -10,12 +10,25 @@
 
 * Glossary
 
-- *Catastrophe*: a scheduled sequenced sample.
-- *Occurrence data*: see /unsequenced sample/.
-- *Scheduled sample*: a sample in which multiple lineages may be sampled.
-- *Sequenced sample*: data that appears in the phylogeny, as a way to distinguish
-  from unsequenced samples
-- *Unsequenced sample*: data that is not included in the phylogeny, a.k.a.
-  /occurrence data/.
+** Catastrophe
 
-#  LocalWords:  unsequenced
+A [[*Scheduled sample][scheduled]] sequenced sample.
+
+** Occurrence data
+
+See [[*Unsequenced sample][unsequenced sample]].
+
+** Scheduled sample
+
+A sample in which multiple lineages may be sampled at the sample time.
+
+** Sequenced sample
+
+Data that appears in the phylogeny, as a way to distinguish from [[*Unsequenced sample][unsequenced
+samples]].
+
+** Unsequenced sample
+
+Data that is not included in the phylogeny, a.k.a. /occurrence data/.
+
+#  LocalWords: unsequenced
