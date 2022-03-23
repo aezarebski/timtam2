@@ -17,6 +17,8 @@ import java.util.Arrays;
  *
  * @author Alexander Zarebski
  */
+@Citation(value = "Zarebski AE, du Plessis L, Parag KV, Pybus OG (2022) A computationally tractable birth-death model that combines phylogenetic and epidemiological data. PLOS Computational Biology 18(2): e1009805. https://doi.org/10.1371/journal.pcbi.1009805",
+        year = 2022, firstAuthorSurname = "Zarebski", DOI="10.1371/journal.pcbi.1009805")
 public class TimTam extends TreeDistribution {
 
     Tree tree;
