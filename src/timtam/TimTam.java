@@ -1,13 +1,11 @@
 package timtam;
 
 
+import beast.core.Citation;
 import beast.core.Input;
 import beast.core.parameter.RealParameter;
 import beast.evolution.tree.Tree;
 import beast.evolution.tree.TreeDistribution;
-// import beast.evolution.tree.birthdeath.*;
-
-import java.util.Arrays;
 
 /**
  * Tree prior for birth-death-sampling while tracking the distribution of hidden
