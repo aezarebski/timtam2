@@ -2,16 +2,51 @@
 #+author: Alexander E. Zarebski
 #+date: 2022:03:22
 
-** Simulating the dataset
+* Use case: Estimating \(R_0\) and prevalence
 
-The tool, =ape-sim.R=, (version =0.1.6=) can be used to simulate a dataset.
+- CHARACTERISTIC INFORMATION
+  + Goal in context: User wants to estimate the reproductive number and
+    prevalence of infection at present.
+  + Preconditions: The user has read the TimTam paper and is familiar with
+    BEAST2. User has a phylogeny connecting scheduled and unscheduled samples, a
+    point process of unsequenced data, and knows the value of the [[file:./../readme.org::*Death rate][natural
+    recovery rate]]
+  + Success end condition: The user has the estimates they want.
+  + Failed end condition: The user cannot generate estimates or needs to request
+    help.
+- MAIN SUCCESS SCENARIO
+  + User uses Beauti and text editor (or R script) to set up analysis.
+  + User runs MCMC program.
+  + User uses R script to get visualisations of the results.
+- EXTENSIONS
+  + User wants to compare this to results they would have obtained from the
+    phylogeny alone, without the point process of unsequenced data.
+  + User wants to try time varying rate parameters.
+- VARIATIONS
+  + User wants to use a different parameterisation.
+- RELATED INFORMATION
+  + Priority: Top
+  + Performance target: Large MCMC sample size in less than 24 hours.
+  + Frequency: 5/year
+- SCHEDULE
+- OPEN ISSUES
+  + How do we specify the time varying parameters.
+
+* Simulating the dataset
+
+For the sake of this vignette, we will simulate a dataset to use. This has the
+advantage that we will know the true values of the parameters we are trying to
+estimate. The tool, =ape-sim.R=, (version =0.1.6=) can be used to simulate a
+dataset. This script is included in the repository.
 
 #+begin_src sh
   Rscript ape-sim.R --verbose my-params.xml
 #+end_src
 
 The parameters for this are specified in the following XML. They are not very
-realistic, but they are convenient for a simple example.
+realistic, but they are convenient for a simple example. The correspond to a
+single scheduled sequenced sample (i.e. a catastrophe) at the end of the
+simulation duration and no scheduled unsequenced samples (i.e. disasters).
 
 #+begin_src xml :tangle my-params.xml
   <ape version="0.1.2">
@@ -42,15 +77,17 @@ The simulated data is shown in Figure [[fig:simulation][Y]].
 #+attr_org: :width 700
 [[./out/ape-simulation-figure.png]]
 
-** Making the XML
+The next step is to turn this simulation into the sort of data set that the user
+may start with: a phylogeny connecting the sequenced cases and a point process
+of unsequenced cases.
 
-*** Data munging
+** Data munging
 
 The file =out/ape-sim-reconstructed-tree.newick= contains a Newick string
 describing the reconstructed tree. We can use this to generate a dummy FASTA
 file describing the tips of the reconstructed tree. Note that we set the seed so
 that =simSeq= will always generate the same sequence (admittedly it is only of
-length one.)
+length one and is never actually used in the analysis.)
 
 #+begin_src R :tangle data-munge.R
   library(ape)
@@ -74,9 +111,19 @@ and write them to a text file.
              con = "out/occurrence-times.txt")
 #+end_src
 
-This code can be found in the =data-munge.R= script.
+This code can be found in the =data-munge.R= script. At this point, we have the
+data from the user:
 
-*** Running Beauti
+- A phylogeny connecting the sequenced samples encoded in
+  + =out/sequences.fasta=,
+  + =out/ape-sim-event-times.csv= (for the root length), and
+  + =out/ape-sim-reconstructed-tree.newick=.
+- A list of unscheduled unsequenced sample time in =out/occurrence-times.txt=.
+- The known death rate in =my-params.xml=
+
+* Making the XML
+
+** Running Beauti
 
 The FASTA file (=out/sequences.fasta=) can then be provided to Beauti to set up a
 scaffold for our analysis file; because we are going to fix the tree and due to
@@ -87,7 +134,7 @@ need to have the TimTam package installed for this to work.
   java -cp <path/to/beast.jar> beast.app.beauti.Beauti
 #+end_src
 
-*** Beauti for TimTam
+** Beauti for TimTam
 
 1. Load =out/sequences.fasta= into Beauti as a nucleotide alignment.
 2. Use tip dates and click through auto-configure to parse out the dates.
@@ -107,7 +154,7 @@ need to have the TimTam package installed for this to work.
 5. Use the =xml-munge.R= script to do some boring edits to obtain
    =fixed-tree-with-rho-2022-03-22-edited.xml=
 
-*** Beauti for BDSky
+** Beauti for BDSky
 
 1. Load =out/sequences.fasta= into Beauti as a nucleotide alignment.
 2. Use tip dates and click through auto-configure to parse out the dates.
@@ -124,7 +171,9 @@ need to have the TimTam package installed for this to work.
    =bdsky-serial-2022-03-22-edited.xml= and =bdsky-2022-03-22-edited.xml=, the
    latter of which handles the contemporaneous sample as well.
 
-** MCMC and results
+* MCMC and results
+
+** Running the MCMC
 
 Run the analysis defined in the XML
 
@@ -134,7 +183,11 @@ Run the analysis defined in the XML
 
 Running the analysis with each of the new XML files should produce two log
 files: =timtam-posterior.log= and =bdsky-posterior.log=. We can get a quick
-inspection of the results using Tracer. The script =posterior-visualisation.R=
+inspection of the results using Tracer.
+
+** Visualising the results
+
+The script =posterior-visualisation.R=
 generates the visualisation of the posterior samples shown below. See Figure [[fig:r-naught-prevalence][X]]
 for the posterior distribution.
 
@@ -151,3 +204,5 @@ dataset rather than a result of the approximation of the likelihood.
 #+name: fig:r-naught-comparison
 #+attr_org: :width 500
 [[./out/r-naught-comparison.png]]
+
+#  LocalWords:  unsequenced Beauti TimTam uninfectious

@@ -14,6 +14,12 @@
 
 A [[*Scheduled sample][scheduled]] sequenced sample.
 
+** Death rate
+
+The rate at which an individual ceases to be infectious if they are not sampled.
+This is not to be confused with the "total becoming uninfectious rate" which
+accounts for sampling and unobserved recovery.
+
 ** Occurrence data
 
 See [[*Unsequenced sample][unsequenced sample]].
@@ -31,4 +37,4 @@ samples]].
 
 Data that is not included in the phylogeny, a.k.a. /occurrence data/.
 
-#  LocalWords: unsequenced
+#  LocalWords: unsequenced uninfectious
