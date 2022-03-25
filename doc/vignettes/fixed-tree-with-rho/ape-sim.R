@@ -1,8 +1,8 @@
 #!/usr/bin/env Rscript
 #'
-VERSION <- c(0,1,6)
+VERSION <- c(0,2,0)
 #' =============
-#' ape-sim-0.1.6
+#' ape-sim-0.2.0
 #' =============
 #'
 #' Use the ape package to simulate the BDSCOD process from the command line.
@@ -51,6 +51,12 @@ VERSION <- c(0,1,6)
 #' ChangeLog
 #' =========
 #'
+#' - 0.2.0
+#'   + Include support for time varying parameters.
+#'
+#' - 0.1.7
+#'   + Switch to using \code{xml2} instead of \code{XML}.
+#'
 #' - 0.1.6
 #'   + Include additional checks that configuration is valid.
 #'   + Fix typo which was breaking sequence simulation.
@@ -64,69 +70,219 @@ suppressPackageStartupMessages(library(tidytree))
 suppressPackageStartupMessages(library(tibble))
 suppressPackageStartupMessages(library(phangorn))
 suppressPackageStartupMessages(library(ape))
-suppressPackageStartupMessages(library(XML))
+suppressPackageStartupMessages(library(xml2))
 
 green_hex_colour <- "#1b9e77"
 purple_hex_colour <- "#7570b3"
 
+#' Parse a string \"FROM TO BY\" into a linear vector of values.
+parse_from_to_by <- function(from_to_by_string) {
+  if (from_to_by_string == "") {
+    NULL
+  } else {
+    tmp <- as.numeric(unlist(strsplit(x = from_to_by_string, split = " ")))
+    stopifnot(length(tmp) == 3)
+    seq(from = tmp[1], to = tmp[2], by = tmp[3])
+  }
+}
+
+#' Return a vectorised step function.
+#'
+#' @param ts the times at which there is a step.
+#' @param vs the value of the function at the step.
+#'
+step_function_factory <- function(ts, vs) {
+  n <- length(ts)
+  if (n < 1) {
+    stop("need at least one step time.")
+  }
+  if (length(vs) != (1 + n)) {
+    stop("if there are n step times there must be n+1 values.")
+  }
+
+  step_func <- function(x) {
+    m <- length(x)
+    y <- numeric(m)
+    mask <- logical(m)
+    mask <- x < ts[1]
+    y[mask] <- vs[1]
+    if (n > 1) {
+      for (ix in seq.int(2, n)) {
+        mask <- (ts[ix-1] <= x) & (x < ts[ix])
+        y[mask] <- vs[ix]
+      }
+    }
+    mask <- x >= ts[n]
+    y[mask] <- vs[n+1]
+    return(y)
+  }
+
+  return(
+    list(
+      func = step_func,
+      times = ts,
+      values = vs
+    )
+  )
+}
+
+#' Return a vectorised step function resulting from the point-wise application
+#' of a binary function to two step functions.
+#'
+#' @param step_func_a a step function (see \code{step_function_factory}.)
+#' @param step_func_b a step function (see \code{step_function_factory}.)
+#' @param binary_func a binary function.
+#'
+map_step_function <- function(step_func_a, step_func_b, binary_func) {
+  times_c <- sort(union(step_func_a$times, step_func_b$times))
+  n <- length(times_c)
+  values_c <- numeric(n + 1)
+  a_t_0 <- ifelse(is.finite(step_func_a$times[1]),
+                  step_func_a$times[1] - 1,
+                  ifelse(step_func_a$times[1] > 0,
+                         0,
+                         stop("invalid first time in step function a")))
+  b_t_0 <- ifelse(is.finite(step_func_b$times[1]),
+                  step_func_b$times[1] - 1,
+                  ifelse(step_func_b$times[1] > 0,
+                         0,
+                         stop("invalid first time in step function b")))
+  values_c[1] <- binary_func(
+    step_func_a$func(a_t_0),
+    step_func_b$func(b_t_0)
+  )
+  for (ix in seq.int(n)) {
+    values_c[ix+1] <- binary_func(
+      step_func_a$func(times_c[ix]),
+      step_func_b$func(times_c[ix])
+    )
+  }
+  return(step_function_factory(times_c, values_c))
+}
+
+step_func_plus <- function(sf_a, sf_b) {
+  return(map_step_function(sf_a, sf_b, function(a, b) {a + b}))
+}
+
+step_func_divide <- function(sf_a, sf_b) {
+  return(map_step_function(sf_a, sf_b, function(a, b) {a / b}))
+}
+
+#' Parse the rate out of the XML node
+parse_rate <- function(xml_input, rate_name) {
+  xml_params <- xml_find_first(xml_input, "//configuration//parameters")
+  rate_attr <- xml_attr(xml_params, rate_name)
+  if (grepl(pattern = "@[a-zA-Z]+", x = rate_attr)) {
+    ## The rate refers to a stepFunction node so we need to extract this data
+    ## and construct an appropriate step function.
+    sf_node <- xml_find_first(
+      xml_input,
+      sprintf(
+        "//stepFunction[@name='%s']",
+        gsub(pattern = "@", replacement = "", x = rate_attr)
+      )
+    )
+    ts <- as.numeric(unlist(strsplit(xml_attr(sf_node, "times"), " ")))
+    vs <- as.numeric(unlist(strsplit(xml_attr(sf_node, "values"), " ")))
+    return(step_function_factory(ts, vs))
+  } else {
+    ## To avoid having multiple representations of the rate, we can return
+    ## another step function which is constant.
+    return(step_function_factory(c(Inf), c(as.numeric(rate_attr), NA)))
+  }
+}
+
 #' Parse the XML configuration of the simulation. See the documentation above
 #' for an example.
 parse_xml_configuration <- function(filepath) {
-  xml_input <- xmlToList(xmlParse(filepath))
-  xml_opts <- as.list(xml_input$configuration$options)
-  xml_params <- as.list(xml_input$configuration$parameters)
+  xml_input <- read_xml(filepath)
+  xml_opts <- xml_find_first(xml_input, "//configuration//options")
+  xml_params <- xml_find_first(xml_input, "//configuration//parameters")
 
-  params = list(
-    birth_rate = as.numeric(xml_params$birthRate),
-    death_rate = as.numeric(xml_params$deathRate),
-    sampling_rate = as.numeric(xml_params$samplingRate),
-    occurrence_rate = as.numeric(xml_params$occurrenceRate),
-    duration = as.numeric(xml_params$duration)
+  ## We need to extract a few individual parameters so it is helpful to have a
+  ## function that makes this a bit easier.
+  numeric_param <- function(n) {
+    tmp <- as.numeric(xml_attr(xml_params, n))
+    if (is.na(tmp)) {
+      stop("could not parse single parameter for ", n)
+    } else {
+      return(tmp)
+    }
+  }
+
+  params <- list(
+    birth_rate = parse_rate(xml_input, "birthRate"),           # lambda
+    death_rate = parse_rate(xml_input, "deathRate"),           # mu
+    sampling_rate = parse_rate(xml_input, "samplingRate"),     # psi
+    occurrence_rate = parse_rate(xml_input, "occurrenceRate"), # omega
+    duration = numeric_param("duration")
   )
 
-  if (is.element("rho", names(xml_params))) {
-    params$rho <- as.numeric(xml_params$rho)
+  if (xml_has_attr(xml_params, "rho")) {
+    params$rho <- numeric_param("rho")
   } else {
     params$rho <- NULL
   }
 
-  if (is.element("nu", names(xml_params))) {
-    params$nu <- as.numeric(xml_params$nu)
+  if (xml_has_attr(xml_params, "nu")) {
+    params$nu <- numeric_param("nu")
   } else {
     params$nu <- NULL
   }
 
-  if (is.element("substitutionRate", names(xml_params))) {
-    params$substitution_rate <- as.numeric(xml_params$substitutionRate)
+  if (xml_has_attr(xml_params, "substitutionRate")) {
+    params$substitution_rate <- numeric_param("substitutionRate")
+  }
+  if (xml_has_attr(xml_params, "seqLength")) {
+    params$seq_length <- numeric_param("seqLength")
   }
 
-  if (is.element("seqLength", names(xml_params))) {
-    params$seq_length <- as.numeric(xml_params$seqLength)
-  }
-
-  params$net_rem_rate <- params$death_rate + params$sampling_rate + params$occurrence_rate
-  params$net_per_capita_event_rate <- params$birth_rate + params$net_rem_rate
-  params$sampling_prob <- params$sampling_rate / params$net_rem_rate
-  params$occurrence_prob <- params$occurrence_rate / params$net_rem_rate
-  params$prob_observed <- params$sampling_prob + params$occurrence_prob
-  params$prob_sampled_given_observed <-
-    params$sampling_prob / params$prob_observed
+  params$net_rem_rate <- step_func_plus(
+    step_func_plus(
+      params$death_rate,
+      params$sampling_rate
+    ),
+    params$occurrence_rate
+  )
+  params$net_per_capita_event_rate <- step_func_plus(
+    params$birth_rate,
+    params$net_rem_rate
+  )
+  params$sampling_prob <- step_func_divide(
+    params$sampling_rate,
+    params$net_rem_rate
+  )
+  params$occurrence_prob <- step_func_divide(
+    params$occurrence_rate,
+    params$net_rem_rate
+  )
+  ## this is the probability that a tip that is not due to a scheduled sample
+  ## will be observed (either sequenced or occurrence) rather than being a death
+  ## tip.
+  params$prob_observed <- step_func_plus(
+    params$sampling_prob,
+    params$occurrence_prob
+  )
+  ## this is the probability that an unscheduled sample will be sequenced.
+  params$prob_sampled_given_observed <- step_func_divide(
+    params$sampling_prob, params$prob_observed
+  )
 
   opts <- list(
-    seed = as.integer(xml_opts$seed),
-    output_directory = xml_opts$outputDirectory,
-    make_plots = as.logical(xml_opts$makePlots),
-    write_newick = as.logical(xml_opts$writeNewick),
-    simulate_sequences = as.logical(xml_opts$simulateSequences))
+    seed = as.integer(xml_attr(xml_opts, "seed")),
+    output_directory = xml_attr(xml_opts, "outputDirectory"),
+    make_plots = as.logical(xml_attr(xml_opts, "makePlots")),
+    write_newick = as.logical(xml_attr(xml_opts, "writeNewick")),
+    simulate_sequences = as.logical(xml_attr(xml_opts, "simulateSequences")))
 
-  if (is.element("seq_agg_times", names(xml_opts))) {
-    opts$seq_agg_times <- parse_from_to_by(xml_opts$seq_agg_times)
+  if (xml_has_attr(xml_opts, "seq_agg_times")) {
+    opts$seq_agg_times <- parse_from_to_by(xml_attr(xml_opts, "seq_agg_times"))
   } else {
     opts$seq_agg_times <- NULL
   }
 
-  if (is.element("occ_agg_times", names(xml_opts))) {
-    opts$occ_agg_times <- parse_from_to_by(xml_opts$occ_agg_times)
+  if (xml_has_attr(xml_opts, "occ_agg_times")) {
+    opts$occ_agg_times <- parse_from_to_by(xml_attr(xml_opts, "occ_agg_times"))
   } else {
     opts$occ_agg_times <- NULL
   }
@@ -211,6 +367,29 @@ sequence_simulation <- function(tree, len, sub_rate) {
   return(simSeq(tree, l = len, rate = sub_rate))
 }
 
+#' Simulate the length of the root of the tree.
+#'
+#' @param params is a list of the model parameters such as birth rate.
+#'
+root_simulation <- function(params) {
+  rate <- params$net_per_capita_event_rate$func
+  times <- params$net_per_capita_event_rate$times
+  if (times[1] <= 0.0) {
+    stop("will not simulate root length if rate changes before or at origin.")
+  }
+  rl <- rexp(n = 1, rate = rate(0.0))
+  ix <- 1
+  while (ix <= length(times)) {
+    if (rl < times[ix]) {
+      return(rl)
+    } else {
+      rl <- times[ix] + rexp(n = 1, rate = rate(times[ix]))
+      ix <- ix + 1
+    }
+  }
+  stop("root simulation failed for an unexpected reason...")
+}
+
 #' Run a simulation and stop if something goes wrong.
 #'
 #' @param params is a list of the model parameters such as birth rate.
@@ -219,18 +398,23 @@ sequence_simulation <- function(tree, len, sub_rate) {
 #' @param is_verbose is a logical for whether to print messages.
 #'
 run_simulation <- function(params, options, is_verbose) {
+  ## Define a small amount of time that can be used to distinguish whether two
+  ## numbers are equal (up to a small tolerance).
   time_eps <- 1e-10
   if (is_verbose) {
     cat("simulating tmrca and phylogeny...\n")
   }
-  ## because the trees generated by rlineage start from the TMRCA rather than
-  ## the origin we need to simulate the length of the root first and subtract
-  ## this from the duration.
-  tmrca <- rexp(n = 1, rate = params$net_per_capita_event_rate)
+  ## because the trees generated by \code{rlineage} start from the TMRCA rather
+  ## than the origin we need to simulate the length of the root first and
+  ## subtract this from the duration.
+  tmrca <- root_simulation(params)
   stopifnot(params$duration > tmrca)
+  ## since the birth and death rates are potentially time dependent we need to
+  ## shift the time given to them to account for the delay due to the root
+  ## length.
   phy <- rlineage(
-    params$birth_rate,
-    params$net_rem_rate,
+    birth = function(t) {params$birth_rate$func(t + tmrca)},
+    death = function(t) {params$net_rem_rate$func(t + tmrca)},
     Tmax = params$duration - tmrca,
     eps = time_eps
   )
@@ -244,24 +428,29 @@ run_simulation <- function(params, options, is_verbose) {
   num_tips <- length(phy$tip.label)
   tip_ix <- seq.int(num_tips)
   tip_times <- head(ape::node.depth.edgelength(phy), num_tips)
+  abs_tip_times <- tip_times + tmrca
   phy$tip.label <- sprintf("%s_%f",
                            phy$tip.label,
-                           tip_times + tmrca)
+                           abs_tip_times)
   tip_labels <- phy$tip.label
   ## TODO we can find the tips that are still extant in the simulation but it is
   ## unclear if we can use strict equality here of if we need to account for
   ## potential error in the branch lengths. It seems like this is safe...
-  extant_mask <- (tip_times + tmrca) == params$duration
+  extant_mask <- abs_tip_times == params$duration
   extant_labels <- tip_labels[extant_mask]
   num_extant <- length(extant_labels)
   if (is_verbose) {
-    cat("\tthere appear to be ", num_extant, " lineages at the end of the simulation\n")
+    cat(
+      "\tthere are ",
+      num_extant,
+      " lineages at the end of the simulation\n"
+    )
   }
   extinct_labels <- tip_labels[!extant_mask]
   num_extinct <- length(extinct_labels)
-  ## We need to do a the appropriate sampling at the end of the simulation if
-  ## either a rho- or nu-sample has been requested, otherwise we need to
-  ## propagate the null values.
+  ## We need to perform the appropriate scheduled sampling at the end of the
+  ## simulation if either a rho- or nu-sample has been requested, otherwise we
+  ## need to propagate the null values for the relevant variables.
   if (is.null(c(params$rho, params$nu))) {
     if (is_verbose) {
       cat("skipping rho-sampling\n")
@@ -306,62 +495,69 @@ run_simulation <- function(params, options, is_verbose) {
       replace = FALSE
     )
   }
-  ## We can select from the extinct lineages which will be designated as deaths,
-  ## samples and occurrences by binomially sampling with the correct
-  ## probabilities and then uniformly selecting this many.
-  num_observed <- rbinom(
-    n = 1,
-    size = num_extinct,
-    prob = params$prob_observed
-  )
-  num_sampled <- rbinom(
-    n = 1,
-    size = num_observed,
-    prob = params$prob_sampled_given_observed
-  )
 
-  observed_labels <- sample(
-    x = extinct_labels,
-    size = num_observed,
-    replace = FALSE
-  )
-  sampling_labels <- sample(
-    x = observed_labels,
-    size = num_sampled,
-    replace = FALSE
-  )
-  occurrence_labels <- setdiff(observed_labels, sampling_labels)
+  ## Pre-allocate the logical masks (all initially \code{FALSE}) to hold the
+  ## outcome of each extinct lineage. The \code{outcome} vector is used as a
+  ## reference for the fate of each tip in the tree.
+  observed_mask <- rep(FALSE, num_tips)
+  unsched_seq_mask <- rep(FALSE, num_tips)
+  unsched_unseq_mask <- rep(FALSE, num_tips)
+  outcome <- rep("", num_tips)
+
+  for (ix in seq.int(num_tips)) {
+    if (!extant_mask[ix]) {
+      ## lineage ended before the present so must be "sampling", "occurrence" or
+      ## "death".
+      is_observed <- rbinom(
+        n = 1,
+        size = 1,
+        prob = params$prob_observed$func(abs_tip_times[ix])
+      )
+      if (is_observed == 1) {
+        observed_mask[ix] <- TRUE
+        is_seq <- rbinom(
+          n = 1,
+          size = 1,
+          prob = params$prob_sampled_given_observed$func(abs_tip_times[ix])
+        )
+        if (is_seq == 1) {
+          outcome[ix] <- "sampling"
+          unsched_seq_mask[ix] <- TRUE
+        } else {
+          outcome[ix] <- "occurrence"
+          unsched_unseq_mask[ix] <- TRUE
+        }
+      } else {
+        outcome[ix] <- "death"
+      }
+    } else {
+      ## lineage persisted to the present so must be "rho", "nu", or "extant".
+      if (is.null(c(rho_sampled_labels, nu_sampled_labels))) {
+        outcome[ix] <- "extant"
+      } else {
+        tl <- tip_labels[ix]
+        if (is.element(tl, rho_sampled_labels)) {
+          outcome[ix] <- "rho"
+        } else if (is.element(tl, nu_sampled_labels)) {
+          outcome[ix] <- "nu"
+        } else {
+          outcome[ix] <- "extant"
+        }
+        rm(tl)
+      }
+    }
+  }
+
+  num_observed <- sum(observed_mask)
+  num_sampled <- sum(unsched_seq_mask)
+  observed_labels <- tip_labels[observed_mask]
+  sampling_labels <- tip_labels[unsched_seq_mask]
+  occurrence_labels <- tip_labels[unsched_unseq_mask]
   num_occurrences <- length(occurrence_labels)
   unobserved_labels <- setdiff(extinct_labels, observed_labels)
 
-  ## It is useful to have a vector describing what happened to each of the tips
-  ## so we will generate this.
-  outcome <- character(num_tips)
-  for (ix in tip_ix) {
-    tl <- tip_labels[ix]
-    outcome[ix] <-
-      if (is.element(tl, extant_labels)) {
-        if (is.null(c(rho_sampled_labels, nu_sampled_labels))) {
-          "extant"
-        } else if (is.element(tl, rho_sampled_labels)) {
-          "rho"
-        } else if (is.element(tl, nu_sampled_labels)) {
-          "nu"
-        } else {
-          "extant"
-        }
-      } else if (is.element(tl, unobserved_labels)) {
-        "death"
-      } else if  (is.element(tl, sampling_labels)) {
-        "sampling"
-      } else if (is.element(tl, occurrence_labels)) {
-        "occurrence"
-      } else {
-        stop("unaccounted for tip: ", tl)
-      }
-  }
-  ## We then drop the lineages that did not result in a sampled lineage and the
-  ## remaining tree is the reconstructed tree.
+  ## We then drop the lineages that did not result in a sampled/rho lineage and
+  ## the remaining tree is the reconstructed tree.
   rt_tip_labels <- c(sampling_labels, rho_sampled_labels)
   num_rt_tips <- length(rt_tip_labels)
   if (num_rt_tips < 2) {
@@ -385,7 +581,10 @@ run_simulation <- function(params, options, is_verbose) {
   depth_first_in_rt <- min(rt_tip_depths)
   rt_offset <- true_first_sample_time - depth_first_in_rt
   ## we can put all of this information into a single dataframe which is more
-  ## convenient for export and subsequent usage.
+  ## convenient for export and subsequent usage. Note that the times here are
+  ## relative to the TMRCA of the whole transmission tree, not the reconstructed
+  ## tree or the origin. This is why we use the tip times and not the \code{rt_}
+  ## times.
   event_times_df <- data.frame(
     time = c(-tmrca,
              tip_times[outcome == "occurrence"],
@@ -402,10 +601,12 @@ run_simulation <- function(params, options, is_verbose) {
                           ifelse(is.null(num_rho_sampled), 0, num_rho_sampled),
                           ifelse(is.null(num_nu_sampled), 0, num_nu_sampled),
                           ifelse(is.null(num_rho_sampled), num_sampled - 1, num_rt_tips - 1)))))
+
   ## Compute the prevalence of infection at the end of the simulation. If there
   ## is no rho-sampling and no nu-sampling then this is just the number of
-  ## extant lineages otherwise we need to subtract the number that were
-  ## rho-sampled or nu-sampled depending on which was carried out.
+  ## extant lineages. Otherwise, we need to subtract the number that were
+  ## rho-sampled or nu-sampled, depending on which was carried out, and remove
+  ## this from the number of extant lineages.
   if (is.null(c(params$rho, params$nu))) {
     final_prevalence <- num_extant
   } else if (is.null(params$nu)) {
@@ -416,28 +617,7 @@ run_simulation <- function(params, options, is_verbose) {
   if (is_verbose) {
     cat("checking output from run_simulation...\n")
   }
-  ## We can do a quick check of the results to make sure that some invariants
-  ## have been preserved. Note that one of the checks here will fail a small
-  ## percent of the time because it is not exact.
-  dur_0 <- params$duration
-  dur_1 <- max(tip_times[outcome == "sampling" | outcome == "rho" | outcome == "nu"]) + tmrca
-  dur_2 <- max(rt_tip_depths) + rt_offset + tmrca
-  dur_3 <- max(tip_times[outcome == "extant" | outcome == "rho" | outcome == "nu"]) + tmrca
-  ## these should be equal up to numerical error.
-  fudge <- 1e-3
-  if (!(abs(dur_0 - dur_1) < fudge * params$duration)) {
-    cat("measure 1 is ", dur_1, "\n")
-    stop("measures of simulation duration 1 is too different from requested duration.")
-  }
-  if (!(abs(dur_0 - dur_2) < fudge * params$duration)) {
-    cat("measure 2 is ", dur_2, "\n")
-    stop(c("Measures of simulation duration 2 is too different from requested duration.\n",
-           "Something may have gone wrong with the reconstructed tree."))
-  }
-  if (!(abs(dur_0 - dur_3) < fudge * params$duration)) {
-    cat("measure 3 is ", dur_3, "\n")
-    stop("measures of simulation duration 3 is too different from requested duration.")
-  }
+
   ## TODO The aggregation code below should probably be refactored and applied
   ## as a post-simulation step rather than being included here.
 
@@ -445,26 +625,38 @@ run_simulation <- function(params, options, is_verbose) {
   ## done now just before the simulation results are returned. This operation is
   ## only defined when there are no rho-samples and no nu-samples at the end of
   ## the simulation (which should be enforced by the validation of the
-  ## parameters...)
+  ## parameters.) Here we construct the \code{agg_event_times_df} which contains
+  ## the data after accounting for the aggregation.
   if (is.null(c(params$rho, params$nu)) &&
       (!is.null(options$occ_agg_times) | !is.null(options$seq_agg_times))) {
     ## There is a little extra book keeping involved because the times are
-    ## relative to the TMRCA rather than the origin. To keep things consistent
-    ## with the TMRCA relative times we need to adjust the aggregation times.
-    ## This is why we need to subtract the TMRCA from the given aggregation
-    ## times to get the TMRCA relative aggregation times. We add a column for
-    ## size to count the number of individuals that were removed in the mock
-    ## scheduled event.
+    ## relative to the TMRCA of the whole transmission tree rather than the
+    ## origin. To make sense of the requested aggregation times we need to
+    ## adjust them to be relative to the TMRCA of the whole transmission tree.
+    ## This is why we subtract the TMRCA from the given aggregation times. We
+    ## add a column for size to count the number of individuals that were
+    ## removed in the mock scheduled event (resulting from the aggregation).
     origin_event_row <- filter(event_times_df, event == "origin")
     origin_event_row$size <- NA
     birth_rows <- filter(event_times_df, event == "birth")
     birth_rows$size <- NA
+
     if (!is.null(options$seq_agg_times)) {
-      sampling_times <- event_times_df |> filter(event == "sampling") |> select(time)
+      ## there are sequence aggregation times so we need to extract these rows
+      ## in a suitable data frame. Recall that the times in
+      ## \code{event_times_df} are relative to the TMRCA of the whole
+      ## transmission tree. We construct a data frame, \code{seq_rows} to
+      ## represent the aggregated counts and their times.
+      sampling_times <- select(filter(event_times_df, event == "sampling"), time)
       tmrca_rel_seq_agg_times <- options$seq_agg_times - tmrca
       num_agg_obs <- length(tmrca_rel_seq_agg_times) - 1
       if (max(options$seq_agg_times) < max(sampling_times)) {
-        stop("There are sequenced samples after the last given aggregation time. It is unclear how to account for the births related to these sequences so you probably want to include another aggregation point to capture them.")
+        stop(
+          "There are sequenced samples after the last given aggregation time.",
+          "It is unclear how to account for the births related to these",
+          "sequences so you probably want to include another aggregation point",
+          "to capture them."
+        )
       }
       tmp_time <- numeric(num_agg_obs)
       tmp_size <- numeric(num_agg_obs)
@@ -486,8 +678,9 @@ run_simulation <- function(params, options, is_verbose) {
       seq_rows <- event_times_df[event_times_df$event == "sampling", ]
       seq_rows$size <- NA
     }
+
     if (!is.null(options$occ_agg_times)) {
-      occurrence_times <- event_times_df |> filter(event == "occurrence") |> select(time)
+      occurrence_times <- select(filter(event_times_df, event == "occurrence"), time)
       tmrca_rel_occ_agg_times <- options$occ_agg_times - tmrca
       num_agg_obs <- length(tmrca_rel_occ_agg_times) - 1
       tmp_time <- numeric(num_agg_obs)
@@ -511,6 +704,8 @@ run_simulation <- function(params, options, is_verbose) {
                                 seq_rows,
                                 birth_rows)
   } else {
+    ## no aggregation has been called for so this variable gets set to
+    ## \code{NULL}
     agg_event_times_df <- NULL
   }
 
@@ -531,108 +726,16 @@ run_simulation <- function(params, options, is_verbose) {
     num_occurrences = num_occurrences))
 }
 
+#' Make some nice plots and write them to the output directory.
 write_plot <- function(simulation_results,
                        parameters,
                        output_directory,
                        is_verbose) {
-  hist_plt_df <- data.frame(
-    outcome = c("death",
-                "sampling",
-                "occurrence"),
-    empirical =
-      c(simulation_results$num_extinct - simulation_results$num_observed,
-        simulation_results$num_sampled,
-        simulation_results$num_occurrences),
-    theory =
-      c(qbinom(p = 0.5,
-               size = simulation_results$num_extinct,
-               prob = 1 - parameters$sampling_prob - parameters$occurrence_prob),
-        qbinom(p = 0.5,
-               size = simulation_results$num_extinct,
-               prob = parameters$sampling_prob),
-        qbinom(p = 0.5,
-               size = simulation_results$num_extinct,
-               prob = parameters$occurrence_prob)),
-    theory_min =
-      c(qbinom(p = 0.025,
-               size = simulation_results$num_extinct,
-               prob = 1 - parameters$sampling_prob - parameters$occurrence_prob),
-        qbinom(p = 0.025,
-               size = simulation_results$num_extinct,
-               prob = parameters$sampling_prob),
-        qbinom(p = 0.025,
-               size = simulation_results$num_extinct,
-               prob = parameters$occurrence_prob)),
-    theory_max =
-      c(qbinom(p = 0.975,
-               size = simulation_results$num_extinct,
-               prob = 1 - parameters$sampling_prob - parameters$occurrence_prob),
-        qbinom(p = 0.975,
-               size = simulation_results$num_extinct,
-               prob = parameters$sampling_prob),
-        qbinom(p = 0.975,
-               size = simulation_results$num_extinct,
-               prob = parameters$occurrence_prob))
+
+  is_observed <- is.element(
+    simulation_results$outcome,
+    c("sampling", "occurrence", "rho", "nu")
   )
-
-  if (!is.null(parameters$rho)) {
-    rho_row <- data.frame(
-      outcome = "rho",
-      empirical = simulation_results$num_rho_sampled,
-      theory = qbinom(p = 0.5,
-                      size = simulation_results$num_extant,
-                      prob = parameters$rho),
-      theory_min = qbinom(p = 0.025,
-                          size = simulation_results$num_extant,
-                          prob = parameters$rho),
-      theory_max = qbinom(p = 0.975,
-                          size = simulation_results$num_extant,
-                          prob = parameters$rho)
-    )
-    hist_plt_df <- rbind(hist_plt_df, rho_row)
-  }
-  if (!is.null(parameters$nu)) {
-    nu_row <- data.frame(
-      outcome = "nu",
-      empirical = simulation_results$num_nu_sampled,
-      theory = qbinom(p = 0.5,
-                      size = simulation_results$num_extant,
-                      prob = parameters$nu),
-      theory_min = qbinom(p = 0.025,
-                          size = simulation_results$num_extant,
-                          prob = parameters$nu),
-      theory_max = qbinom(p = 0.975,
-                          size = simulation_results$num_extant,
-                          prob = parameters$nu)
-    )
-    hist_plt_df <- rbind(hist_plt_df, nu_row)
-  }
-  tmp <- data.frame(outcome = "extant",
-                    empirical = simulation_results$num_extant,
-                    theory = NA,
-                    theory_min = NA,
-                    theory_max = NA)
-  hist_plt_df <- rbind(hist_plt_df, tmp)
-  hist_plt_df$outcome <- factor(hist_plt_df$outcome, levels = c("death", "occurrence", "sampling", "extant", "rho", "nu"))
-  plt5 <- ggplot(hist_plt_df) +
-    geom_col(mapping = aes(x = outcome, y = empirical)) +
-    geom_point(mapping = aes(x = outcome, y = theory)) +
-    geom_errorbar(mapping = aes(x = outcome, ymin = theory_min, ymax = theory_max)) +
-    labs(y = "Count", x = NULL) +
-    theme_classic()
-
-  plt6 <- ggplot(data = hist_plt_df) +
-    geom_col(mapping = aes(x = outcome, y = empirical), colour = "#636363", fill = "#bdbdbd") +
-    scale_x_discrete(NULL,
-                     labels = c(
-                       "extant" = "Prevalence",
-                       "death" = "Unobserved",
-                       "sampling" = "Sequenced",
-                       "occurrence" = "Unsequenced")) +
-    labs(y = NULL, x = NULL) +
-    theme_classic()
-
-  is_observed <- is.element(simulation_results$outcome, c("sampling", "occurrence", "rho", "nu"))
 
   tip_annotations <- tibble(
     node = simulation_results$tip_ix,
@@ -640,28 +743,32 @@ write_plot <- function(simulation_results,
     is_observed = is_observed
   )
 
-  tr <- tidytree::treedata(phylo = simulation_results$phylo, data = tip_annotations)
+  tr <- tidytree::treedata(
+                    phylo = simulation_results$phylo,
+                    data = tip_annotations
+                  )
 
-  plt4 <- ggplot(tr, mapping = aes(x, y)) +
+  colourful_tree_plot <- ggplot(tr, mapping = aes(x, y)) +
     geom_tippoint(mapping = aes(colour = outcome, shape = is_observed),
                   size = 3) +
     geom_nodepoint() +
-    geom_vline(data = simulation_results$event_times_df, aes(xintercept = time, colour = event)) +
+    geom_vline(data = simulation_results$event_times_df,
+               aes(xintercept = time, colour = event)) +
     geom_tree() +
     labs(colour = "Tip outcome",
          shape = "Observed") +
     theme_tree2(legend.position = "top")
 
-  plt7 <- ggplot(tr, mapping = aes(x, y)) +
+  neat_tree_plot <- ggplot(tr, mapping = aes(x, y)) +
     geom_tree(alpha = 0.3) +
     geom_tippoint(mapping = aes(colour = is_observed),
                   size = 2.5) +
-    scale_colour_manual(values = c("#bdbdbd", green_hex_colour), labels = c("TRUE" = "Observed", "FALSE" = "Not observed")) +
+    scale_colour_manual(
+      values = c("#bdbdbd", green_hex_colour),
+      labels = c("TRUE" = "Observed", "FALSE" = "Not observed")) +
     labs(colour = NULL) +
     theme_tree(legend.position = "top")
 
-  #' TODO This figure needs fixing because it does not represent rho-samples
-  #' properly in the histogram!
   if (is_verbose) {
     cat("writing visualistion to file...\n")
   }
@@ -671,12 +778,12 @@ write_plot <- function(simulation_results,
       "ape-simulation-figure.png",
       sep = "/"
     ),
-    plot = plot_grid(plt4, plt5, nrow = 1, rel_widths = c(2, 1)),
+    plot = colourful_tree_plot,
     width = 25,
     height = 15,
     units = "cm"
   )
-  saveRDS(object = list(plt6, plt7),
+  saveRDS(object = list(colourful_tree_plot, neat_tree_plot),
           file = paste(
             output_directory,
             "ape-sim-figures-1.rds",
@@ -742,17 +849,6 @@ write_aggregated_plot <- function(simulation_results,
           )
 }
 
-#' Parse a string \"FROM TO BY\" into a linear vector of values.
-parse_from_to_by <- function(from_to_by_string) {
-  if (from_to_by_string == "") {
-    NULL
-  } else {
-    tmp <- as.numeric(unlist(strsplit(x = from_to_by_string, split = " ")))
-    stopifnot(length(tmp) == 3)
-    seq(from = tmp[1], to = tmp[2], by = tmp[3])
-  }
-}
-
 #' Predicate for the configuration read from XML being valid.
 configuration_is_valid <- function(config) {
   params <- config$params
@@ -799,9 +895,10 @@ configuration_is_valid <- function(config) {
 
 main <- function(args, config) {
   if (args$version) {
-    cat(paste(c("ape-sim-",
-                paste(as.character(VERSION), collapse = "."),
-                "\n"), collapse = ""))
+    stop("this is not a complete script...")
+    ## cat(paste(c("ape-sim-",
+    ##             paste(as.character(VERSION), collapse = "."),
+    ##             "\n"), collapse = ""))
     return(0)
   }
 
@@ -813,6 +910,8 @@ main <- function(args, config) {
   if (args$verbose) {
     cat("reading parameters from", args$xml, "\n")
   }
+  ## We set the seed of the PRNG so that each time this program is called the
+  ## results can be reproduced exactly.
   set.seed(config$options$seed)
 
   ## Awkward because you cannot assign NULL via ifelse so you need to have a
@@ -910,54 +1009,22 @@ if (!interactive()) {
   config <- parse_xml_configuration(args$xml)
   main(args, config)
 } else {
-
-  ## This branch demonstrates how to construct an appropriate XML configuration
-  ## and simulate from it. This is particularly useful for development but may
-  ## be useful as a way to run the code...
+  demo_xml_1 <- "<ape version=\"0.1.2\"><configuration><parameters birthRate=\"3.0\" deathRate=\"1.0\" samplingRate=\"0.5\" occurrenceRate=\"0.5\" duration=\"4.0\" /><options seed=\"2\" writeNewick=\"true\" makePlots=\"true\" outputDirectory=\"out\" simulateSequences=\"false\" seq_agg_times=\"\" occ_agg_times=\"1.0 4.0 1.0\" /></configuration></ape>"
+  demo_xml_2 <- "<ape version=\"0.2.0\"><stepFunction name=\"stepBirthRate\" times=\"2.0 3.0\" values=\"3.0 2.5 2.0\" /><configuration><parameters birthRate=\"@stepBirthRate\" deathRate=\"1.0\" samplingRate=\"0.5\" occurrenceRate=\"0.5\" duration=\"4.0\" /><options seed=\"2\" writeNewick=\"true\" makePlots=\"true\" outputDirectory=\"out\" simulateSequences=\"false\" seq_agg_times=\"\" occ_agg_times=\"1.0 4.0 1.0\" /></configuration></ape>"
+  demo_xml_3 <- "<ape version=\"0.1.2\"><configuration><parameters birthRate=\"3.0\" deathRate=\"1.0\" samplingRate=\"0.5\" occurrenceRate=\"0.5\" duration=\"4.0\" rho=\"0.5\" /><options seed=\"2\" writeNewick=\"true\" makePlots=\"true\" outputDirectory=\"out\" simulateSequences=\"false\" /></configuration></ape>"
+  tmp_file <- tempfile()
+  writeLines(
+    text = demo_xml_3,
+    con = tmp_file
+  )
   args <- list(
-    verbose = TRUE,
     version = FALSE,
-    xml = tempfile()
+    verbose = TRUE,
+    xml = tmp_file
   )
-
-  parameters_node <- xmlNode(
-    "parameters",
-    attrs = list(birthRate = "3.0",
-                 deathRate = "1.0",
-                 samplingRate = "0.5",
-                 occurrenceRate = "0.5",
-                 nu = "0.5",
-                 ## rho = "-1.0",
-                 duration = "4.0"))
-
-  options_node <- xmlNode(
-    "options",
-    attrs = list(seed = "1",
-                 writeNewick = "true",
-                 makePlots = "true",
-                 outputDirectory = "out",
-                 simulateSequences = "false",
-                 seq_agg_times = "",
-                 occ_agg_times = ""))
-
-  input_node <- xmlNode(
-    "configuration",
-    parameters_node,
-    options_node
-  )
-
-  z <- xmlNode(
-    "ape",
-    input_node,
-    attrs = list(version = "0.1.2")
-  )
-
-  saveXML(
-    z,
-    file = args$xml,
-      prefix = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n"
-  )
-
   config <- parse_xml_configuration(args$xml)
   main(args, config)
+
 }
+
+# LocalWords:  TMRCA
