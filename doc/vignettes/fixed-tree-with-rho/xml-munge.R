@@ -3,7 +3,7 @@ library(xml2)
 input_times_csv <- "out/ape-sim-event-times.csv"
 input_occ_csv <- "out/occurrence-times.txt"
 input_newick <- "out/ape-sim-reconstructed-tree.newick"
-input_xml <- "ft-with-rho-2022-03-22.xml"
+input_xml <- "ft-with-rho-2022-03-25.xml"
 output_xml <- gsub(
   pattern = ".xml",
   replacement = "-edited.xml",

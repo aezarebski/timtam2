@@ -36,11 +36,11 @@
 
 For the sake of this vignette, we will simulate a dataset to use. This has the
 advantage that we will know the true values of the parameters we are trying to
-estimate. The tool, =ape-sim.R=, (version =0.1.6=) can be used to simulate a
+estimate. The tool, =ape-sim.R=, (version =0.2.0=) can be used to simulate a
 dataset. This script is included in the repository.
 
 #+begin_src sh
-  Rscript ape-sim.R --verbose my-params.xml
+  Rscript ape-sim.R --verbose sim-const-params.xml
 #+end_src
 
 The parameters for this are specified in the following XML. They are not very
@@ -48,18 +48,18 @@ realistic, but they are convenient for a simple example. The correspond to a
 single scheduled sequenced sample (i.e. a catastrophe) at the end of the
 simulation duration and no scheduled unsequenced samples (i.e. disasters).
 
-#+begin_src xml :tangle my-params.xml
-  <ape version="0.1.2">
+#+begin_src xml :tangle sim-const-params.xml
+  <ape version="0.2.0">
       <configuration>
           <parameters
               birthRate="3.0"
               deathRate="1.0"
               samplingRate="0.5"
               occurrenceRate="0.5"
-              rho="0.5"
-              duration="4.0" />
+              rho="0.25"
+              duration="5.0" />
           <options
-              seed="1"
+              seed="7"
               writeNewick="true"
               makePlots="true"
               outputDirectory="out"
@@ -83,6 +83,28 @@ of unsequenced cases.
 
 ** Data munging
 
+There is some data munging required to get the simulated data into a format that
+is easier to include in the XML for the analysis so we will do that now. We
+start by loading some useful libraries and reading the simulation configuration.
+
+#+begin_src R :tangle data-munge.R
+  library(ape)
+  library(phangorn)
+  library(xml2)
+  set.seed(1)
+
+  config <- read_xml("sim-const-params.xml")
+  duration <- as.numeric(
+    xml_attr(
+      xml_find_first(config, "//parameters"),
+      "duration")
+  )
+  out_dir <- xml_attr(
+    xml_find_first(config, "//options"),
+    "outputDirectory"
+  )
+#+end_src
+
 The file =out/ape-sim-reconstructed-tree.newick= contains a Newick string
 describing the reconstructed tree. We can use this to generate a dummy FASTA
 file describing the tips of the reconstructed tree. Note that we set the seed so
@@ -90,25 +112,24 @@ that =simSeq= will always generate the same sequence (admittedly it is only of
 length one and is never actually used in the analysis.)
 
 #+begin_src R :tangle data-munge.R
-  library(ape)
-  library(phangorn)
-  set.seed(1)
-  x <- read.tree("out/ape-sim-reconstructed-tree.newick")
-  seqs <- simSeq(x, l = 1, rate = 0)
-  write.phyDat(seqs, file = "out/sequences.fasta", format = "fasta")
+  tree <- read.tree(file.path(out_dir, "ape-sim-reconstructed-tree.newick"))
+  write.phyDat(
+    simSeq(tree, l = 1, rate = 0),
+    file = file.path(out_dir, "sequences.fasta"),
+    format = "fasta"
+  )
 #+end_src
 
 And this snippet demonstrates how to extract the occurrence times, reverse them
 and write them to a text file.
 
 #+begin_src R :tangle data-munge.R
-  x <- read.csv("out/ape-sim-event-times.csv")
-  duration <- 4.0
+  x <- read.csv(file.path(out_dir, "ape-sim-event-times.csv"))
   root_length <- abs(x[x$event == "origin", "time"])
   occurrence_times <- sort(x[x$event == "occurrence", "time"] + root_length)
   bwd_occurrence_times <- duration - occurrence_times
-  writeLines(text = paste(bwd_occurrence_times,collapse = " "),
-             con = "out/occurrence-times.txt")
+  writeLines(text = paste(bwd_occurrence_times, collapse = " "),
+             con = file.path(out_dir, "occurrence-times.txt"))
 #+end_src
 
 This code can be found in the =data-munge.R= script. At this point, we have the
@@ -119,7 +140,7 @@ data from the user:
   + =out/ape-sim-event-times.csv= (for the root length), and
   + =out/ape-sim-reconstructed-tree.newick=.
 - A list of unscheduled unsequenced sample time in =out/occurrence-times.txt=.
-- The known death rate in =my-params.xml=
+- The known death rate in =sim-const-params.xml=
 
 * Making the XML
 
@@ -147,12 +168,12 @@ need to have the TimTam package installed for this to work.
      to \(0.5\).
    * Set the sampling rate prior to \(\Gamma(2.0,0.25)\) and its initial value
      to \(0.5\).
-   * Set the root length to \(0.244539801768007\) (from =ape-sim-event-times.csv=)
+   * Set the root length to \(0.847096238234892\) (from =ape-sim-event-times.csv=)
      and untick the estimate box.
-4. Save this as an XML file called =ft-with-2022-03-22.xml=. The name is important
+4. Save this as an XML file called =ft-with-2022-03-25.xml=. The name is important
    so that =xml-munge.R= knows where it is.
 5. Use the =xml-munge.R= script to do some boring edits to obtain
-   =fixed-tree-with-rho-2022-03-22-edited.xml=
+   =fixed-tree-with-rho-2022-03-25-edited.xml=
 
 ** Beauti for BDSky
 

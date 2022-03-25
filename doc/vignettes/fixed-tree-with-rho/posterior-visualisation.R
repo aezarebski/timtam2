@@ -6,7 +6,7 @@ library(xml2)
 posterior_samples <- read.csv("out/timtam-posterior.log",
                               sep = "\t", comment.char = "#")
 
-sim_xml <- read_xml("my-params.xml")
+sim_xml <- read_xml("sim-const-params.xml")
 xml_params <- xml_find_first(sim_xml, "//parameters")
 true_parameters <- list(
   deathRate = as.numeric(xml_attr(xml_params, attr = "deathRate")),
