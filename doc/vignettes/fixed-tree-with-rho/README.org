@@ -105,7 +105,7 @@ need to have the TimTam package installed for this to work.
 4. Save this as an XML file called =ft-with-2022-03-22.xml=. The name is important
    so that =xml-munge.R= knows where it is.
 5. Use the =xml-munge.R= script to do some boring edits to obtain
-   =fixed-tree-with-rho-2022-03-22-edited.xml=
+   =ft-with-rho-2022-03-22-edited.xml=
 
 *** Beauti for BDSky
 
