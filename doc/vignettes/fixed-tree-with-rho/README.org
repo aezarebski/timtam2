@@ -1,6 +1,6 @@
 #+title: Fixed Tree Example With Rho
 #+author: Alexander E. Zarebski
-#+Time-stamp: <Last modified: 2022-03-28 14:18:46>
+#+Time-stamp: <Last modified: 2022-03-28 15:26:23>
 
 * Use case: Estimating \(R_0\) and prevalence
 

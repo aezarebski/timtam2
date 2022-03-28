@@ -9,58 +9,57 @@
                    <input spec="timtam.BackwardsSchedule"
                    id="catastropheSchedule.t:$(n)"
                    value="0.0" />
-
                    <input spec="timtam.BackwardsSchedule"
                    id="disasterSchedule.t:$(n)"
                    value="0.0" />
-
                    <input spec="timtam.BackwardsCounts"
                    id="disasterCounts.t:$(n)"
                    value="1" />
-
                    <input spec="timtam.BackwardsPointProcess"
                    id="occurrenceTimes.t:$(n)"
                    value="0.0 0.1" />
 
+
                    <distribution id="TimTam.t:$(n)"
                    spec="timtam.TimTam"
-                   p="0.5"
                    catastropheTimes="@catastropheSchedule.t:$(n)"
                    points="@occurrenceTimes.t:$(n)"
                    disasterTimes="@disasterSchedule.t:$(n)"
                    disasterCounts="@disasterCounts.t:$(n)"
                    tree='@Tree.t:$(n)'>
-            	     <lambda spec='parameter.RealParameter' id="birthRate.t:$(n)" value='2.0' lower='0' upper='100' />
-                   <mu spec='parameter.RealParameter' id="deathRate.t:$(n)" value='0.5' lower='0' upper='100' />
-                   <psi spec='parameter.RealParameter' id="samplingRate.t:$(n)" value='0.5' lower='0' upper='100' />
-                   <omega spec='parameter.RealParameter' id="occurrenceRate.t:$(n)" value='0.5' lower='0' upper='100' />
-                   <rootLength spec='parameter.RealParameter' id="rootLength.t:$(n)" value='0.1' lower='0' upper='100' />
-                   <nu spec='parameter.RealParameter' id="nuProb.t:$(n)" value='0.5' lower='0' upper='1' />
+            	       <lambda spec='parameter.RealParameter' id="birthRate.t:$(n)" value='2.0' lower='0' upper='100' />
+                     <mu spec='parameter.RealParameter' id="deathRate.t:$(n)" value='0.5' lower='0' upper='100' />
+                     <psi spec='parameter.RealParameter' id="samplingRate.t:$(n)" value='0.5' lower='0' upper='100' />
+                     <rho spec='parameter.RealParameter' id="rhoProb.t:$(n)" value='0.5' lower='0' upper='1' />
+                     <omega spec='parameter.RealParameter' id="occurrenceRate.t:$(n)" value='0.5' lower='0' upper='100' />
+                     <rootLength spec='parameter.RealParameter' id="rootLength.t:$(n)" value='0.1' lower='0' upper='100' />
+                     <nu spec='parameter.RealParameter' id="nuProb.t:$(n)" value='0.5' lower='0' upper='1' />
                    </distribution>
 
-                   <prior id='birthRatePrior.t:$(n)' x='@birthRate.t:$(n)'><distr spec="beast.math.distributions.Uniform" lower='0' upper='100'/></prior>
-                   <prior id='deathRatePrior.t:$(n)' x='@deathRate.t:$(n)'><distr spec="beast.math.distributions.Uniform" lower='0' upper='100'/></prior>
-                   <prior id='samplingRatePrior.t:$(n)' x='@samplingRate.t:$(n)'><distr spec="beast.math.distributions.Uniform" lower='0' upper='100'/></prior>
-                   <prior id='occurrenceRatePrior.t:$(n)' x='@occurrenceRate.t:$(n)'><distr spec="beast.math.distributions.Uniform" lower='0' upper='100'/></prior>
+
+                   <prior id='birthRatePrior.t:$(n)' x='@birthRate.t:$(n)'><distr spec="beast.math.distributions.Gamma" alpha='2' beta='2'/></prior>
+                   <prior id='deathRatePrior.t:$(n)' x='@deathRate.t:$(n)'><distr spec="beast.math.distributions.Gamma" alpha='2' beta='2'/></prior>
+                   <prior id='samplingRatePrior.t:$(n)' x='@samplingRate.t:$(n)'><distr spec="beast.math.distributions.Gamma" alpha='2' beta='2'/></prior>
+                   <prior id='rhoProbPrior.t:$(n)' x='@rhoProb.t:$(n)'><distr spec="beast.math.distributions.Beta" alpha='2' beta='2'/></prior>
+                   <prior id='occurrenceRatePrior.t:$(n)' x='@occurrenceRate.t:$(n)'><distr spec="beast.math.distributions.Gamma" alpha='2' beta='2'/></prior>
+                   <prior id='nuProbPrior.t:$(n)' x='@nuProb.t:$(n)'><distr spec="beast.math.distributions.Beta" alpha='2' beta='2'/></prior>
                    <prior id='rootLengthPrior.t:$(n)' x='@rootLength.t:$(n)'><distr spec="beast.math.distributions.Uniform" lower='0' upper='100'/></prior>
-                   <prior id='nuProbPrior.t:$(n)' x='@nuProb.t:$(n)'><distr spec="beast.math.distributions.Uniform" lower='0' upper='1'/></prior>
+
 
   		             <scale id='birthRateScaler.t:$(n)' spec='ScaleOperator' scaleFactor="0.75" weight="3" parameter="@birthRate.t:$(n)"/>
                    <input id='birthRateWalk.t:$(n)' spec="RealRandomWalkOperator" windowSize="0.1" useGaussian="true" weight="3" parameter="@birthRate.t:$(n)"/>
-
   		             <scale id='deathRateScaler.t:$(n)' spec='ScaleOperator' scaleFactor="0.75" weight="3" parameter="@deathRate.t:$(n)"/>
                    <input id='deathRateWalk.t:$(n)' spec="RealRandomWalkOperator" windowSize="0.1" useGaussian="true" weight="3" parameter="@deathRate.t:$(n)"/>
-
   		             <scale id='samplingRateScaler.t:$(n)' spec='ScaleOperator' scaleFactor="0.75" weight="3" parameter="@samplingRate.t:$(n)"/>
                    <input id='samplingRateWalk.t:$(n)' spec="RealRandomWalkOperator" windowSize="0.1" useGaussian="true" weight="3" parameter="@samplingRate.t:$(n)"/>
-
+                   <input id='rhoProbWalk.t:$(n)' spec="RealRandomWalkOperator" windowSize="0.1" useGaussian="true" weight="3" parameter="@rhoProb.t:$(n)"/>
   		             <scale id='occurrenceRateScaler.t:$(n)' spec='ScaleOperator' scaleFactor="0.75" weight="3" parameter="@occurrenceRate.t:$(n)"/>
                    <input id='occurrenceRateWalk.t:$(n)' spec="RealRandomWalkOperator" windowSize="0.1" useGaussian="true" weight="3" parameter="@occurrenceRate.t:$(n)"/>
-
   		             <scale id='rootLengthScaler.t:$(n)' spec='ScaleOperator' scaleFactor="0.75" weight="3" parameter="@rootLength.t:$(n)"/>
                    <input id='rootLengthWalk.t:$(n)' spec="RealRandomWalkOperator" windowSize="0.1" useGaussian="true" weight="3" parameter="@rootLength.t:$(n)"/>
-
                    <input id='nuProbWalk.t:$(n)' spec="RealRandomWalkOperator" windowSize="0.1" useGaussian="true" weight="3" parameter="@nuProb.t:$(n)"/>
+
+
 
                    <input spec="timtam.TimTamLogger" id="TimTamLogger.t:$(n)" />
                    ]]>
@@ -73,6 +72,7 @@
             <connect srcID='birthRate.t:$(n)' targetID='state' inputName='stateNode' if='inposterior(TimTam.t:$(n)) and inposterior(birthRate.t:$(n)) and birthRate.t:$(n)/estimate=true' />
             <connect srcID='deathRate.t:$(n)' targetID='state' inputName='stateNode' if='inposterior(TimTam.t:$(n)) and inposterior(deathRate.t:$(n)) and deathRate.t:$(n)/estimate=true' />
             <connect srcID='samplingRate.t:$(n)' targetID='state' inputName='stateNode' if='inposterior(TimTam.t:$(n)) and inposterior(samplingRate.t:$(n)) and samplingRate.t:$(n)/estimate=true' />
+            <connect srcID='rhoProb.t:$(n)' targetID='state' inputName='stateNode' if='inposterior(TimTam.t:$(n)) and inposterior(rhoProb.t:$(n)) and rhoProb.t:$(n)/estimate=true' />
             <connect srcID='occurrenceRate.t:$(n)' targetID='state' inputName='stateNode' if='inposterior(TimTam.t:$(n)) and inposterior(occurrenceRate.t:$(n)) and occurrenceRate.t:$(n)/estimate=true' />
             <connect srcID='rootLength.t:$(n)' targetID='state' inputName='stateNode' if='inposterior(TimTam.t:$(n)) and inposterior(rootLength.t:$(n)) and rootLength.t:$(n)/estimate=true' />
             <connect srcID='nuProb.t:$(n)' targetID='state' inputName='stateNode' if='inposterior(TimTam.t:$(n)) and inposterior(nuProb.t:$(n)) and nuProb.t:$(n)/estimate=true' />
@@ -85,6 +85,9 @@
             </connect>
             <connect srcID='samplingRatePrior.t:$(n)' targetID='prior' inputName='distribution' if='inposterior(TimTam.t:$(n)) and inposterior(samplingRate.t:$(n)) and samplingRate.t:$(n)/estimate=true'>
                 sampling rate of the TimTam model on partition t:$(n)
+            </connect>
+            <connect srcID='rhoProbPrior.t:$(n)' targetID='prior' inputName='distribution' if='inposterior(TimTam.t:$(n)) and inposterior(rhoProb.t:$(n)) and rhoProb.t:$(n)/estimate=true'>
+                sequenced scheduled sampling probability in TimTam model on partition t:$(n)
             </connect>
             <connect srcID='occurrenceRatePrior.t:$(n)' targetID='prior' inputName='distribution' if='inposterior(TimTam.t:$(n)) and inposterior(occurrenceRate.t:$(n)) and occurrenceRate.t:$(n)/estimate=true'>
                 occurrence rate of the TimTam model on partition t:$(n)
@@ -120,6 +123,10 @@
                 Random walk operator on sampling rate of TimTam prior of tree t:$(n)
             </connect>
 
+            <connect srcID='rhoProbWalk.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTam.t:$(n)) and inposterior(rhoProb.t:$(n)) and rhoProb.t:$(n)/estimate=true'>
+                Random walk operator on the sequenced scheduled sampling probability of TimTam prior of tree t:$(n)
+            </connect>
+
             <connect srcID='occurrenceRateScaler.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTam.t:$(n)) and inposterior(occurrenceRate.t:$(n)) and occurrenceRate.t:$(n)/estimate=true'>
                 Scale occurrence rate of TimTam prior of tree t:$(n)
             </connect>
@@ -143,6 +150,7 @@
             <connect srcID='birthRate.t:$(n)' targetID='tracelog' inputName='log' if='inposterior(TimTam.t:$(n)) and inposterior(birthRate.t:$(n)) and birthRate.t:$(n)/estimate=true' />
             <connect srcID='deathRate.t:$(n)' targetID='tracelog' inputName='log' if='inposterior(TimTam.t:$(n)) and inposterior(deathRate.t:$(n)) and deathRate.t:$(n)/estimate=true' />
             <connect srcID='samplingRate.t:$(n)' targetID='tracelog' inputName='log' if='inposterior(TimTam.t:$(n)) and inposterior(samplingRate.t:$(n)) and samplingRate.t:$(n)/estimate=true' />
+            <connect srcID='rhoProb.t:$(n)' targetID='tracelog' inputName='log' if='inposterior(TimTam.t:$(n)) and inposterior(rhoProb.t:$(n)) and rhoProb.t:$(n)/estimate=true' />
             <connect srcID='occurrenceRate.t:$(n)' targetID='tracelog' inputName='log' if='inposterior(TimTam.t:$(n)) and inposterior(occurrenceRate.t:$(n)) and occurrenceRate.t:$(n)/estimate=true' />
             <connect srcID='rootLength.t:$(n)' targetID='tracelog' inputName='log' if='inposterior(TimTam.t:$(n)) and inposterior(rootLength.t:$(n)) and rootLength.t:$(n)/estimate=true' />
             <connect srcID='nuProb.t:$(n)' targetID='tracelog' inputName='log' if='inposterior(TimTam.t:$(n)) and inposterior(nuProb.t:$(n)) and nuProb.t:$(n)/estimate=true' />

@@ -99,7 +99,7 @@ public class TestTimTam {
         tt.setInputValue("lambda", "2.0");
         tt.setInputValue("mu", "1.0");
         tt.setInputValue("psi", "0.3");
-        tt.setInputValue("p", "0.5");
+        tt.setInputValue("rho", "0.5");
         tt.setInputValue("omega", "0.6");
         tt.setInputValue("rootLength", "1.0");
         tt.setInputValue("catastropheTimes", catastropheTimes);
@@ -126,7 +126,7 @@ public class TestTimTam {
         ttConditioned.setInputValue("lambda", "2.0");
         ttConditioned.setInputValue("mu", "1.0");
         ttConditioned.setInputValue("psi", "0.3");
-        ttConditioned.setInputValue("p", "0.5");
+        ttConditioned.setInputValue("rho", "0.5");
         ttConditioned.setInputValue("omega", "0.6");
         ttConditioned.setInputValue("rootLength", "1.0");
         ttConditioned.setInputValue("catastropheTimes", catastropheTimes);
