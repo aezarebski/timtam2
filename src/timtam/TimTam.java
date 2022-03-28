@@ -31,7 +31,7 @@ public class TimTam extends TreeDistribution {
     RealParameter psi;
 
     // extant sampling proportion
-    RealParameter p;
+    RealParameter rho;
 
     // occurrence rate
     RealParameter omega;
@@ -76,7 +76,7 @@ public class TimTam extends TreeDistribution {
             RealParameter lambda,
             RealParameter mu,
             RealParameter psi,
-            RealParameter p,
+            RealParameter rho,
             RealParameter omega,
             RealParameter rootLength,
             BackwardsSchedule catastropheTimes,
@@ -85,14 +85,14 @@ public class TimTam extends TreeDistribution {
             BackwardsSchedule disasterTimes,
             BackwardsCounts disasterCounts,
             Boolean conditionOnObservation) {
-        this("timTamModel", lambda, mu, psi, p, omega, rootLength, catastropheTimes, points, nu,
+        this("timTamModel", lambda, mu, psi, rho, omega, rootLength, catastropheTimes, points, nu,
                 disasterTimes, disasterCounts, conditionOnObservation);
     }
 
     final public Input<RealParameter> lambdaInput = new Input<>("lambda", "the birth rate of new infections");
     final public Input<RealParameter> muInput = new Input<>("mu", "the death rate");
     final public Input<RealParameter> psiInput = new Input<>("psi", "the sampling rate");
-    final public Input<RealParameter> pInput = new Input<>("p", "the probability of sampling extant lineages");
+    final public Input<RealParameter> rhoInput = new Input<>("rho", "the probability of sampling extant lineages");
     final public Input<RealParameter> omegaInput = new Input<>("omega", "the occurrence rate");
     final public Input<RealParameter> rootLengthInput = new Input<>("rootLength", "the length of the edge between the origin and the MRCA");
     final public Input<BackwardsSchedule> catastropheTimesInput = new Input<>("catastropheTimes", "the times at which a scheduled sequenced sample was attempted");
@@ -115,9 +115,9 @@ public class TimTam extends TreeDistribution {
         this.psi = psiInput.get();
         psi.setBounds(0.0, Double.POSITIVE_INFINITY);
 
-        this.p = pInput.get();
-        if (this.p != null) {
-            this.p.setBounds(0.0, 1.0);
+        this.rho = rhoInput.get();
+        if (this.rho != null) {
+            this.rho.setBounds(0.0, 1.0);
         }
 
         this.omega = omegaInput.get();
@@ -162,7 +162,7 @@ public class TimTam extends TreeDistribution {
             RealParameter lambda,
             RealParameter mu,
             RealParameter psi,
-            RealParameter p,
+            RealParameter rho,
             RealParameter omega,
             RealParameter rootLength,
             BackwardsSchedule catastropheTimes,
@@ -181,9 +181,9 @@ public class TimTam extends TreeDistribution {
         this.psi = psi;
         psi.setBounds(0.0, Double.POSITIVE_INFINITY);
 
-        this.p = p;
-        if (this.p != null) {
-            p.setBounds(0.0, 1.0);
+        this.rho = rho;
+        if (this.rho != null) {
+            rho.setBounds(0.0, 1.0);
         }
 
         this.omega = omega;
@@ -233,8 +233,8 @@ public class TimTam extends TreeDistribution {
         }
     }
 
-    public double p() {
-        return p.getValue(0);
+    public double rho() {
+        return rho.getValue(0);
     }
 
     public double nu() {
@@ -297,7 +297,7 @@ public class TimTam extends TreeDistribution {
             }
             case "catastrophe" -> {
                 int n = intervalType.getCount().getAsInt();
-                double rho = p();
+                double rho = rho();
                 this.lnL += (this.k - n) * Math.log(1 - rho)
                         + n * Math.log(rho)
                         + this.nb.lnPGF(1 - rho);
@@ -747,7 +747,7 @@ public class TimTam extends TreeDistribution {
 //                || lambdaInput.get().somethingIsDirty()
 //                || muInput.get().somethingIsDirty()
 //                || psiInput.get().somethingIsDirty()
-//                || pInput.get().somethingIsDirty()
+//                || rhoInput.get().somethingIsDirty()
 //                || omegaInput.get().somethingIsDirty()
 //                || nuInput.get().somethingIsDirty()
 //                || rootLengthInput.get().somethingIsDirty();
