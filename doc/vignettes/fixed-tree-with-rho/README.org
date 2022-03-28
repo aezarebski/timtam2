@@ -1,6 +1,6 @@
 #+title: Fixed Tree Example With Rho
 #+author: Alexander E. Zarebski
-#+Time-stamp: <Last modified: 2022-03-28 15:58:46>
+#+Time-stamp: <Last modified: 2022-03-28 16:29:16>
 
 * Use case: Estimating \(R_0\) and prevalence
 
@@ -40,7 +40,7 @@ estimate. The tool, =ape-sim.R=, (version =0.2.0=) can be used to simulate a
 dataset. This script is included in the repository.
 
 #+begin_src sh
-  Rscript ape-sim.R --verbose sim-const-params.xml
+  Rscript ape-sim.R --verbose sim-params.xml
 #+end_src
 
 The parameters for this are specified in the following XML. They are not very
@@ -48,18 +48,22 @@ realistic, but they are convenient for a simple example. The correspond to a
 single scheduled sequenced sample (i.e. a catastrophe) at the end of the
 simulation duration and no scheduled unsequenced samples (i.e. disasters).
 
-#+begin_src xml :tangle sim-const-params.xml
+#+begin_src xml :tangle sim-params.xml
   <ape version="0.2.0">
+      <stepFunction
+          name="stepBirthRate"
+          times="2.0"
+          values="4.5 2.5" />
       <configuration>
           <parameters
-              birthRate="3.0"
+              birthRate="@stepBirthRate"
               deathRate="1.0"
               samplingRate="0.5"
               occurrenceRate="0.5"
               rho="0.25"
               duration="5.0" />
           <options
-              seed="7"
+              seed="2"
               writeNewick="true"
               makePlots="true"
               outputDirectory="out"
@@ -93,7 +97,7 @@ start by loading some useful libraries and reading the simulation configuration.
   library(xml2)
   set.seed(1)
 
-  config <- read_xml("sim-const-params.xml")
+  config <- read_xml("sim-params.xml")
   duration <- as.numeric(
     xml_attr(
       xml_find_first(config, "//parameters"),
@@ -140,7 +144,7 @@ data from the user:
   + =out/ape-sim-event-times.csv= (for the root length), and
   + =out/ape-sim-reconstructed-tree.newick=.
 - A list of unscheduled unsequenced sample time in =out/occurrence-times.txt=.
-- The known death rate in =sim-const-params.xml=
+- The known death rate in =sim-params.xml=
 
 * Making the XML
 

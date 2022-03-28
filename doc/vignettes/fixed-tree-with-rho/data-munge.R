@@ -3,7 +3,7 @@ library(phangorn)
 library(xml2)
 set.seed(1)
 
-config <- read_xml("sim-const-params.xml")
+config <- read_xml("sim-params.xml")
 duration <- as.numeric(
   xml_attr(
     xml_find_first(config, "//parameters"),

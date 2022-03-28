@@ -1,14 +1,18 @@
 <ape version="0.2.0">
+    <stepFunction
+        name="stepBirthRate"
+        times="2.0"
+        values="4.5 2.5" />
     <configuration>
         <parameters
-            birthRate="3.0"
+            birthRate="@stepBirthRate"
             deathRate="1.0"
             samplingRate="0.5"
             occurrenceRate="0.5"
             rho="0.25"
             duration="5.0" />
         <options
-            seed="7"
+            seed="2"
             writeNewick="true"
             makePlots="true"
             outputDirectory="out"
