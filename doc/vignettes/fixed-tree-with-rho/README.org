@@ -1,6 +1,6 @@
 #+title: Fixed Tree Example With Rho
 #+author: Alexander E. Zarebski
-#+Time-stamp: <Last modified: 2022-03-28 15:26:23>
+#+Time-stamp: <Last modified: 2022-03-28 15:58:46>
 
 * Use case: Estimating \(R_0\) and prevalence
 
@@ -174,6 +174,8 @@ need to have the TimTam package installed for this to work.
      to \(0.5\).
    * Set the root length to \(0.847096238234892\) (from =ape-sim-event-times.csv=)
      and untick the estimate box.
+   * Set the prior on the scheduled sequenced sampling probability to
+     \(\text{Beta}(4,6)\).
 4. Save this as an XML file called =ft-with-rho-2022-03-28.xml=. The name is
    important so that =xml-munge-timtam.R= knows where it is.
 5. Use the =xml-munge-timtam.R= script to do some boring edits to obtain
@@ -189,12 +191,12 @@ need to have the TimTam package installed for this to work.
      1\) (i.e. with an offset of \(1.0\)).
    * Set the prior for the reproductive number to \(\Gamma(3.0,0.5) + 1\) (i.e.
      with an offset of \(1.0\)).
-   * Set the prior for the sampling proportion to \(\Beta(2.0,6.0)\).
-4. Save this as an XML file called =bdsky-serial-2022-03-22.xml=. The name is
+   * Set the prior for the sampling proportion to \(\text{Beta}(4,6)\).
+4. Save this as an XML file called =bdsky-serial-2022-03-28.xml=. The name is
    important so that =xml-munge-bdsky.R= knows where it is.
 5. Use the =xml-munge-bdsky.R= script to do some boring edits to obtain
-   =bdsky-serial-2022-03-22-edited.xml= and =bdsky-2022-03-22-edited.xml=, the
-   latter of which handles the contemporaneous sample as well.
+   =bdsky-2022-03-28-edited.xml=, the latter of which handles the contemporaneous
+   sample as well.
 
 * MCMC and results
 

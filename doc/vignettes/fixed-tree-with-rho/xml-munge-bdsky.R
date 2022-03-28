@@ -112,7 +112,7 @@ rho_prior_node <- read_xml(
     "</prior>"
     )
 )
-xml_set_attr(rho_prior_node, attr = "id", value = paste0("@", rho_param$id))
+xml_set_attr(rho_prior_node, attr = "x", value = paste0("@", rho_param$id))
 xml_set_text(
   xml_find_first(rho_prior_node, "//parameter[@name='alpha']"),
   value = as.character(rho_param$beta_prior_alpha)
@@ -139,7 +139,7 @@ xml_add_sibling(
   rho_operator_node
 )
 
-rho_log_node <- read_xml(sprintf("<log idref='%s' />", rho_param_id))
+rho_log_node <- read_xml(sprintf("<log idref='%s' />", rho_param$id))
 xml_add_child(xml_find_first(bdsky, "//logger[@id='tracelog']"), rho_log_node)
 
 ## ==============================================================================
