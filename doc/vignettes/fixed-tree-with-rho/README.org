@@ -1,6 +1,6 @@
 #+title: Fixed Tree Example With Rho
 #+author: Alexander E. Zarebski
-#+date: 2022:03:22
+#+Time-stamp: <Last modified: 2022-03-28 14:18:46>
 
 * Use case: Estimating \(R_0\) and prevalence
 
@@ -144,6 +144,10 @@ data from the user:
 
 * Making the XML
 
+** Model assumptions
+
+- the prior distribution for the scheduled sequence sampling probability is \(\rho\sim\text{Beta}(4,6)\).
+
 ** Running Beauti
 
 The FASTA file (=out/sequences.fasta=) can then be provided to Beauti to set up a
@@ -170,10 +174,10 @@ need to have the TimTam package installed for this to work.
      to \(0.5\).
    * Set the root length to \(0.847096238234892\) (from =ape-sim-event-times.csv=)
      and untick the estimate box.
-4. Save this as an XML file called =ft-with-2022-03-25.xml=. The name is important
-   so that =xml-munge.R= knows where it is.
-5. Use the =xml-munge.R= script to do some boring edits to obtain
-   =fixed-tree-with-rho-2022-03-25-edited.xml=
+4. Save this as an XML file called =ft-with-rho-2022-03-28.xml=. The name is
+   important so that =xml-munge-timtam.R= knows where it is.
+5. Use the =xml-munge-timtam.R= script to do some boring edits to obtain
+   =fixed-tree-with-rho-2022-03-28-edited.xml=
 
 ** Beauti for BDSky
 
@@ -208,9 +212,14 @@ inspection of the results using Tracer.
 
 ** Visualising the results
 
-The script =posterior-visualisation.R=
-generates the visualisation of the posterior samples shown below. See Figure [[fig:r-naught-prevalence][X]]
-for the posterior distribution.
+#+begin_src sh
+  cp ../../../timtam-posterior.log out/
+  cp ../../../bdsky-posterior.log out/
+#+end_src
+
+The script =posterior-visualisation.R= generates the visualisation of the
+posterior samples shown below. To actually make use of them you will need to
+copy them into =out/=. See Figure [[fig:r-naught-prevalence][X]] for the posterior distribution.
 
 #+caption: Posterior distribution of R-naught and the prevalence.
 #+name: fig:r-naught-prevalence

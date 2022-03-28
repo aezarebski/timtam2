@@ -1,10 +1,21 @@
 library(xml2)
 
-input_times_csv <- "out/ape-sim-event-times.csv"
-input_occ_csv <- "out/occurrence-times.txt"
-input_newick <- "out/ape-sim-reconstructed-tree.newick"
-simulation_duration <- "4.0"
-input_xml <- "bdsky-serial-2022-03-22.xml"
+config <- read_xml("sim-const-params.xml")
+duration <- as.numeric(
+  xml_attr(
+    xml_find_first(config, "//parameters"),
+    "duration")
+)
+out_dir <- xml_attr(
+  xml_find_first(config, "//options"),
+  "outputDirectory"
+)
+
+input_times_csv <- file.path(out_dir, "ape-sim-event-times.csv")
+input_occ_csv <- file.path(out_dir, "occurrence-times.txt")
+input_newick <- file.path(out_dir, "ape-sim-reconstructed-tree.newick")
+simulation_duration <- duration
+input_xml <- "bdsky-serial-2022-03-28.xml"
 output_xml <- gsub(
   pattern = ".xml",
   replacement = "-edited.xml",
@@ -15,6 +26,7 @@ output_again_xml <- gsub(
   x = output_xml)
 
 bdsky <- read_xml(input_xml)
+
 
 xml_remove(xml_find_first(bdsky, "//tree"))
 xml_remove(xml_find_first(bdsky, "//parameter[@id='clockRate.c:sequences']"))
@@ -66,52 +78,71 @@ xml_remove(xml_find_first(bdsky, "//distribution[@id='likelihood']"))
 xml_remove(xml_find_first(bdsky, "//prior[@id='ClockPrior.c:sequences']"))
 xml_remove(xml_find_first(bdsky, "//prior[@id='originPrior_BDSKY_Serial.t:sequences']"))
 
-
-
-
-## Write the result to file
-write_xml(x = bdsky, file = output_xml)
-
-## Format the result for easier reading.
-system2(
-  "js-beautify",
-  args = c("-f", output_xml, "-r", "--type", "html"),
-  wait = TRUE,
-  timeout = 0)
-
+## ==============================================================================
 
 #' Once we have the serially sampled analysis, we can make some further edits to
-#' incorporate the contemporaneous sample.
+#' incorporate the contemporaneous sample into the specification.
+rho_param <- list(
+  id = "rho_BDSKY_Contemp.t:sequences",
+  init_value = 0.3,
+  beta_prior_alpha = 4.0,
+  beta_prior_beta = 6.0
+)
 
-rho_param_id <- "rho_BDSKY_Contemp.t:sequences"
-rho_param_node <- read_xml(sprintf("<parameter id='%s' spec='parameter.RealParameter' lower='0.0' name='stateNode' upper='1.0'>0.3</parameter>", rho_param_id))
+rho_param_node <- read_xml("<parameter spec='parameter.RealParameter' lower='0.0' name='stateNode' upper='1.0'></parameter>")
+xml_set_attr(rho_param_node, attr = "id", value = rho_param$id)
+xml_set_text(rho_param_node, value = as.character(rho_param$init_value))
+xml_set_attr(
+  xml_find_first(bdsky, "//distribution[@id='BDSKY_Serial.t:sequences']"),
+  attr = "rho", value = paste0("@", rho_param$id)
+)
+xml_set_attr(
+  xml_find_first(bdsky, "//distribution[@id='BDSKY_Serial.t:sequences']"),
+  attr = "contemp", value = "true"
+)
+
 xml_add_child(xml_find_first(bdsky, "//state[@id='state']"), rho_param_node)
-
-xml_set_attr(
-  xml_find_first(bdsky, "//distribution[@id='BDSKY_Serial.t:sequences']"),
-  attr = "contemp",
-  value = "true"
+rho_prior_node <- read_xml(
+  paste0(
+    "<prior id='rhoPrior_BDSKY_Contemp.t:sequences' name='distribution'>",
+    "<Beta id='Beta.0' name='distr'>",
+    "<parameter id='RealParameter.1' spec='parameter.RealParameter' estimate='false' name='alpha'></parameter>",
+    "<parameter id='RealParameter.2' spec='parameter.RealParameter' estimate='false' name='beta'></parameter>",
+    "</Beta>",
+    "</prior>"
+    )
 )
-xml_set_attr(
-  xml_find_first(bdsky, "//distribution[@id='BDSKY_Serial.t:sequences']"),
-  attr = "rho",
-  value = sprintf("@%s", rho_param_id)
+xml_set_attr(rho_prior_node, attr = "id", value = paste0("@", rho_param$id))
+xml_set_text(
+  xml_find_first(rho_prior_node, "//parameter[@name='alpha']"),
+  value = as.character(rho_param$beta_prior_alpha)
+)
+xml_set_text(
+  xml_find_first(rho_prior_node, "//parameter[@name='beta']"),
+  value = as.character(rho_param$beta_prior_beta)
 )
 
-rho_prior_node <- read_xml(paste0(c(sprintf("<prior id='rhoPrior_BDSKY_Contemp.t:sequences' name='distribution' x='@%s'>", rho_param_id),
-  "<Beta id='Beta.0' name='distr'>",
-  "<parameter id='RealParameter.1' spec='parameter.RealParameter' estimate='false' name='alpha'>4.0</parameter>",
-  "<parameter id='RealParameter.2' spec='parameter.RealParameter' estimate='false' name='beta'>4.0</parameter>",
-  "</Beta>",
-  "</prior>"), collapse = ""))
+xml_add_child(
+  xml_find_first(bdsky, "//distribution[@id='prior']"),
+  rho_prior_node
+)
 
-xml_add_child(xml_find_first(bdsky, "//distribution[@id='prior']"), rho_prior_node)
+rho_operator_node <- read_xml("<operator id='rhoScaler_BDSKY_Contemp.t:sequences' spec='ScaleOperator' weight='1.0' />")
+xml_set_attr(
+  rho_operator_node,
+  attr = "parameter",
+  value = paste0("@", rho_param$id)
+)
 
-rho_operator_node <- read_xml(sprintf("<operator id='rhoScaler_BDSKY_Contemp.t:sequences' spec='ScaleOperator' parameter='@%s' weight='1.0' />", rho_param_id))
-xml_add_sibling(xml_find_first(bdsky, "//operator[@id='samplingProportionScaler_BDSKY_Serial.t:sequences']"), rho_operator_node)
+xml_add_sibling(
+  xml_find_first(bdsky, "//operator[@id='samplingProportionScaler_BDSKY_Serial.t:sequences']"),
+  rho_operator_node
+)
 
 rho_log_node <- read_xml(sprintf("<log idref='%s' />", rho_param_id))
 xml_add_child(xml_find_first(bdsky, "//logger[@id='tracelog']"), rho_log_node)
+
+## ==============================================================================
 
 xml_set_attr(
   xml_find_first(bdsky, "//logger[@id='tracelog']"),
@@ -121,7 +152,7 @@ xml_set_attr(
 xml_set_attr(
   xml_find_first(bdsky, "//run[@id='mcmc']"),
   attr = "chainLength",
-  value = "1000000"
+  value = "100000"
 )
 
 ## Write the result to file

@@ -46,7 +46,6 @@ ggsave(
   units = "cm"
 )
 
-## bdsky_posterior_samples <- read.csv("out/fixed-tree-with-rho-03.log",
 bdsky_posterior_samples <- read.csv("out/bdsky-posterior.log",
                                     sep = "\t", comment.char = "#")
 plot_df <- data.frame(model = rep(c("timtam", "bdsky"), each = nrow(posterior_samples)),

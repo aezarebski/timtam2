@@ -1,9 +1,15 @@
 library(xml2)
 
-input_times_csv <- "out/ape-sim-event-times.csv"
-input_occ_csv <- "out/occurrence-times.txt"
-input_newick <- "out/ape-sim-reconstructed-tree.newick"
-input_xml <- "ft-with-rho-2022-03-25.xml"
+config <- read_xml("sim-const-params.xml")
+out_dir <- xml_attr(
+  xml_find_first(config, "//options"),
+  "outputDirectory"
+)
+
+input_times_csv <- file.path(out_dir, "ape-sim-event-times.csv")
+input_occ_csv <- file.path(out_dir, "occurrence-times.txt")
+input_newick <- file.path(out_dir, "ape-sim-reconstructed-tree.newick")
+input_xml <- "ft-with-rho-2022-03-28.xml"
 output_xml <- gsub(
   pattern = ".xml",
   replacement = "-edited.xml",
@@ -31,8 +37,10 @@ xml_remove(
   free = TRUE)
 
 ## Adjust the initial value of the birth rate.
-state_birth_rate <- xml_find_first(beauti_output, "//state//parameter[@id='birthRate.t:sequences']")
-xml_text(state_birth_rate) <- "3.0"
+state_birth_rate <- xml_find_first(
+  beauti_output,
+  "//state//parameter[@id='birthRate.t:sequences']")
+xml_set_text(state_birth_rate, "3.0")
 
 ## Set the starting tree to be the reconstructed tree.
 fixed_tree_node <- read_xml("<init spec='beast.util.TreeParser' taxa='@sequences' id='Tree.t:sequences' IsLabelledNewick='true' adjustTipHeights='false' />")
@@ -44,7 +52,7 @@ rand_tree_node <- xml_find_first(beauti_output, "//init[@id='RandomTree.t:sequen
 xml_replace(rand_tree_node, fixed_tree_node)
 
 ## Insert the root length properly and remove unused variables.
-tmp <- read.csv(input_times_csv, nrows=1)
+tmp <- read.csv(input_times_csv, nrows = 1)
 root_length <- abs(tmp[tmp$event == "origin","time"])
 rm(tmp)
 timtam_dist_node <- xml_find_first(beauti_output, "//distribution[@id='TimTam.t:sequences']")
@@ -116,7 +124,7 @@ xml_set_attr(
 xml_set_attr(
   xml_find_first(beauti_output, "//run[@id='mcmc']"),
   attr = "chainLength",
-  value = "1000000"
+  value = "100000"
 )
 
 ## Write the result to file
