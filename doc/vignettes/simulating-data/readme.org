@@ -1,0 +1,63 @@
+#+title: Vignettes
+#+author: Alexander E. Zarebski
+#+Time-stamp: <Last modified: 2022-03-31 13:26:34>
+
+* Example 1
+
+#+caption: Visualisation of the simulation in Example 1.
+#+name: fig:ex1-fig
+#+attr_org: :width 500px
+#+attr_html: :width 400px
+[[./out/ex1/ape-simulation-figure.png]]
+
+** Configuration
+
+- =src/ex1/sim-params.xml= contains the parameters for this simulation.
+- =src/ex1/prep-data.R= prepares the dataset.
+- =out/ex1/= is where the final dataset lives.
+
+There are no scheduled samples and the rates are kept constant. The full set of
+parameters is given in Table [[tbl:ex1-params]], and the actual configuration can be
+found in Listing [[src:ex1-params]]
+
+#+name: tbl:ex1-params
+#+caption: Parameterisation of the model for Example 1
+| Parameter                  | Value |
+|----------------------------+-------|
+| birth rate \(\lambda\)     |   3.0 |
+| death rate \(\mu\)         |   1.0 |
+| sampling rate \(\psi\)     |   0.5 |
+| occurrence rate \(\omega\) |   0.5 |
+| simulation duration        |   5.0 |
+| reproduction number        |   1.5 |
+
+#+name: src:ex1-params
+#+begin_src xml :tangle src/ex1/sim-params.xml
+<ape version="0.2.0">
+    <configuration>
+        <parameters
+            birthRate="3.0"
+            deathRate="1.0"
+            samplingRate="0.5"
+            occurrenceRate="0.5"
+            duration="5.0" />
+        <options
+            seed="1"
+            writeNewick="true"
+            makePlots="true"
+            outputDirectory="out/ex1"
+            simulateSequences="false"
+            seq_agg_times=""
+            occ_agg_times="" />
+    </configuration>
+</ape>
+#+end_src
+
+** Running the simulation
+
+#+begin_src sh
+Rscript src/ape-sim.R --verbose src/ex1/sim-params.xml
+Rscript src/ex1/prep-data.R
+#+end_src
+
+The results of this can be seen in Figure [[fig:ex1-fig]].
