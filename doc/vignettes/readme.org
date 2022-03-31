@@ -1,6 +1,10 @@
 #+title: Vignettes
+#+author: Alexander E. Zarebski
+#+Time-stamp: <Last modified: 2022-03-31 14:18:47>
 
 * Vignettes
+
+There is a description of the process used to [[file:./simulating-data/readme.org][simulate datasets]].
 
 - [[file:./fixed-tree-with-rho/README.org][Fixed tree with \(\rho\)-sample]]
 - [[file:./fixed-tree-with-nu/README.org][Fixed tree with \(\nu\)-sample]]

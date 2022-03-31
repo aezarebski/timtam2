@@ -1,6 +1,6 @@
-#+title: Vignettes
+#+title: Simulating datasets
 #+author: Alexander E. Zarebski
-#+Time-stamp: <Last modified: 2022-03-31 13:42:49>
+#+Time-stamp: <Last modified: 2022-03-31 14:17:41>
 
 * Example 1
 
