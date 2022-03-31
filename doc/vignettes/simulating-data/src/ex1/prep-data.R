@@ -48,6 +48,10 @@ writeLines(text = paste(bwd_occurrence_times, collapse = " "),
            con = file.path(out_dir, "occurrence-times.txt"))
 jsonlite::write_json(
             x = list(
+              final_prevalence = read_json(
+                "out/ex1/ape-sim-final-prevalence.json",
+                simplifyVector = TRUE
+              ),
               newick_tree = readLines(newick_path),
               root_length = root_length,
               fasta = readLines(fasta_path),

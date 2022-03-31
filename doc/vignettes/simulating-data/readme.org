@@ -1,6 +1,6 @@
 #+title: Vignettes
 #+author: Alexander E. Zarebski
-#+Time-stamp: <Last modified: 2022-03-31 13:26:34>
+#+Time-stamp: <Last modified: 2022-03-31 13:35:30>
 
 * Example 1
 
@@ -14,7 +14,7 @@
 
 - =src/ex1/sim-params.xml= contains the parameters for this simulation.
 - =src/ex1/prep-data.R= prepares the dataset.
-- =out/ex1/= is where the final dataset lives.
+- =out/ex1/= is where the final dataset lives, primarily in =out/ex1/ex1.json=
 
 There are no scheduled samples and the rates are kept constant. The full set of
 parameters is given in Table [[tbl:ex1-params]], and the actual configuration can be
