@@ -1,0 +1,22 @@
+<ape version="0.2.0">
+    <configuration>
+      <stepFunction
+          name="stepBirthRate"
+          times="2.0"
+          values="4.5 2.5" />
+      <parameters
+          birthRate="@stepBirthRate"
+          deathRate="1.0"
+          samplingRate="0.5"
+          occurrenceRate="0.5"
+          duration="5.0" />
+      <options
+          seed="1"
+          writeNewick="true"
+          makePlots="true"
+          outputDirectory="out/ex2"
+          simulateSequences="false"
+          seq_agg_times=""
+          occ_agg_times="" />
+    </configuration>
+</ape>

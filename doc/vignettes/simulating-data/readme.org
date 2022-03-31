@@ -1,8 +1,11 @@
 #+title: Vignettes
 #+author: Alexander E. Zarebski
-#+Time-stamp: <Last modified: 2022-03-31 13:35:30>
+#+Time-stamp: <Last modified: 2022-03-31 13:42:49>
 
 * Example 1
+
+This example contains a constant rate simulation without any scheduled samples.
+Figure [[fig:ex1-fig]] displays the full transmission tree in the simulation.
 
 #+caption: Visualisation of the simulation in Example 1.
 #+name: fig:ex1-fig
@@ -61,3 +64,70 @@ Rscript src/ex1/prep-data.R
 #+end_src
 
 The results of this can be seen in Figure [[fig:ex1-fig]].
+
+* Example 2
+
+This example contains a variable rate simulation without any scheduled samples.
+Figure [[fig:ex2-fig]] displays the full transmission tree in the simulation.
+
+#+caption: Visualisation of the simulation in Example 2.
+#+name: fig:ex2-fig
+#+attr_org: :width 500px
+#+attr_html: :width 400px
+[[./out/ex2/ape-simulation-figure.png]]
+
+** Configuration
+
+- =src/ex2/sim-params.xml= contains the parameters for this simulation.
+- =src/ex2/prep-data.R= prepares the dataset.
+- =out/ex2/= is where the final dataset lives, primarily in =out/ex2/ex2.json=
+
+There are no scheduled samples and the rates are kept constant. The full set of
+parameters is given in Table [[tbl:ex2-params]], and the actual configuration can be
+found in Listing [[src:ex2-params]].
+
+#+name: tbl:ex2-params
+#+caption: Parameterisation of the model for Example 2
+| Parameter                     |    Value |
+|-------------------------------+----------|
+| birth rate values \(\lambda\) | 4.5, 2.5 |
+| birth rate times              | 0.0, 2.0 |
+| death rate \(\mu\)            |      1.0 |
+| sampling rate \(\psi\)        |      0.5 |
+| occurrence rate \(\omega\)    |      0.5 |
+| simulation duration           |      5.0 |
+
+#+name: src:ex2-params
+#+begin_src xml :tangle src/ex2/sim-params.xml
+  <ape version="0.2.0">
+      <configuration>
+        <stepFunction
+            name="stepBirthRate"
+            times="2.0"
+            values="4.5 2.5" />
+        <parameters
+            birthRate="@stepBirthRate"
+            deathRate="1.0"
+            samplingRate="0.5"
+            occurrenceRate="0.5"
+            duration="5.0" />
+        <options
+            seed="1"
+            writeNewick="true"
+            makePlots="true"
+            outputDirectory="out/ex2"
+            simulateSequences="false"
+            seq_agg_times=""
+            occ_agg_times="" />
+      </configuration>
+  </ape>
+#+end_src
+
+** Running the simulation
+
+#+begin_src sh
+Rscript src/ape-sim.R --verbose src/ex2/sim-params.xml
+Rscript src/ex2/prep-data.R
+#+end_src
+
+The results of this can be seen in Figure [[fig:ex2-fig]].
