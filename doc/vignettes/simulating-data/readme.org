@@ -1,6 +1,6 @@
 #+title: Simulating datasets
 #+author: Alexander E. Zarebski
-#+Time-stamp: <Last modified: 2022-03-31 14:17:41>
+#+Time-stamp: <Last modified: 2022-03-31 14:26:38>
 
 * Example 1
 
@@ -33,6 +33,7 @@ found in Listing [[src:ex1-params]]
 | occurrence rate \(\omega\) |   0.5 |
 | simulation duration        |   5.0 |
 | reproduction number        |   1.5 |
+| becoming uninfectious rate |   2.0 |
 
 #+name: src:ex1-params
 #+begin_src xml :tangle src/ex1/sim-params.xml
