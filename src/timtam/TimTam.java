@@ -19,28 +19,45 @@ import beast.evolution.tree.TreeDistribution;
         year = 2022, firstAuthorSurname = "Zarebski", DOI="10.1371/journal.pcbi.1009805")
 public class TimTam extends TreeDistribution {
 
+    final public Input<RealParameter> lambdaInput =
+            new Input<>("lambda", "The birth rate. If you want to have rates that change over time you will also need the lambdaChangeTimes to be set.", (RealParameter) null);
+
+    final public Input<RealParameter> muInput =
+            new Input<>("mu", "The death rate, i.e. the rate at which individuals are removed without being observed.", (RealParameter) null);
+
+    final public Input<RealParameter> psiInput =
+            new Input<>("psi", "The sampling rate, i.e. the rate of unscheduled sequenced sampling.", (RealParameter) null);
+
+    final public Input<RealParameter> rhoInput =
+            new Input<>("rho", "The probability of sampling lineages in a scheduled sample.", (RealParameter) null);
+
+    final public Input<RealParameter> omegaInput =
+            new Input<>("omega", "The occurrence rate, i.e. the rate of unscheduled unsequenced sampling.", (RealParameter) null);
+
+    final public Input<RealParameter> rootLengthInput =
+            new Input<>("rootLength", "The length of the time between the origin and the tMRCA.", (RealParameter) null);
+
+    final public Input<BackwardsSchedule> catastropheTimesInput = new Input<>("catastropheTimes", "the times at which a scheduled sequenced sample was attempted");
+
+    final public Input<BackwardsPointProcess> pointsInput =
+            new Input<>("points", "The times at which there was an occurrence (omega-sample) event.");
+
+    final public Input<RealParameter> nuInput = new Input<>("nu", "the probability of unsequenced scheduled sampling", Input.Validate.OPTIONAL);
+
+    final public Input<BackwardsSchedule> disasterTimesInput = new Input<>("disasterTimes", "the times at which a scheduled unsequenced sample was attempted", Input.Validate.OPTIONAL);
+
+    final public Input<BackwardsCounts> disasterCountsInput = new Input<>("disasterCounts", "the size of each scheduled unsequenced sample", Input.Validate.OPTIONAL);
+
+    final public Input<Boolean> conditionOnObservationInput = new Input<>("conditionOnObservation", "if is true then condition on sampling at least one individual (psi-sampling). The default value is true.", true);
+
     Tree tree;
-
-    // birth rate
     RealParameter lambda;
-
-    // death rate
     RealParameter mu;
-
-    // serial sampling rate
     RealParameter psi;
-
-    // extant sampling proportion
     RealParameter rho;
-
-    // occurrence rate
     RealParameter omega;
-    private boolean hasPositiveOmega;
-
-    // scheduled unsequenced sampling probability
+    private boolean hasPositiveOmega; // because there is a decent chance someone will want to set it to zero.
     RealParameter nu;
-
-    // length of the edge from origin to MRCA node.
     RealParameter rootLength;
 
     // the times at which a scheduled sequenced sample was attempted
@@ -66,6 +83,7 @@ public class TimTam extends TreeDistribution {
 
     private TreeWithBackwardsPointProcess ti;
     private int numIntervals;
+
     // Unclear why it is necessary, but BEAST expects there to be a zero-argument
     // constructor and if there isn't one it freaks out.
     public TimTam() {
@@ -88,19 +106,6 @@ public class TimTam extends TreeDistribution {
         this("timTamModel", lambda, mu, psi, rho, omega, rootLength, catastropheTimes, points, nu,
                 disasterTimes, disasterCounts, conditionOnObservation);
     }
-
-    final public Input<RealParameter> lambdaInput = new Input<>("lambda", "the birth rate of new infections");
-    final public Input<RealParameter> muInput = new Input<>("mu", "the death rate");
-    final public Input<RealParameter> psiInput = new Input<>("psi", "the sampling rate");
-    final public Input<RealParameter> rhoInput = new Input<>("rho", "the probability of sampling extant lineages");
-    final public Input<RealParameter> omegaInput = new Input<>("omega", "the occurrence rate");
-    final public Input<RealParameter> rootLengthInput = new Input<>("rootLength", "the length of the edge between the origin and the MRCA");
-    final public Input<BackwardsSchedule> catastropheTimesInput = new Input<>("catastropheTimes", "the times at which a scheduled sequenced sample was attempted");
-    final public Input<BackwardsPointProcess> pointsInput = new Input<>("points", "the points in the point process");
-    final public Input<RealParameter> nuInput = new Input<>("nu", "the probability of unsequenced scheduled sampling", Input.Validate.OPTIONAL);
-    final public Input<BackwardsSchedule> disasterTimesInput = new Input<>("disasterTimes", "the times at which a scheduled unsequenced sample was attempted", Input.Validate.OPTIONAL);
-    final public Input<BackwardsCounts> disasterCountsInput = new Input<>("disasterCounts", "the size of each scheduled unsequenced sample", Input.Validate.OPTIONAL);
-    final public Input<Boolean> conditionOnObservationInput = new Input<>("conditionOnObservation", "if is true then condition on sampling at least one individual (psi-sampling). The default value is true.", true);
 
     @Override
     public void initAndValidate() {
