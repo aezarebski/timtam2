@@ -8,6 +8,9 @@ library(stringr)
 library(cowplot)
 library(whisker)
 
+## TODO these variables should be read out of the input data rather than
+## hard-coded here.
+
 out_dir <- "out"
 bdsky_log <- file.path(out_dir, "ex1-bdsky-serial.log")
 timtam_log <- file.path(out_dir, "ex1-timtam.log")
@@ -24,9 +27,12 @@ read_beast2_log <- function(filename) {
 
 bdsky_mcmc <- bdsky_log |>
   read_beast2_log() |>
-  select(reproductiveNumber_BDSKY_Serial) |>
-  rename(r_naught = reproductiveNumber_BDSKY_Serial) |>
-  mutate(model = "bdsky_serial")
+  select(birthRate_BDSKY_Serial) |>
+  mutate(
+    r_naught = birthRate_BDSKY_Serial / (death_rate + sampling_rate + occurrence_rate),
+    model = "bdsky"
+  ) |>
+  select(r_naught, model)
 
 timtam_mcmc <- timtam_log |>
   read_beast2_log() |>
