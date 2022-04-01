@@ -1,9 +1,9 @@
 #!/usr/bin/env Rscript
 #'
-VERSION <- c(0,2,0)
-#' =============
-#' ape-sim-0.2.0
-#' =============
+VERSION <- c(0,2,1)
+#' =======
+#' ape-sim
+#' =======
 #'
 #' Use the ape package to simulate the BDSCOD process from the command line.
 #'
@@ -50,6 +50,9 @@ VERSION <- c(0,2,0)
 #'
 #' ChangeLog
 #' =========
+#'
+#' - 0.2.1
+#'   + Fix bug where version was not printing properly.
 #'
 #' - 0.2.0
 #'   + Include support for time varying parameters.
@@ -895,10 +898,12 @@ configuration_is_valid <- function(config) {
 
 main <- function(args, config) {
   if (args$version) {
-    stop("this is not a complete script...")
-    ## cat(paste(c("ape-sim-",
-    ##             paste(as.character(VERSION), collapse = "."),
-    ##             "\n"), collapse = ""))
+    ## TODO when requesting the version number you also need to provide a valid
+    ## XML which is silly. Because \code{main} takes both the args and the
+    ## config this is an annoying fix so I'm leaving it for now.
+    cat(paste(c("ape-sim-",
+                paste(as.character(VERSION), collapse = "."),
+                "\n"), collapse = ""))
     return(0)
   }
 
