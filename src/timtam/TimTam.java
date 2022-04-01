@@ -51,14 +51,14 @@ public class TimTam extends TreeDistribution {
     final public Input<Boolean> conditionOnObservationInput = new Input<>("conditionOnObservation", "if is true then condition on sampling at least one individual (psi-sampling). The default value is true.", true);
 
     Tree tree;
-    RealParameter lambda;
-    RealParameter mu;
-    RealParameter psi;
-    RealParameter rho;
-    RealParameter omega;
+    protected Double lambda;
+    protected Double mu;
+    protected Double psi;
+    protected Double rho;
+    protected Double omega;
     private boolean hasPositiveOmega; // because there is a decent chance someone will want to set it to zero.
-    RealParameter nu;
-    RealParameter rootLength;
+    protected Double nu;
+    protected Double rootLength;
 
     // the times at which a scheduled sequenced sample was attempted
     BackwardsSchedule catastropheTimes;
@@ -111,39 +111,31 @@ public class TimTam extends TreeDistribution {
     public void initAndValidate() {
         super.initAndValidate();
 
-        this.lambda = lambdaInput.get();
-        lambda.setBounds(0.0, Double.POSITIVE_INFINITY);
-
-        this.mu = muInput.get();
-        mu.setBounds(0.0, Double.POSITIVE_INFINITY);
-
-        this.psi = psiInput.get();
-        psi.setBounds(0.0, Double.POSITIVE_INFINITY);
-
-        this.rho = rhoInput.get();
-        if (this.rho != null) {
-            this.rho.setBounds(0.0, 1.0);
-        }
-
-        this.omega = omegaInput.get();
-        if (this.omega != null) {
-            omega.setBounds(0.0, Double.POSITIVE_INFINITY);
-            hasPositiveOmega = true;
+        this.lambda = lambdaInput.get().getValue();
+        this.mu = muInput.get().getValue();
+        this.psi = psiInput.get().getValue();
+        if (rhoInput.get() != null) {
+            this.rho = rhoInput.get().getValue();
         } else {
-            hasPositiveOmega = false;
+            this.rho = null;
         }
-
-        this.rootLength= rootLengthInput.get();
-        rootLength.setBounds(0.0, Double.POSITIVE_INFINITY);
+        if (omegaInput.get() != null) {
+            this.omega = omegaInput.get().getValue();
+            this.hasPositiveOmega = true;
+        } else {
+            this.hasPositiveOmega = false;
+        }
+        if (nuInput.get() != null) {
+            this.nu = nuInput.get().getValue();
+        } else {
+            this.nu = null;
+        }
+        this.rootLength = rootLengthInput.get().getValue();
 
         this.catastropheTimes = catastropheTimesInput.get();
 
         this.points = pointsInput.get();
 
-        this.nu = nuInput.get();
-        if (this.nu != null) {
-            this.nu.setBounds(0.0, 1.0);
-        }
         this.disasterTimes = disasterTimesInput.get();
         this.disasterCounts = disasterCountsInput.get();
 
@@ -153,7 +145,7 @@ public class TimTam extends TreeDistribution {
 
         this.tree = (Tree) treeInput.get();
         this.ti = new TreeWithBackwardsPointProcess(
-                rootLength,
+                rootLengthInput.get(),
                 tree,
                 points,
                 disasterTimes,
@@ -177,36 +169,24 @@ public class TimTam extends TreeDistribution {
             BackwardsCounts disasterCounts,
             Boolean conditionOnObservation) {
 
-        this.lambda = lambda;
-        lambda.setBounds(0.0, Double.POSITIVE_INFINITY);
+        this.lambda = lambda.getValue();
 
-        this.mu = mu;
-        mu.setBounds(0.0, Double.POSITIVE_INFINITY);
+        this.mu = mu.getValue();
 
-        this.psi = psi;
-        psi.setBounds(0.0, Double.POSITIVE_INFINITY);
+        this.psi = psi.getValue();
 
-        this.rho = rho;
-        if (this.rho != null) {
-            rho.setBounds(0.0, 1.0);
-        }
+        this.rho = rho.getValue();
 
-        this.omega = omega;
-        if (this.omega != null) {
-            omega.setBounds(0.0, Double.POSITIVE_INFINITY);
-            hasPositiveOmega = true;
-        } else {
-            hasPositiveOmega = false;
-        }
+        this.omega = omega.getValue();
+        hasPositiveOmega = this.omega != null;
 
-        this.rootLength= rootLength;
-        rootLength.setBounds(0.0, Double.POSITIVE_INFINITY);
+        this.rootLength= rootLength.getValue();
 
         this.catastropheTimes = catastropheTimes;
 
         this.points = points;
 
-        this.nu = nu;
+        this.nu = nu.getValue();
         if (this.nu != null) {
             nu.setBounds(0.0, 1.0);
         }
@@ -219,31 +199,31 @@ public class TimTam extends TreeDistribution {
     }
 
     public double birth() {
-        return lambda.getValue(0);
+        return lambda;
     }
 
     public double death() {
-        return mu.getValue(0);
+        return mu;
     }
 
     public double psi() {
-        return psi.getValue(0);
+        return psi;
     }
 
     public double omega() {
         if (hasPositiveOmega) {
-            return omega.getValue(0);
+            return omega;
         } else {
             throw new RuntimeException("Omega was not provided hence should not be requested.");
         }
     }
 
     public double rho() {
-        return rho.getValue(0);
+        return rho;
     }
 
     public double nu() {
-        return nu.getValue(0);
+        return nu;
     }
 
     @Override
@@ -282,7 +262,7 @@ public class TimTam extends TreeDistribution {
      *
      * @param intervalType the type of observation that was made
      *
-     * @see beast.evolution.tree.birthdeath.EventType
+     * @see timtam.EventType
      *
      */
     private void processObservation(EventType intervalType) {

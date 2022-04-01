@@ -50,13 +50,12 @@ public class TestTreeWithBackwardsPointProcess {
                 "trait", myTraitSet,
                 "populationModel", myPopModel);
 
-        double rootLengthDouble = 1.0;
         RealParameter rootLength = new RealParameter("1.0");
 
         // This loop is included to ensure that we get an origin that occurs before the first occurrence event.
         double mRCAHeight;
         mRCAHeight = myTree.getRoot().getHeight();
-        while (mRCAHeight + rootLengthDouble < 4.0) {
+        while (mRCAHeight + rootLength.getValue() < 4.0) {
             myTree = new RandomTree();
             myTree.initByName(
                     "taxonset", myTaxonSet,
@@ -64,7 +63,7 @@ public class TestTreeWithBackwardsPointProcess {
                     "populationModel", myPopModel);
             mRCAHeight = myTree.getRoot().getHeight();
         }
-        assertTrue(mRCAHeight + rootLengthDouble > 4.0);
+        assertTrue(mRCAHeight + rootLength.getValue() > 4.0);
 
         BackwardsPointProcess points = new BackwardsPointProcess();
         points.initByName("value", "4.0 -0.5");
@@ -98,7 +97,7 @@ public class TestTreeWithBackwardsPointProcess {
         assertEquals(tpp.getIntervalType(2).toString(), "sample");
         assertTrue(approxEqual.test(
                 hiddenDelay + tpp.getIntervalDuration(2),
-                mRCAHeight + rootLengthDouble - 1.0));
+                mRCAHeight + rootLength.getValue() - 1.0));
 
 
         assertEquals(tpp.getIntervalType(3).toString(), "sample");
@@ -135,13 +134,12 @@ public class TestTreeWithBackwardsPointProcess {
                 "trait", myTraitSet,
                 "populationModel", myPopModel);
 
-        double rootLengthDouble = 1.0;
         RealParameter rootLength = new RealParameter("1.0");
 
         // This loop is included to ensure that we get an origin that occurs before the first occurrence event.
         double mRCAHeight;
         mRCAHeight = myTree.getRoot().getHeight();
-        while (mRCAHeight + rootLengthDouble < 4.5) {
+        while (mRCAHeight + rootLength.getValue() < 4.5) {
             myTree = new RandomTree();
             myTree.initByName(
                     "taxonset", myTaxonSet,
@@ -149,7 +147,7 @@ public class TestTreeWithBackwardsPointProcess {
                     "populationModel", myPopModel);
             mRCAHeight = myTree.getRoot().getHeight();
         }
-        assertTrue(mRCAHeight + rootLengthDouble > 4.5);
+        assertTrue(mRCAHeight + rootLength.getValue() > 4.5);
 
 
         BackwardsPointProcess points = new BackwardsPointProcess();
@@ -184,7 +182,7 @@ public class TestTreeWithBackwardsPointProcess {
         assertEquals(tpp.getIntervalType(2).toString(), "sample");
         assertTrue(approxEqual.test(
                 hiddenDelay + tpp.getIntervalDuration(2),
-                mRCAHeight + rootLengthDouble - 1.5));
+                mRCAHeight + rootLength.getValue() - 1.5));
 
 
         assertEquals(tpp.getIntervalType(3).toString(), "occurrence");
