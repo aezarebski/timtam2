@@ -1,13 +1,13 @@
 #+title: Example 2
 #+author: Alexander E. Zarebski
-#+Time-stamp: <Last modified: 2022-03-31 16:44:53>
+#+Time-stamp: <Last modified: 2022-04-01 12:14:53>
 
 The details of the simulation of this data set are [[file:../simulating-data/readme.org::*Example 2][here]]. The input data is in
 =data/= and there is an XML for using BDSky (serial) and TimTam to analyse this
 data in =xml/=. The script =src/make-posterior-plots.R= should produce some sensible
 figures displaying the results.
 
-#+caption: Estimates of R-nought through time using the BDSky.
+#+caption: Estimates of the birth rate through time using the BDSky.
 #+name: fig:r0-est
 #+attr_org: :width 500px
 #+attr_html: :width 400px

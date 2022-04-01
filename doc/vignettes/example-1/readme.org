@@ -1,14 +1,13 @@
 #+title: Example 1
 #+author: Alexander E. Zarebski
-#+Time-stamp: <Last modified: 2022-03-31 15:51:40>
+#+Time-stamp: <Last modified: 2022-04-01 12:06:04>
 
 The details of the simulation of this data set are [[file:../simulating-data/readme.org::*Example 1][here]]. The input data is in
 =data/= and there is an XML for using BDSky (serial) and TimTam to analyse this
 data in =xml/=. The script =src/make-posterior-plots.R= produces the summary in
 Table [[tbl:r0-estimates]]. Figure [[fig:prev-est]] shows the posterior estimate of the
 prevalence obtained by the TimTam model. Figure [[fig:r0-est]] shows a comparison of
-the R-nought estimates from each model. These results should not be taken too
-seriously because the two models have very different prior distributions.
+the R-nought estimates from each model.
 
 #+name: tbl:r0-estimates
 #+caption:  Summary of R-nought estimates

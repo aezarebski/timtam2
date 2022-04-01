@@ -21,23 +21,23 @@ read_beast2_log <- function(filename) {
 
 bdsky_mcmc <- bdsky_log |>
   read_beast2_log() |>
-  select(matches("reproductiveNumber*"))
-
+  select(matches("birthRate*"))
 
 ## TODO Obviously everything below here needs to be fixed but this demonstrates
 ## the type of figure that should be created.
 
-
+## this is a summary of the estimated birth rates from BDSky
 tmp_bdsky <- data.frame(
-  t = c(0, 2.5-1e-6, 2.5 + 1e-6, 5.0),
-  y = c(1.739, 1.739, 1.205, 1.205),
-  ymin = c(1.558114, 1.558114, 1.134191, 1.134191),
-  ymax = c(1.914309, 1.914309, 1.275801, 1.275801)
+  t = c(0, 2.0-1e-6, 2.0 + 1e-6, 5.0),
+  y = c(4.855, 4.855, 2.429, 2.429),
+  ymin = c(4.261566, 4.261566, 2.300249, 2.300249),
+  ymax = c(5.527479, 5.527479, 2.556796, 2.556796)
 )
 
+## This is a representation of the true birth rates used in the simulation.
 tmp_sim <- data.frame(
   t = c(0, 2.0 - 1e-6, 2.0 + 1e-6, 5.0),
-  y = c(4.5 / 2.0, 4.5 / 2.0, 2.5 / 2.0, 2.5 / 2.0)
+  y = c(4.5, 4.5, 2.5, 2.5)
 )
 
 tmp_gg <- ggplot() +
