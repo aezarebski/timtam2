@@ -243,7 +243,7 @@ public class TimTam extends TreeDistribution {
 
         for (int ix = 0; ix < this.catastropheTimes.length; ix++) {
             this.intervalTerminators[iTx] =
-                    new TimTamIntervalTerminator("occurrence", this.catastropheTimes[ix], OptionalInt.of(this.catastropheSizes[ix]));
+                    new TimTamIntervalTerminator("catastrophe", this.catastropheTimes[ix], OptionalInt.of(this.catastropheSizes[ix]));
             iTx++;
         }
 
