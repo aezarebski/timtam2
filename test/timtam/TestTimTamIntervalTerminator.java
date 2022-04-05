@@ -27,4 +27,10 @@ public class TestTimTamIntervalTerminator {
         assertTrue(Objects.equals(intTerms[1].getBwdTime(), it2.getBwdTime()));
         assertTrue(Objects.equals(intTerms[2].getBwdTime(), it3.getBwdTime()));
     }
+
+    @Test(expected = RuntimeException.class)
+    public void testGuardAgainstNonsense() {
+        TimTamIntervalTerminator it =
+                new TimTamIntervalTerminator("occurrence", 1.0, OptionalInt.of(2));
+    }
 }

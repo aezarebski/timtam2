@@ -15,7 +15,7 @@ public class TimTamIntervalTerminator implements Comparable<TimTamIntervalTermin
 
     public int getCount() {
         if (Objects.equals(this.type, "catastrophe") | Objects.equals(this.type, "disaster")) {
-            return count.getAsInt();
+            return count;
         } else {
             throw new RuntimeException("TimTamIntervalTerminator, " + this.type + " does not have a count.");
         }
@@ -26,14 +26,20 @@ public class TimTamIntervalTerminator implements Comparable<TimTamIntervalTermin
     }
 
     private final String type;
-    private final OptionalInt count;
+    private final int count;
     private final Double bwdTime;
 
     TimTamIntervalTerminator(String type, Double bwdTime, OptionalInt count) {
         if (validTerminatorNames.contains(type)) {
             this.type = type;
             this.bwdTime = bwdTime;
-            this.count = count;
+            if (count.isPresent() & (Objects.equals(type, "catastrophe") | Objects.equals(type, "disaster"))) {
+                this.count = count.getAsInt();
+            } else if (count.isEmpty() & (!Objects.equals(type, "catastrophe")) & (!Objects.equals(type, "disaster"))) {
+                this.count = -1;
+            } else {
+                throw new RuntimeException("count cannot be "+ count + " in TimTamIntervalTerminator if type is " + type);
+            }
         } else {
             throw new IllegalArgumentException("Unexpected interval terminator type: " + type);
         }
