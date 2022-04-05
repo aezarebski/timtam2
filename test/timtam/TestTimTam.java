@@ -22,66 +22,49 @@ public class TestTimTam {
     @Test
     public void testLikelihoodCalculationSimple() {
         /**
-         * This test draws on a similar one in BDSKY and checks that the TimTam
-         * values look similar in a special case.
+         * This test draws on a similar one in BDSKY (see the
+         * testLikelihoodCalculationSimple test in BirthDeathSkylineTest.java)
+         * and checks that the TimTam values look similar in a special case.
+         * These values were computed assuming constant parameters. The modified
+         * version of testLikelihoodCalculationSimple in
+         * BirthDeathSkylineTest.java is included at the end of this file.
          *
-         * | R0  | lBDSKY             |lambda|
-         * |-----+--------------------+------|
-         * | 1.5 | -26.10536013426608 | 2.25 |
-         * | 1.6 | -27.39912704449781 | 2.40 |
-         * | 1.7 | -28.76692080906782 | 2.55 |
-         * | 1.8 | -30.19926984491369 | 2.70 |
-         * | 2.0 | -33.22625199062580 | 3.00 |
-         * | 3.0 | -50.33479549906616 | 4.50 |
-         * | 4.0 | -68.99855263104962 | 6.00 |
-         *
-         * |  R0 |             p0BDSKY | lambda |
-         * |-----+---------------------+--------|
-         * | 1.5 | 0.35607263215566554 |   2.25 |
-         * | 1.6 |  0.3406353481143964 |   2.40 |
-         * | 1.7 | 0.32629489067558237 |   2.55 |
-         * | 1.8 | 0.31296665195860446 |   2.70 |
+         *  | R0  | lBDSKY              |
+         *  |-----+---------------------|
+         *  | 1.5 | -26.10536013426608  |
+         *  | 1.6 | -27.39912704449781  |
+         *  | 1.7 | -28.76692080906782  |
+         *  | 1.8 | -30.199269844913694 |
+         *  | 1.9 | -31.68804261637826  |
+         *  | 2.0 | -33.2262519906258   |
+         *  | 3.0 | -50.33479549906616  |
+         *  | 4.0 | -68.99855263104962  |
           */
 
         TimTam tt =  new TimTam();
 
         Tree tree = new TreeParser("((3 : 1.5, 4 : 0.5) : 1 , (1 : 2, 2 : 1) : 3);",false);
         tt.setInputValue("tree", tree);
-        tt.setInputValue("rootLength", new RealParameter("5.0"));
-        tt.setInputValue("mu", new RealParameter("1.05"));
-        tt.setInputValue("psi", new RealParameter("0.45"));
+        tt.setInputValue("originTime", new RealParameter("10.0"));
 
-        tt.setInputValue("lambda", new RealParameter("2.25"));
-        tt.initAndValidate();
-        assertTrue(approxEqual.test(0.356072632, tt.p0(10.0)));
-        assertTrue(kindaEqual.test(-26.1 - 2, tt.calculateLogP()));
+        double becomeUninfectiousRate = 1.5;
+        double samplingProportion = 0.3;
+        double[] r0Values = {1.5,1.6,1.7,1.8,1.9,2.0,3.0,4.0};
+        double[] llhdValues = {
+                -26.105360,-27.399127,-28.766920,-30.199269,
+                -31.688042,-33.226251,-50.334795,-68.998552};
 
-        tt.setInputValue("lambda", new RealParameter("2.40"));
-        tt.initAndValidate();
-        assertTrue(approxEqual.test(0.340635348, tt.p0(10.0)));
-        assertTrue(kindaEqual.test(-27.4 - 2, tt.calculateLogP()));
+        tt.setInputValue("mu",new RealParameter(Double.toString(becomeUninfectiousRate * (1 - samplingProportion))));
+        tt.setInputValue("psi",new RealParameter(Double.toString(becomeUninfectiousRate * samplingProportion)));
 
-        tt.setInputValue("lambda", new RealParameter("2.55"));
-        tt.initAndValidate();
-        assertTrue(approxEqual.test(0.326294890, tt.p0(10.0)));
-        assertTrue(kindaEqual.test(-28.8 - 2, tt.calculateLogP()));
-
-        tt.setInputValue("lambda", new RealParameter("2.70"));
-        tt.initAndValidate();
-        assertTrue(approxEqual.test(0.312966651, tt.p0(10.0)));
-        assertTrue(kindaEqual.test(-30.2 - 2, tt.calculateLogP()));
-
-        tt.setInputValue("lambda", new RealParameter("3.00"));
-        tt.initAndValidate();
-        assertTrue(kindaEqual.test(-33.2 - 2, tt.calculateLogP()));
-
-        tt.setInputValue("lambda", new RealParameter("4.50"));
-        tt.initAndValidate();
-        assertTrue(kindaEqual.test(-50.3 - 2, tt.calculateLogP()));
-
-        tt.setInputValue("lambda", new RealParameter("6.00"));
-        tt.initAndValidate();
-        assertTrue(kindaEqual.test(-69.0 - 2, tt.calculateLogP()));
+        tt.setInputValue("lambdaChangeTimes", null);
+        String lambdaString;
+        for (int ix = 0; ix < r0Values.length; ix++) {
+            lambdaString = Double.toString(r0Values[ix] * becomeUninfectiousRate);
+            tt.setInputValue("lambda", new RealParameter(lambdaString));
+            tt.initAndValidate();
+            assertTrue(kindaEqual.test(llhdValues[ix] - 2, tt.calculateLogP()));
+        }
     }
 
     @Test
@@ -89,10 +72,10 @@ public class TestTimTam {
 
         Tree tree = new TreeParser("(((1:3,2:1):1,3:4):2,4:6);",false);
 
-        BackwardsSchedule catastropheTimes = new BackwardsSchedule();
+        RealParameter catastropheTimes = new RealParameter();
         catastropheTimes.initByName("value", "0.0");
 
-        BackwardsPointProcess points = new BackwardsPointProcess();
+        RealParameter points = new RealParameter();
         points.initByName("value", "5.0 1.0");
 
         TimTam tt = new TimTam();
@@ -101,9 +84,9 @@ public class TestTimTam {
         tt.setInputValue("psi", "0.3");
         tt.setInputValue("rho", "0.5");
         tt.setInputValue("omega", "0.6");
-        tt.setInputValue("rootLength", "1.0");
+        tt.setInputValue("originTime", "7.0");
         tt.setInputValue("catastropheTimes", catastropheTimes);
-        tt.setInputValue("points", points);
+        tt.setInputValue("occurrenceTimes", points);
         tt.setInputValue("tree", tree);
         tt.setInputValue("conditionOnObservation", "false");
         tt.initAndValidate();
@@ -111,9 +94,9 @@ public class TestTimTam {
 
         double fx, fxh, h, fxDash;
         h = 1e-6;
-        fxh = tt.p0(1.0, 1.0 - h);
-        fx = tt.p0(1.0, 1.0);
-        fxDash = tt.lnP0Dash1(1.0);
+        fxh = tt.p0(1.0, 0.0, 1.0 - h);
+        fx = tt.p0(1.0, 0.0, 1.0);
+        fxDash = tt.lnP0Dash1(1.0, 0.0);
         assertTrue(approxEqual.test(Math.log((fx - fxh) / h), fxDash));
 
         assertTrue(
@@ -128,11 +111,13 @@ public class TestTimTam {
         ttConditioned.setInputValue("psi", "0.3");
         ttConditioned.setInputValue("rho", "0.5");
         ttConditioned.setInputValue("omega", "0.6");
-        ttConditioned.setInputValue("rootLength", "1.0");
+//        ttConditioned.setInputValue("rootLength", "1.0");
+        ttConditioned.setInputValue("originTime", "7.0");
         ttConditioned.setInputValue("catastropheTimes", catastropheTimes);
-        ttConditioned.setInputValue("points", points);
+//        ttConditioned.setInputValue("points", points);
+        ttConditioned.setInputValue("occurrenceTimes", points);
         ttConditioned.setInputValue("tree", tree);
-        ttConditioned.setInputValue("conditionOnObservation", "true");
+//        ttConditioned.setInputValue("conditionOnObservation", "true");
         ttConditioned.initAndValidate();
         assertFalse(
                 roughlyEqual.test(
@@ -214,3 +199,35 @@ public class TestTimTam {
     }
 
 }
+
+
+// public void testLikelihoodCalculationSimple() throws Exception {
+
+//     BirthDeathSkylineModel bdssm =  new BirthDeathSkylineModel();
+
+//     Tree tree = new TreeParser("((3 : 1.5, 4 : 0.5) : 1 , (1 : 2, 2 : 1) : 3);",false);
+//     bdssm.setInputValue("tree", tree);
+//     bdssm.setInputValue("origin", new RealParameter("10."));
+//     bdssm.setInputValue("conditionOnSurvival", false);
+//     bdssm.setInputValue("removalProbability", "1");
+
+//     bdssm.setInputValue("reproductiveNumber", new RealParameter("1.5"));
+//     bdssm.setInputValue("becomeUninfectiousRate", new RealParameter("1.5"));
+//     bdssm.setInputValue("samplingProportion", new RealParameter("0.3") );
+
+//     bdssm.initAndValidate();
+//     bdssm.printTempResults = false;
+
+//     assertEquals(-26.105360134266082, bdssm.calculateTreeLogLikelihood(tree), 1e-4);
+
+//     System.out.println("| R0  | lBDSKY             |");
+//     System.out.println("|-----+--------------------|");
+//     String[] reproductiveNumbers =
+//         {"1.5", "1.6", "1.7", "1.8", "1.9", "2.0", "3.0", "4.0"};
+//     for (String r0String : reproductiveNumbers) {
+//         bdssm.setInputValue("reproductiveNumber", new RealParameter(r0String));
+//         bdssm.initAndValidate();
+//         double tmp = bdssm.calculateTreeLogLikelihood(tree);
+//         System.out.println("| " + r0String + " | " + tmp + " |");
+//     }
+// }

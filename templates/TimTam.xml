@@ -6,16 +6,16 @@
 
         <subtemplate id='TimTam' class='timtam.TimTam' mainid='TimTam.t:$(n)'>
             <![CDATA[
-                   <input spec="timtam.BackwardsSchedule"
+                   <input spec="parameter.RealParameter"
                    id="catastropheSchedule.t:$(n)"
                    value="0.0" />
-                   <input spec="timtam.BackwardsSchedule"
+                   <input spec="parameter.RealParameter"
                    id="disasterSchedule.t:$(n)"
                    value="0.0" />
-                   <input spec="timtam.BackwardsCounts"
+                   <input spec="timtam.IntegerParameter"
                    id="disasterCounts.t:$(n)"
                    value="1" />
-                   <input spec="timtam.BackwardsPointProcess"
+                   <input spec="parameter.RealParameter"
                    id="occurrenceTimes.t:$(n)"
                    value="0.0 0.1" />
 
