@@ -10,6 +10,7 @@ import beast.evolution.tree.Tree;
 import beast.evolution.tree.TreeDistribution;
 
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.OptionalInt;
 
 /**
@@ -439,7 +440,12 @@ public class TimTam extends TreeDistribution {
     }
 
     /**
-     * This method should mutate the input to account for the observation that occurred.
+     * This method should mutate the attributes of this object to account for
+     * the observation that occurred.
+     *
+     * @implNote This method is implemented using if-else rather than a switch
+     * because the switch syntax has changed between Java versions so this
+     * guards against changes in versions.
      *
      * @param intTerminator the reason the interval of time ended.
      *
@@ -447,49 +453,46 @@ public class TimTam extends TreeDistribution {
      *
      */
     private void processObservation(TimTamIntervalTerminator intTerminator) {
-        switch (intTerminator.getType()) {
-            case "birth" -> {
-                this.lnL += Math.log(birth(intTerminator.getBwdTime()));
-                this.k += 1;
-            }
-            case "sample" -> {
-                this.lnL += Math.log(psi());
-                this.k -= 1;
-            }
-            case "occurrence" -> {
-                this.lnL += Math.log(omega()) + this.nb.lnPGFDash1(1.0);
-                double lnRp1 = Math.log(Math.exp(this.nb.getLnR()) + 1.0);
-                this.nb.setLnPAndLnR(this.nb.getLnP(), lnRp1);
-            }
-            case "catastrophe" -> {
-                int n = intTerminator.getCount();
-                double rho = rho();
-                this.lnL += (this.k - n) * Math.log(1 - rho)
-                        + n * Math.log(rho)
-                        + this.nb.lnPGF(1 - rho);
-                this.k -= n;
-                this.nb.setLnPAndLnR(Math.log(1 - rho) + this.nb.getLnP(),
-                        this.nb.getLnR());
+        String intTypeStr = intTerminator.getType();
+        Double obsBwdTime = intTerminator.getBwdTime();
 
+        if (Objects.equals(intTypeStr, "birth")) {
+            this.lnL += Math.log(birth(obsBwdTime));
+            this.k += 1;
+        } else if (Objects.equals(intTypeStr, "sample")) {
+            this.lnL += Math.log(psi());
+            this.k -= 1;
+        } else if (Objects.equals(intTypeStr, "occurrence")) {
+            this.lnL += Math.log(omega()) + this.nb.lnPGFDash1(1.0);
+            double lnRp1 = Math.log(Math.exp(this.nb.getLnR()) + 1.0);
+            this.nb.setLnPAndLnR(this.nb.getLnP(), lnRp1);
+        } else if (Objects.equals(intTypeStr, "catastrophe")) {
+            int n = intTerminator.getCount();
+            double rho = rho();
+            this.lnL += (this.k - n) * Math.log(1 - rho)
+                    + n * Math.log(rho)
+                    + this.nb.lnPGF(1 - rho);
+            this.k -= n;
+            this.nb.setLnPAndLnR(Math.log(1 - rho) + this.nb.getLnP(),
+                    this.nb.getLnR());
+        } else if (Objects.equals(intTypeStr, "disaster")) {
+            int h = intTerminator.getCount();
+            double nu = nu();
+            if (h > 0) {
+                this.lnL += this.k * Math.log(1 - nu)
+                        + h * Math.log(nu)
+                        + this.nb.lnPGFDash(h, 1 - nu);
+            } else if (h == 0) {
+                this.lnL += this.k * Math.log(1 - nu)
+                        + this.nb.lnPGFDash(h, 1 - nu); // this should just be the lnPGF.
+            } else {
+                throw new RuntimeException("a disaster with a negative number of cases should never happen.");
             }
-            case "disaster" -> {
-                int h = intTerminator.getCount();
-                double nu = nu();
-                if (h > 0) {
-                    this.lnL += this.k * Math.log(1 - nu)
-                            + h * Math.log(nu)
-                            + this.nb.lnPGFDash(h, 1 - nu);
-                } else if (h == 0) {
-                    this.lnL += this.k * Math.log(1 - nu)
-                            + this.nb.lnPGFDash(h, 1 - nu); // this should just be the lnPGF.
-                } else {
-                    throw new RuntimeException("a disaster with a negative number of cases should never happen.");
-                }
-                this.nb.setLnPAndLnR(
-                        Math.log(1 - nu) + this.nb.getLnP(),
-                        Math.log(Math.exp(this.nb.getLnR()) + h));
-            }
-            default -> throw new IllegalStateException("Unexpected value: " + intTerminator.getType() + "\n\tPlease look at the TimTamIntervalTerminator class to see the type of intervals that TimTam recognises.");
+            this.nb.setLnPAndLnR(
+                    Math.log(1 - nu) + this.nb.getLnP(),
+                    Math.log(Math.exp(this.nb.getLnR()) + h));
+        } else {
+            throw new IllegalStateException("Unexpected value: " + intTerminator.getType() + "\n\tPlease look at the TimTamIntervalTerminator class to see the type of intervals that TimTam recognises.");
         }
     }
 
@@ -785,7 +788,7 @@ public class TimTam extends TreeDistribution {
          * @param i
          * @return the logarithm of the Pochhammer function
          */
-        public static double lnPochhammer(double a, int i) {
+        public double lnPochhammer(double a, int i) {
             if (i > 0) {
                 double tmp = 0;
                 for (int j = i; j > 0; j--) {
