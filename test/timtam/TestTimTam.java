@@ -100,9 +100,16 @@ public class TestTimTam {
         assertTrue(approxEqual.test(Math.log((fx - fxh) / h), fxDash));
 
         assertTrue(
-                roughlyEqual.test(
-                        -47.0,
-                        tt.calculateLogP()));
+                roughlyEqual.test(-47.0,tt.calculateLogP()));
+
+        double lnMean0 = tt.getTimTamNegBinom().getLnMean();
+        tt.setInputValue("lambda", "3.0");
+        tt.initAndValidate();
+        assertFalse(
+                roughlyEqual.test(-47.0, tt.calculateLogP())
+        );
+        double lnMean1 = tt.getTimTamNegBinom().getLnMean();
+        assertFalse(roughlyEqual.test(lnMean0, lnMean1));
 
         // if we repeat this using an instance that conditions upon observation then the value should be different.
         TimTam ttConditioned = new TimTam();
@@ -123,6 +130,7 @@ public class TestTimTam {
                 roughlyEqual.test(
                         -47.0,
                         ttConditioned.calculateLogP()));
+
     }
 
     @Test
