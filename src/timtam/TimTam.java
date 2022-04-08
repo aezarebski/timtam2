@@ -75,8 +75,6 @@ public class TimTam extends TreeDistribution {
     // we specify a threshold below which two times are considered equal.
     private final double timeEpsilon = 0.00001;
 
-    private double[] llhdTermsForDebugging = {0,0}; // (interval, observations)
-
     Tree tree;
     protected Double[] lambda;
     protected Double[] lambdaChangeTimes;
@@ -112,7 +110,7 @@ public class TimTam extends TreeDistribution {
     private int k;
 
     // this is used to track the distribution of hidden lineages as we process the data.
-    private TimTamNegBinom nb = new TimTamNegBinom();
+    private final TimTamNegBinom nb = new TimTamNegBinom();
 
 
 
@@ -347,16 +345,9 @@ public class TimTam extends TreeDistribution {
 
         this.nb.setZero();
 
-        double debugVar;
-        this.llhdTermsForDebugging[0] = 0.0;
-        this.llhdTermsForDebugging[1] = 0.0;
         for (int ix = 0; ix < this.numTimeIntervals; ix++) {
-            debugVar = this.lnL;
             processInterval(this.intervalDuration[ix], this.intervalTerminators[ix].getBwdTime());
-            this.llhdTermsForDebugging[0] += (this.lnL - debugVar);
-            debugVar = this.lnL;
             processObservation(this.intervalTerminators[ix]);
-            this.llhdTermsForDebugging[1] += (this.lnL - debugVar);
         }
     }
 
@@ -418,7 +409,7 @@ public class TimTam extends TreeDistribution {
     }
 
     // this variable is just here in an attempt to resolve a memory leak...
-    private double[] tmpArry = {0,0,0,0,0};
+    private final double[] tmpArry = {0,0,0,0,0};
 
     /**
      * This method should mutate the input to adjust for the interval during which there was no observation.
@@ -444,29 +435,17 @@ public class TimTam extends TreeDistribution {
                 lnFM0 = this.nb.lnPGF(p0Val) + this.k * lnRVal;
                 tmpArry[0] = this.nb.lnPGFDash1(p0Val) + lnP0Dash1Val + this.k * lnRVal;
                 tmpArry[1] = Math.log(k) + (k-1) * lnRVal + lnRDash1Val + this.nb.lnPGF(p0Val);
-//                double tmp1 = this.nb.lnPGFDash1(p0Val) + lnP0Dash1Val + this.k * lnRVal;
-//                double tmp2 = Math.log(k) + (k-1) * lnRVal + lnRDash1Val + this.nb.lnPGF(p0Val);
-//                lnFM1 = logSumExp(new double[] {tmp1, tmp2});
                 lnFM1 = logSumExp(tmpArry, 2);
                 tmpArry[0] = this.nb.lnPGFDash2(p0Val) + 2 * lnP0Dash1Val + this.k * lnRVal;
                 tmpArry[1] = this.nb.lnPGFDash1(p0Val) + lnP0Dash2Val + this.k * lnRVal;
                 tmpArry[2] = Math.log(2) + this.nb.lnPGFDash1(p0Val) + lnP0Dash1Val + Math.log(this.k) + (this.k - 1) * lnRVal + lnRDash1Val;
                 tmpArry[3] = this.nb.lnPGF(p0Val) + Math.log(this.k) + Math.log(this.k - 1) + (this.k - 2) * lnRVal + 2 * lnRDash1Val;
                 tmpArry[4] = this.nb.lnPGF(p0Val) + Math.log(this.k) + (this.k-1) * lnRVal + lnRDash2Val;
-//                tmp1 = this.nb.lnPGFDash2(p0Val) + 2 * lnP0Dash1Val + this.k * lnRVal;
-//                tmp2 = this.nb.lnPGFDash1(p0Val) + lnP0Dash2Val + this.k * lnRVal;
-//                double tmp3 = Math.log(2) + this.nb.lnPGFDash1(p0Val) + lnP0Dash1Val + Math.log(this.k) + (this.k - 1) * lnRVal + lnRDash1Val;
-//                double tmp4 = this.nb.lnPGF(p0Val) + Math.log(this.k) + Math.log(this.k - 1) + (this.k - 2) * lnRVal + 2 * lnRDash1Val;
-//                double tmp5 = this.nb.lnPGF(p0Val) + Math.log(this.k) + (this.k-1) * lnRVal + lnRDash2Val;
-//                lnFM2 = logSumExp(new double[]{tmp1,tmp2,tmp3,tmp4,tmp5});
                 lnFM2 = logSumExp(tmpArry, 5);
             } else {
 
                 lnFM0 = this.nb.lnPGF(p0Val);
                 lnFM1 = this.nb.lnPGFDash1(p0Val) + lnP0Dash1Val;
-//                double tmp1 = this.nb.lnPGFDash2(p0Val) + 2 * lnP0Dash1Val;
-//                double tmp2 = this.nb.lnPGFDash1(p0Val) + lnP0Dash2Val;
-//                lnFM2 = logSumExp(new double[]{tmp1, tmp2});
                 tmpArry[0] = this.nb.lnPGFDash2(p0Val) + 2 * lnP0Dash1Val;
                 tmpArry[1] = this.nb.lnPGFDash1(p0Val) + lnP0Dash2Val;
                 lnFM2 = logSumExp(tmpArry, 2);
@@ -489,16 +468,6 @@ public class TimTam extends TreeDistribution {
 
     private double lnR(double intervalDuration, double bwdTimeIntervalEnd) {
         odeHelpers(intervalDuration, bwdTimeIntervalEnd);
-//        double[] tmp = odeHelpers(intervalDuration);
-//        double x1,x2,disc,expFact;
-//        x1 = tmp[0];
-//        x2 = tmp[1];
-//        disc = tmp[2];
-//        expFact = tmp[3];
-//        return Math.log(disc)
-//                + Math.log(expFact)
-//                - (2 * Math.log(birth()))
-//                - (2 * Math.log((x2 - 1.0) - (x1 - 1.0) * expFact));
         return Math.log(this.ohDiscriminant)
                 + Math.log(this.ohExpFact)
                 - (2 * Math.log(birth(bwdTimeIntervalEnd)))
@@ -507,18 +476,6 @@ public class TimTam extends TreeDistribution {
 
     private double lnRDash1(double intervalDuration, double bwdTimeIntervalEnd) {
         odeHelpers(intervalDuration, bwdTimeIntervalEnd);
-//        double[] tmp = odeHelpers(intervalDuration);
-//        double x1,x2,disc,expFact;
-//        x1 = tmp[0];
-//        x2 = tmp[1];
-//        disc = tmp[2];
-//        expFact = tmp[3];
-//        return Math.log(2)
-//                + Math.log(1 - expFact)
-//                + Math.log(expFact)
-//                + Math.log(disc)
-//                - 2 * Math.log(birth())
-//                - 3 * Math.log((x2 - expFact * (x1 - 1.0) - 1.0));
         return Math.log(2)
                 + Math.log(1 - this.ohExpFact)
                 + Math.log(this.ohExpFact)
@@ -529,18 +486,6 @@ public class TimTam extends TreeDistribution {
 
     private double lnRDash2(double intervalDuration, double bwdTimeIntervalEnd) {
         odeHelpers(intervalDuration, bwdTimeIntervalEnd);
-//        double[] tmp = odeHelpers(intervalDuration);
-//        double x1,x2,disc,expFact;
-//        x1 = tmp[0];
-//        x2 = tmp[1];
-//        disc = tmp[2];
-//        expFact = tmp[3];
-//        return Math.log(6)
-//                + 2 * Math.log(1 - expFact)
-//                + Math.log(expFact)
-//                + Math.log(disc)
-//                - 2 * Math.log(birth())
-//                - 4 * Math.log((x2 - expFact * (x1 - 1.0) - 1.0));
         return Math.log(6)
                 + 2 * Math.log(1 - this.ohExpFact)
                 + Math.log(this.ohExpFact)
@@ -549,24 +494,9 @@ public class TimTam extends TreeDistribution {
                 - 4 * Math.log((this.ohX2 - this.ohExpFact * (this.ohX1 - 1.0) - 1.0));
     }
 
-//    double p0(double intervalDuration) {
-//        odeHelpers(intervalDuration);
-//        return (this.ohX1 * (this.ohX2 - 1.0) - this.ohX2 * (this.ohX1 - 1.0) * this.ohExpFact) / ((this.ohX2 - 1.0) - (this.ohX1 - 1.0) * this.ohExpFact);
-////        double[] tmp = odeHelpers(intervalDuration);
-////        double x1 = tmp[0];
-////        double x2 = tmp[1];
-////        double expFact = tmp[3];
-////        return (x1 * (x2 - 1.0) - x2 * (x1 - 1.0) * expFact) / ((x2 - 1.0) - (x1 - 1.0) * expFact);
-//    }
-
     protected double p0(double intervalDuration, double bwdTimeIntervalEnd, double z) {
         odeHelpers(intervalDuration, bwdTimeIntervalEnd);
         return (this.ohX1 * (this.ohX2 - z) - this.ohX2 * (this.ohX1 - z) * this.ohExpFact) / ((this.ohX2 - z) - (this.ohX1 - z) * this.ohExpFact);
-//        double[] tmp = odeHelpers(intervalDuration);
-//        double x1 = tmp[0];
-//        double x2 = tmp[1];
-//        double expFact = tmp[3];
-//        return (x1 * (x2 - z) - x2 * (x1 - z) * expFact) / ((x2 - z) - (x1 - z) * expFact);
     }
 
     protected double lnP0Dash1(double intervalDuration, double bwdTimeIntervalEnd) {
@@ -576,15 +506,6 @@ public class TimTam extends TreeDistribution {
         double cc = this.ohX2 * this.ohExpFact - this.ohX1;
         return Math.log(cc * aa + this.ohX1 * this.ohX2 * Math.pow(bb, 2.0))
                 - 2.0 * Math.log(aa - bb);
-//        double[] tmp = odeHelpers(intervalDuration);
-//        double x1 = tmp[0];
-//        double x2 = tmp[1];
-//        double expFact = tmp[3];
-//        double aa = x2 - x1 * expFact;
-//        double bb = 1 - expFact;
-//        double cc = x2 * expFact - x1;
-//        return Math.log(cc * aa + x1 * x2 * Math.pow(bb, 2.0))
-//                - 2.0 * Math.log(aa - bb);
     }
 
     private double lnP0Dash2(double intervalDuration, double bwdTimeIntervalEnd) {
@@ -596,17 +517,6 @@ public class TimTam extends TreeDistribution {
                 + Math.log(bb)
                 + Math.log(cc * aa + this.ohX1 * this.ohX2 * Math.pow(bb, 2.0))
                 - 3.0 * Math.log(aa - bb);
-        // double[] tmp = odeHelpers(intervalDuration);
-        // double x1 = tmp[0];
-        // double x2 = tmp[1];
-        // double expFact = tmp[3];
-        // double aa = x2 - x1 * expFact;
-        // double bb = 1 - expFact;
-        // double cc = x2 * expFact - x1;
-        // return Math.log(2.0)
-        //         + Math.log(bb)
-        //         + Math.log(cc * aa + x1 * x2 * Math.pow(bb, 2.0))
-        //         - 3.0 * Math.log(aa - bb);
     }
 
     private double ohX1, ohX2, ohDiscriminant, ohExpFact;
@@ -624,12 +534,6 @@ public class TimTam extends TreeDistribution {
         return this.nb;
     }
 
-    public TimTamNegBinom getNewTimTamNegBinom() {
-        return new TimTamNegBinom();
-    }
-
-
-
     /**
      * LogSumExp
      *
@@ -637,7 +541,7 @@ public class TimTam extends TreeDistribution {
      *
      * @see <a href="https://en.wikipedia.org/wiki/LogSumExp">Wikipedia page.</a>
      */
-    final static double logSumExp(double[] xs) {
+    final double logSumExp(double[] xs) {
         return logSumExp(xs, xs.length);
     }
 
@@ -647,7 +551,7 @@ public class TimTam extends TreeDistribution {
      * @param xs array
      * @param n number of leading entries to use
      */
-    final static double logSumExp(double[] xs, int n) {
+    final double logSumExp(double[] xs, int n) {
         double xMax = Double.NEGATIVE_INFINITY;
         for (int i = 0; i < n; i++) {
             if (xs[i] > xMax) {
@@ -659,23 +563,10 @@ public class TimTam extends TreeDistribution {
             tmp += Math.exp(xs[i] - xMax);
         }
         return xMax + Math.log(tmp);
-       // double xMax = Arrays.stream(xs).limit(n).max().getAsDouble();
-       // double tmp = Arrays.stream(xs).limit(n).map((x) -> Math.exp(x - xMax)).sum();
-       // return xMax + Math.log(tmp);
     }
 
     @Override
     protected boolean requiresRecalculation() {
-        // We need to tell beast that the likelihood needs to be recalculated each time one of the inputs corresponding
-        // to a parameter changes. Since the schedule and points are not estimated we do not care about them here.
         return true;
-//        return super.requiresRecalculation()
-//                || lambdaInput.get().somethingIsDirty()
-//                || muInput.get().somethingIsDirty()
-//                || psiInput.get().somethingIsDirty()
-//                || rhoInput.get().somethingIsDirty()
-//                || omegaInput.get().somethingIsDirty()
-//                || nuInput.get().somethingIsDirty()
-//                || rootLengthInput.get().somethingIsDirty();
     }
 }
