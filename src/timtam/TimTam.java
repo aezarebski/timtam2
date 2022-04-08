@@ -142,30 +142,9 @@ public class TimTam extends TreeDistribution {
 
         this.tree = (Tree) treeInput.get();
 
-        this.lambda = lambdaInput.get().getValues();
-        this.lambdaChangeTimes =
-                lambdaChangeTimesInput.get() != null ? lambdaChangeTimesInput.get().getValues() : new Double[] {};
-
-        this.mu = muInput.get().getValue();
-        this.psi = psiInput.get().getValue();
-        if (rhoInput.get() != null) {
-            this.rho = rhoInput.get().getValue();
-        } else {
-            this.rho = null;
-        }
-
-        this.omega = omegaInput.get() != null ? omegaInput.get().getValue() : 0.0;
-
-        if (nuInput.get() != null) {
-            this.nu = nuInput.get().getValue();
-        } else {
-            this.nu = null;
-        }
+        updateRateAndProbParams();
 
         this.originTime = originTimeInput.get().getValue();
-
-        this.rateChangeTimes = this.lambdaChangeTimes;
-        this.numRateChanges = this.rateChangeTimes.length;
 
         if (catastropheTimesInput.get() != null) {
             this.catastropheTimes = catastropheTimesInput.get().getValues();
@@ -327,8 +306,26 @@ public class TimTam extends TreeDistribution {
 
     @Override
     public double calculateLogP() {
+        updateRateAndProbParams();
         calculateTreeLogLikelihood();
         return this.lnL;
+    }
+
+    /**
+     * Update the (primitive) local parameters to match the input.
+     */
+    private void updateRateAndProbParams() {
+        this.lambda = lambdaInput.get().getValues();
+        this.lambdaChangeTimes =
+                (lambdaChangeTimesInput.get() != null) ? lambdaChangeTimesInput.get().getValues() : new Double[]{};
+        this.mu = muInput.get().getValue();
+        this.psi = psiInput.get().getValue();
+        this.rho = (rhoInput.get() != null) ? rhoInput.get().getValue() : null;
+        this.omega = (omegaInput.get() != null) ? omegaInput.get().getValue() : 0.0;
+        this.nu = (nuInput.get() != null) ? nuInput.get().getValue() : null;
+
+        this.rateChangeTimes = this.lambdaChangeTimes;
+        this.numRateChanges = this.rateChangeTimes.length;
     }
 
     /**
