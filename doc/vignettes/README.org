@@ -1,6 +1,6 @@
 #+title: Vignettes
 #+author: Alexander E. Zarebski
-#+Time-stamp: <Last modified: 2022-03-31 15:56:42>
+#+Time-stamp: <Last modified: 2022-04-04 17:05:07>
 
 * Vignettes
 
@@ -28,9 +28,25 @@ The rate at which an individual ceases to be infectious if they are not sampled.
 This is not to be confused with the "total becoming uninfectious rate" which
 accounts for sampling and unobserved recovery.
 
+** Interval
+
+In the code, reference is made to /intervals of time/, this is used to indicate an
+interval of time can end in either an [[*Observation][observation]] or a change in a rate.
+
+** Observation
+
+The points in time that are represented in the data: births, unscheduled samples
+(both sequenced and unsequenced) and scheduled samples (both sequenced and
+unsequenced).
+
 ** Occurrence data
 
 See [[*Unsequenced sample][unsequenced sample]].
+
+** Origin
+
+The time that the first individual started to be infectious. This should not be
+confused with the tMRCA of the reconstructed tree.
 
 ** Scheduled sample
 

@@ -100,9 +100,16 @@ public class TestTimTam {
         assertTrue(approxEqual.test(Math.log((fx - fxh) / h), fxDash));
 
         assertTrue(
-                roughlyEqual.test(
-                        -47.0,
-                        tt.calculateLogP()));
+                roughlyEqual.test(-47.0,tt.calculateLogP()));
+
+        double lnMean0 = tt.getTimTamNegBinom().getLnMean();
+        tt.setInputValue("lambda", "3.0");
+        tt.initAndValidate();
+        assertFalse(
+                roughlyEqual.test(-47.0, tt.calculateLogP())
+        );
+        double lnMean1 = tt.getTimTamNegBinom().getLnMean();
+        assertFalse(roughlyEqual.test(lnMean0, lnMean1));
 
         // if we repeat this using an instance that conditions upon observation then the value should be different.
         TimTam ttConditioned = new TimTam();
@@ -123,6 +130,7 @@ public class TestTimTam {
                 roughlyEqual.test(
                         -47.0,
                         ttConditioned.calculateLogP()));
+
     }
 
     @Test
@@ -133,69 +141,26 @@ public class TestTimTam {
         // > log(sum(exp(c(1.17,0.95,0.10))))
         // [1] 1.933385
 
+        TimTam tt = new TimTam();
+
         double[] xs = {1.17,0.95,0.10,1.58};
 
-        assertTrue(approxEqual.test(2.465369, TimTam.logSumExp(xs, 4)));
-        assertTrue(approxEqual.test(1.933385, TimTam.logSumExp(xs, 3)));
+        assertTrue(approxEqual.test(2.465369, tt.logSumExp(xs, 4)));
+        assertTrue(approxEqual.test(1.933385, tt.logSumExp(xs, 3)));
 
 
         // > log(sum(exp(c(-1.0,0.95,0.10,1.58))))
         // [1] 2.187591
         xs[0] = -1.0;
-        assertTrue(approxEqual.test(2.187591, TimTam.logSumExp(xs)));
+        assertTrue(approxEqual.test(2.187591, tt.logSumExp(xs)));
         // > log(sum(exp(c(1.0,0.95,0.10,1.58))))
         // [1] 2.421622
         xs[0] = 1.0;
-        assertTrue(approxEqual.test(2.421622, TimTam.logSumExp(xs)));
+        assertTrue(approxEqual.test(2.421622, tt.logSumExp(xs)));
         // > log(sum(exp(c(10.0,0.95,0.10,1.58))))
         // [1] 10.00039
         xs[0] = 10.0;
-        assertTrue(approxEqual.test(10.00039, TimTam.logSumExp(xs)));
-    }
-
-    @Test
-    public void testNegativeBinomial() {
-
-        TimTam tt = new TimTam();
-
-        TimTam.NegativeBinomial myNB = tt.getNewNegativeBinomial();
-        myNB.setZero();
-
-        assertTrue(
-                approxEqual.test(
-                        0.0,
-                        TimTam.NegativeBinomial.lnPochhammer(1.5, 0)
-                )
-        );
-        assertTrue(
-                approxEqual.test(
-                        Math.log(1.5),
-                        TimTam.NegativeBinomial.lnPochhammer(1.5, 1)
-                )
-        );
-        assertTrue(
-                approxEqual.test(
-                        Math.log(1.5 * 2.5),
-                        TimTam.NegativeBinomial.lnPochhammer(1.5, 2)
-                )
-        );
-
-        myNB.setLnPAndLnR(Math.log(0.3), Math.log(5));
-
-        assertTrue(approxEqual.test(myNB.getLnMean(),0.7621401));
-        assertTrue(approxEqual.test(myNB.getLnVariance(),1.118815));
-
-
-        DoubleFunction<Double> f = (double z) -> myNB.lnPGF(z, 5, 0.3);
-        DoubleFunction<Double> fDash = (double z) -> myNB.lnPGFDash(1, z, 5, 0.3);
-        double z = 0.4;
-        double h = 1e-6;
-        double fFD = Math.log((Math.exp(f.apply(z + h)) - Math.exp(f.apply(z))) / h);
-
-        assertTrue(approxEqual.test(f.apply(z), -1.144208));
-        assertTrue(f.apply(z+h) > -1.144208);
-        assertTrue(approxEqual.test(fDash.apply(z), fFD));
-
+        assertTrue(approxEqual.test(10.00039, tt.logSumExp(xs)));
     }
 
 }
