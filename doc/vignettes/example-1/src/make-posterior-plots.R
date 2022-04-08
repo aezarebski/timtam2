@@ -38,17 +38,20 @@ timtam_mcmc <- timtam_log |>
   read_beast2_log() |>
   mutate(
     r_naught = birthRate / (death_rate + sampling_rate + occurrence_rate),
-    model = "timtam"
+    model = "timtam",
+    prev_nb_mean = TimTam.prevalence.mean,
+    prev_nb_size = ((TimTam.prevalence.mean ^ 2) /
+                    (TimTam.prevalence.variance - TimTam.prevalence.mean))
   ) |>
-  select(r_naught, model, TimTam.prevalence.lnR, TimTam.prevalence.lnP)
+  select(r_naught, model, prev_nb_mean, prev_nb_size)
 
 ## Posterior summary for the prevalence
 
 prev_df <- data.frame(
   prevalence = rnbinom(
     n = nrow(timtam_mcmc),
-    size = exp(timtam_mcmc$TimTam.prevalence.lnR),
-    prob = 1 - exp(timtam_mcmc$TimTam.prevalence.lnP)
+    mu = timtam_mcmc$prev_nb_mean,
+    size = timtam_mcmc$prev_nb_size
   )
 )
 
