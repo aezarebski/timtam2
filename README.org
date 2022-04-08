@@ -2,14 +2,16 @@
 #+author: Alexander E. Zarebski
 
 This repository is an attempt to implement the [[https://github.com/aezarebski/timtam][TimTam]] likelihood (described in
-the PLOS Computational Biology [[https://doi.org/10.1371/journal.pcbi.1009805][paper]]) as a BEAST2 package. There are [[file:./doc/vignettes/readme.org::*Vignettes][vignettes]]
+the PLOS Computational Biology [[https://doi.org/10.1371/journal.pcbi.1009805][paper]]) as a BEAST2 package. There are [[file:./doc/vignettes/README.org::*Vignettes][vignettes]]
 demonstrating how to use this. There is also a [[file:./doc/vignettes/readme.org::*Glossary][glossary]] for definitions specific
 to TimTam.
 
 * Installation
 
-The following is an example of how to compile this package and install it so
-BEAST2 can find it.
+This package is not yet ready for CBAN, but in the meantime you can still use it
+but you will need to compile it from source and install it on your machine.
+Remco Bouckaert has an [[https://www.beast2.org/2021/06/21/building-from-source.html][excellent blog post]] describing this process in more
+detail.
 
 #+begin_example
 $ ant
@@ -21,7 +23,7 @@ $ mkdir timtam
 $ cd timtam
 $ unzip -o <path/to/timtam.v0.1.0.zip>
 ...
-$ java-cp <path/to/beast.jar> beast.app.beauti.Beauti
+$ java -cp <path/to/beast.jar> beast.app.beauti.Beauti
 #+end_example
 
 _Don't forget to clear the Class Path in Beauti before looking for the package!_
