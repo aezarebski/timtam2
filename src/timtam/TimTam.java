@@ -28,49 +28,49 @@ import java.util.OptionalInt;
         year = 2022, firstAuthorSurname = "Zarebski", DOI="10.1371/journal.pcbi.1009805")
 public class TimTam extends TreeDistribution {
 
-    final public Input<RealParameter> lambdaInput =
+    public Input<RealParameter> lambdaInput =
             new Input<>("lambda", "The birth rate. If you want to have rates that change over time you will also need the lambdaChangeTimes to be set.", (RealParameter) null);
 
-    final public Input<RealParameter> lambdaChangeTimesInput =
+    public Input<RealParameter> lambdaChangeTimesInput =
             new Input<>("lambdaChangeTimes", "The times at which the value of lambda changes. These should be given as backwards times treating the final observation *in the tree* as the present (time zero). If lambda is constant then this parameter can safely be left as the default null value.", (RealParameter) null);
 
-    final public Input<RealParameter> muInput =
+    public Input<RealParameter> muInput =
             new Input<>("mu", "The death rate, i.e. the rate at which individuals are removed without being observed.", (RealParameter) null);
 
-    final public Input<RealParameter> psiInput =
+    public Input<RealParameter> psiInput =
             new Input<>("psi", "The sampling rate, i.e. the rate of unscheduled sequenced sampling.", (RealParameter) null);
 
-    final public Input<RealParameter> rhoInput =
+    public Input<RealParameter> rhoInput =
             new Input<>("rho", "The probability of sampling lineages in a scheduled sample.", (RealParameter) null);
 
-    final public Input<RealParameter> omegaInput =
+    public Input<RealParameter> omegaInput =
             new Input<>("omega", "The occurrence rate, i.e. the rate of unscheduled unsequenced sampling. Default value of zero (no occurrence sampling).", (RealParameter) null);
 
-    final public Input<RealParameter> originTimeInput =
+    public Input<RealParameter> originTimeInput =
             new Input<>("originTime",
                     "The (backwards) time of the origin (relative to the most recent observation in the tree which is considered as having occurred at time zero).",
                     (RealParameter) null);
 
-    final public Input<RealParameter> catastropheTimesInput = new Input<>("catastropheTimes", "the times at which a scheduled sequenced sample was attempted", Input.Validate.OPTIONAL);
+    public Input<RealParameter> catastropheTimesInput = new Input<>("catastropheTimes", "the times at which a scheduled sequenced sample was attempted", Input.Validate.OPTIONAL);
 
-    final public Input<RealParameter> occurrenceTimesInput =
+    public Input<RealParameter> occurrenceTimesInput =
             new Input<>("occurrenceTimes",
                     "The times at which there was an occurrence (omega-sample) event. This should be entered as backwards time relative to the final time in the tree which is treated as the present (time zero). The default variable for this is null meaning no occurrence observations, leaving this empty does not mean that the omega rate is assumed to be zero.");
 
-    final public Input<RealParameter> nuInput =
+    public Input<RealParameter> nuInput =
             new Input<>("nu", "the probability of unsequenced scheduled sampling", Input.Validate.OPTIONAL);
 
-    final public Input<RealParameter> disasterTimesInput =
+    public Input<RealParameter> disasterTimesInput =
             new Input<>("disasterTimes",
                     "The times at which a scheduled unsequenced sample was attempted. This should be entered as backwards time relative to the final time in the tree which is treated as the present (time zero). The default variable for this is null indicating that no scheduled unsequenced samples were attempted.",
                     (RealParameter) null);
 
-    final public Input<IntegerParameter> disasterSizesInput =
+    public Input<IntegerParameter> disasterSizesInput =
             new Input<>("disasterSizes",
                     "the size of each scheduled unsequenced sample",
                     (IntegerParameter) null);
 
-    final public Input<Boolean> conditionOnObservationInput = new Input<>("conditionOnObservation", "if is true then condition on sampling at least one individual (psi-sampling). The default value is true.", true);
+    public Input<Boolean> conditionOnObservationInput = new Input<>("conditionOnObservation", "if is true then condition on sampling at least one individual (psi-sampling). The default value is true.", true);
 
     // we specify a threshold below which two times are considered equal.
     private final double timeEpsilon = 0.00001;
