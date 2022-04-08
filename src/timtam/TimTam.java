@@ -268,13 +268,17 @@ public class TimTam extends TreeDistribution {
             double nBwdTime = this.lambdaChangeTimes[0];
             int ix = 0;
             while (true) {
-                if (cBwdTime > bwdTime & bwdTime > nBwdTime) {
+                if (cBwdTime >= bwdTime & bwdTime > nBwdTime) {
                     return cLambda;
                 } else {
                     ix+=1;
                     cBwdTime = this.lambdaChangeTimes[ix-1];
                     cLambda = this.lambda[ix];
-                    nBwdTime = this.lambdaChangeTimes[ix];
+                    if (ix < this.lambdaChangeTimes.length) {
+                        nBwdTime = this.lambdaChangeTimes[ix];
+                    } else {
+                        nBwdTime = Double.NEGATIVE_INFINITY;
+                    }
                 }
             }
         } else {
@@ -403,6 +407,7 @@ public class TimTam extends TreeDistribution {
             this.nb.setLnPAndLnR(
                     Math.log(1 - nu) + this.nb.getLnP(),
                     Math.log(Math.exp(this.nb.getLnR()) + h));
+        } else if (Objects.equals(intTypeStr, "rateChange")) {
         } else {
             throw new IllegalStateException("Unexpected value: " + intTerminator.getType() + "\n\tPlease look at the TimTamIntervalTerminator class to see the type of intervals that TimTam recognises.");
         }

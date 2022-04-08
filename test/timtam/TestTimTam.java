@@ -162,6 +162,39 @@ public class TestTimTam {
         assertTrue(approxEqual.test(10.00039, tt.logSumExp(xs)));
     }
 
+    @Test
+    public void testVariableBirthRate() {
+
+        Tree tree = new TreeParser("(((1:3,2:1):1,3:4):2,4:6);",false);
+        RealParameter occTimes = new RealParameter();
+        occTimes.initByName("value", "5.0 1.0");
+
+        double lv0 = 3.1;
+        double lv1 = 4.1;
+        double lv2 = 5.9;
+        double lct0 = 4.3;
+        double lct1 = 2.1;
+        TimTam tt = new TimTam();
+        tt.setInputValue("lambda", lv0 + " " + lv1 + " " + lv2);
+        tt.setInputValue("lambdaChangeTimes", lct0 + " " + lct1);
+        tt.setInputValue("mu", "1.0");
+        tt.setInputValue("psi", "0.3");
+        tt.setInputValue("rho", "0.5");
+        tt.setInputValue("omega", "0.6");
+        tt.setInputValue("originTime", "7.0");
+        tt.setInputValue("occurrenceTimes", occTimes);
+        tt.setInputValue("tree", tree);
+        tt.setInputValue("conditionOnObservation", "false");
+        tt.initAndValidate();
+
+        assertTrue(approxEqual.test(tt.birth(lct0 + 0.1), lv0));
+        assertTrue(approxEqual.test(tt.birth(lct0), lv1));
+        assertTrue(approxEqual.test(tt.birth(lct0 - 0.1), lv1));
+
+        assertTrue(approxEqual.test(tt.birth(lct1 + 0.1), lv1));
+        assertTrue(approxEqual.test(tt.birth(lct1), lv2));
+        assertTrue(approxEqual.test(tt.birth(lct1 - 0.1), lv2));
+    }
 }
 
 
