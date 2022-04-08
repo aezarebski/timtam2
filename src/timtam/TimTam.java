@@ -136,36 +136,6 @@ public class TimTam extends TreeDistribution {
 
     }
 
-    public TimTam(
-            RealParameter lambda,
-            RealParameter lambdaChangeTimes,
-            RealParameter mu,
-            RealParameter psi,
-            RealParameter rho,
-            RealParameter omega,
-            RealParameter originTime,
-            RealParameter catastropheTimes,
-            RealParameter occurrenceTimes,
-            RealParameter nu,
-            RealParameter disasterTimes,
-            IntegerParameter disasterSizes,
-            Boolean conditionOnObservation) {
-        this("timTamModel",
-                lambda,
-                lambdaChangeTimes,
-                mu,
-                psi,
-                rho,
-                omega,
-                originTime,
-                catastropheTimes,
-                occurrenceTimes,
-                nu,
-                disasterTimes,
-                disasterSizes,
-                conditionOnObservation);
-    }
-
     @Override
     public void initAndValidate() {
         super.initAndValidate();
@@ -312,52 +282,6 @@ public class TimTam extends TreeDistribution {
             this.catastropheSizes[ix] = cS;
             this.totalCatastropheSizes += cS;
         }
-    }
-
-    public TimTam(
-            String modelName,
-            RealParameter lambda,
-            RealParameter lambdaChangeTimes,
-            RealParameter mu,
-            RealParameter psi,
-            RealParameter rho,
-            RealParameter omega,
-            RealParameter originTime,
-            RealParameter catastropheTimes,
-            RealParameter occurrenceTimes,
-            RealParameter nu,
-            RealParameter disasterTimes,
-            IntegerParameter disasterSizes,
-            Boolean conditionOnObservation) {
-
-        this.lambda = lambda.getValues();
-
-        this.lambdaChangeTimes = lambdaChangeTimes.getValues();
-
-        this.mu = mu.getValue();
-
-        this.psi = psi.getValue();
-
-        this.rho = rho.getValue();
-
-        this.omega = omega.getValue();
-
-        this.originTime= originTime.getValue();
-
-        this.catastropheTimes = catastropheTimes.getValues();
-
-        this.occurrenceTimes = occurrenceTimes.getValues();
-
-        this.nu = nu.getValue();
-        if (this.nu != null) {
-            nu.setBounds(0.0, 1.0);
-        }
-        this.disasterTimes = disasterTimes.getValues();
-        this.disasterSizes = disasterSizes.getValues();
-
-        this.conditionOnObservation = conditionOnObservation;
-
-        this.nb.setZero();
     }
 
     public double birth(double bwdTime) {
