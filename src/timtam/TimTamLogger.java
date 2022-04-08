@@ -24,11 +24,10 @@ public class TimTamLogger extends BEASTObject implements Loggable {
     @Override
     public void log(long sample, PrintStream out) {
         final TimTam tt = timTamInput.get();
-        out.print(tt.getNewTimTamNegBinom().getLnR() + "\t");
-        out.print(tt.getNewTimTamNegBinom().getLnR() + "\t");
-        out.print(tt.getNewTimTamNegBinom().getLnP() + "\t");
-        out.print(tt.getNewTimTamNegBinom().getLnMean() + "\t");
-        out.print(tt.getNewTimTamNegBinom().getLnVariance() + "\t");
+        out.print(tt.getTimTamNegBinom().getLnR() + "\t");
+        out.print(tt.getTimTamNegBinom().getLnP() + "\t");
+        out.print(tt.getTimTamNegBinom().getLnMean() + "\t");
+        out.print(tt.getTimTamNegBinom().getLnVariance() + "\t");
     }
 
     @Override
