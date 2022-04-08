@@ -23,9 +23,9 @@ public class TimTamNegBinom {
 
     /**
      *
-     * @param z
-     * @param r
-     * @param p
+     * @param z variable of the generating function
+     * @param r parameter of the negative distribution
+     * @param p parameter of the distribution
      * @return the logarithm of the probability generating function.
      */
     public double lnPGF(double z, double r, double p) {
@@ -42,7 +42,9 @@ public class TimTamNegBinom {
 
     /**
      * @param n the number of partial derivatives
-     * @param z
+     * @param z variable of the generating function
+     * @param r parameter of the negative distribution
+     * @param p parameter of the distribution
      * @return the logarithm of the n-th partial derivative of the probability generating function
      */
     public double lnPGFDash(int n, double z, double r, double p) {
@@ -77,8 +79,6 @@ public class TimTamNegBinom {
     }
 
     /**
-     * @param a
-     * @param i
      * @return the logarithm of the Pochhammer function
      */
     public double lnPochhammer(double a, int i) {
@@ -92,19 +92,6 @@ public class TimTamNegBinom {
             return 0.0;
         } else {
             throw new IllegalArgumentException("logPochhammer expects i >= 0 but got " + i);
-        }
-    }
-
-    public TimTamNegBinom(double mean, double variance) {
-        if (mean > 0 && variance > mean) {
-            this.isZero = false;
-            setLnMeanAndLnVariance(Math.log(mean), Math.log(variance));
-        }
-
-        if (mean == 0 && variance == 0) {
-            this.isZero = true;
-            this.lnMean = Double.NEGATIVE_INFINITY;
-            this.lnVariance = Double.NEGATIVE_INFINITY;
         }
     }
 
