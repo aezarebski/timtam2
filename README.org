@@ -1,5 +1,6 @@
 #+title: TimTam
 #+author: Alexander E. Zarebski
+#+Time-stamp: <Last modified: 2022-04-11 18:31:36>
 
 This repository is an attempt to implement the [[https://github.com/aezarebski/timtam][TimTam]] likelihood (described in
 the PLOS Computational Biology [[https://doi.org/10.1371/journal.pcbi.1009805][paper]]) as a BEAST2 package. There are [[file:./doc/vignettes/README.org::*Vignettes][vignettes]]
@@ -9,34 +10,78 @@ to TimTam.
 * Installation
 
 This package is not yet ready for CBAN, but in the meantime you can still use it
-but you will need to compile it from source and install it on your machine.
-Remco Bouckaert has an [[https://www.beast2.org/2021/06/21/building-from-source.html][excellent blog post]] describing this process in more
-detail.
+but you will need to compile it from source and install it on your machine. The
+following steps will achieve that.
+
+** Create a directory for BEAST2 and TimTam
+
+Since the ant build scripts expect BEAST2 to be in a particular location, it is
+probably easiest to start by cloning a fresh copy of BEAST2 into a sensible
+directory created for this purpose.
 
 #+begin_example
+$ mkdir foobar
+$ cd foobar
+#+end_example
+
+** Clone and compile BEAST2
+
+#+begin_example
+$ git clone git@github.com:CompEvol/beast2.git
+...
+$ cd beast2
 $ ant
 ...
-$ ls dist/timtam.*.zip
-dist/timtam.v0.1.0.zip
+$ cd ..
+#+end_example
+
+** Clone and compile TimTam
+
+For the time being, only the =skyline= branch can be used comfortably
+
+#+begin_example
+$ git clone git@github.com:aezarebski/timtam2.git
+...
+$ cd timtam2
+$ git checkout skyline
+$ ant
+...
+$ cd ..
+#+end_example
+
+Note that in the output it should tell you that the jar file has been created:
+=./dist/timtam.v0.1.0.zip=. We will need this later.
+
+** Install TimTam where BEAST2 can find it
+
+You can use Beauti to find where BEAST2 looks for packages, typically if you are using version =2.6= this will be in =~/.beast/2.6/=.
+
+#+begin_example
+$ java -cp ./beast2/build/dist/beast.jar beast.app.beauti.Beauti
+#+end_example
+
+Move the zip file to this location and unzip it there.
+
+#+begin_example
 $ cd ~/.beast/2.6/
 $ mkdir timtam
 $ cd timtam
 $ unzip -o <path/to/timtam.v0.1.0.zip>
 ...
-$ java -cp <path/to/beast.jar> beast.app.beauti.Beauti
+$ cd <path/to/foobar>
 #+end_example
 
-_Don't forget to clear the Class Path in Beauti before looking for the package!_
+Remco Bouckaert has an [[https://www.beast2.org/2021/06/21/building-from-source.html][excellent blog post]] describing this process in more
+detail. _Don't forget to clear the Class Path in Beauti before looking for the
+package!_
 
-* Structure
+** Test one of the example XML files runs
 
-Figure [[example-dag]] shows an example of how the classes provided by the package
-fit together to define a model. The =RootLength= is really a =RealParameter= but
-this has not been given its own class yet.
+There is an example XML [[file:./doc/vignettes/example-1/xml/timtam.xml][here]] (=doc/vignettes/example-1/xml/timtam.xml=).
 
-#+name: example-dag
-#+attr_org: :width 500
-[[./example-dag.png]]
+#+begin_example
+$ java -cp ./beast2/build/dist/beast.jar beast.app.beastapp.BeastMain timtam.xml
+#+end_example
 
 * Remaining tasks and open problems
 
@@ -47,4 +92,3 @@ this has not been given its own class yet.
 2. Support heterogeneous rates
 3. The [[file:./doc/vignettes/example-1/xml/bdsky-serial.xml][Example 1 XML]] still uses the R-nought parameterisation, but the Example 2
    XML shows that it is easy to move over to the canonical parameterisation.
-4. The [[*Structure][Structure]] section below is massively out of date.
