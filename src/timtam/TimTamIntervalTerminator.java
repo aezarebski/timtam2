@@ -24,6 +24,13 @@ public class TimTamIntervalTerminator implements Comparable<TimTamIntervalTermin
     private final int count;
     private final Double bwdTime;
 
+    /**
+     * Construct a description of why an interval terminated.
+     *
+     * @param type a string indicating the reason the interval ended.
+     * @param bwdTime the time that the interval ended
+     * @param count the size of the event
+     */
     TimTamIntervalTerminator(String type, Double bwdTime, OptionalInt count) {
         final Set<String> validTerminatorNames =
                 new HashSet<>(Arrays.asList("birth", "sample", "occurrence", "catastrophe", "disaster", "rateChange"));
