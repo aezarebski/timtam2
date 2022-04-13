@@ -66,6 +66,43 @@ public class TestTimTam {
         }
     }
 
+    /** This is pretty much the same as {@link #testLikelihoodCalculationSimple()} but
+     * it uses a variable birth rate. The resulting log-likelihood should sit somewhere
+     * between the likelihoods of the two extremes used.
+     */
+    @Test
+    public void testLikelihoodCalculationVariableBirthRate() {
+
+        TimTam tt =  new TimTam();
+
+        Tree tree = new TreeParser("((3 : 1.5, 4 : 0.5) : 1 , (1 : 2, 2 : 1) : 3);",false);
+        tt.setInputValue("tree", tree);
+        tt.setInputValue("originTime", new RealParameter("10.0"));
+
+        double becomeUninfectiousRate = 1.5;
+        double samplingProportion = 0.3;
+
+        tt.setInputValue("mu",new RealParameter(Double.toString(becomeUninfectiousRate * (1 - samplingProportion))));
+        tt.setInputValue("psi",new RealParameter(Double.toString(becomeUninfectiousRate * samplingProportion)));
+
+        // We can check that when using a variable rate it interpolates between the extremes used.
+        String lambdaString1p8 = Double.toString(1.8 * becomeUninfectiousRate);
+        tt.setInputValue("lambda", new RealParameter(lambdaString1p8));
+        tt.initAndValidate();
+        double tmpWith1p8 = tt.calculateLogP();
+        String lambdaString1p9 = Double.toString(1.9 * becomeUninfectiousRate);
+        tt.setInputValue("lambda", new RealParameter(lambdaString1p9));
+        tt.initAndValidate();
+        double tmpWith1p9 = tt.calculateLogP();
+        String lambdaStringV = lambdaString1p8 + " " + lambdaString1p9;
+        tt.setInputValue("lambda", new RealParameter(lambdaStringV));
+        tt.setInputValue("lambdaChangeTimes", new RealParameter("3.0"));
+        tt.initAndValidate();
+        double tmpWithVarying = tt.calculateLogP();
+        assertTrue(tmpWith1p8 > tmpWithVarying);
+        assertTrue(tmpWithVarying > tmpWith1p9);
+    }
+
     @Test
     public void testLikelihood() {
 
