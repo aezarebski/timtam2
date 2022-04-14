@@ -456,7 +456,7 @@ name="alignment">
     <map name="InverseGamma" >beast.math.distributions.InverseGamma</map>
     <map name="OneOnX" >beast.math.distributions.OneOnX</map>
 
-    <run id="mcmc" spec="MCMC" chainLength="1000000">
+    <run id="mcmc" spec="MCMC" chainLength="$(chainLength)">
 
         <state id="state" spec="State" storeEvery="5000">
             <parameter
