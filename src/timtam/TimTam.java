@@ -35,7 +35,10 @@ public class TimTam extends TreeDistribution {
             new Input<>("lambdaChangeTimes", "The times at which the value of lambda changes. These should be given as backwards times treating the final observation *in the tree* as the present (time zero). If lambda is constant then this parameter can safely be left as the default null value.", (RealParameter) null);
 
     public Input<RealParameter> muInput =
-            new Input<>("mu", "The death rate, i.e. the rate at which individuals are removed without being observed.", (RealParameter) null);
+            new Input<>("mu", "The death rate, i.e. the rate at which individuals are removed without being observed. If you want to have rates that change over time you will also need the muChangeTimes to be set.", (RealParameter) null);
+
+    public Input<RealParameter> muChangeTimesInput =
+            new Input<>("muChangeTimes", "The times at which the value of mu changes. These should be given as backwards times treating the final observation *in the tree* as the present (time zero). If mu is constant then this parameter can safely be left as the default null value.", (RealParameter) null);
 
     public Input<RealParameter> psiInput =
             new Input<>("psi", "The sampling rate, i.e. the rate of unscheduled sequenced sampling.", (RealParameter) null);
@@ -77,7 +80,7 @@ public class TimTam extends TreeDistribution {
 
     Tree tree;
     protected Double[] lambdaChangeTimes;
-    protected Double mu;
+    protected Double[] muChangeTimes;
     protected Double psi;
     protected Double rho;
     protected Double omega;
@@ -123,6 +126,7 @@ public class TimTam extends TreeDistribution {
     private double[] lncs;
     private double[] lnls;
     private double[] lambdaValues;
+    private double[] muValues;
     private int[] kValues;
     // END SNEAKY
 
@@ -164,7 +168,17 @@ public class TimTam extends TreeDistribution {
 
         this.lambdaChangeTimes =
                 (lambdaChangeTimesInput.get() != null) ? lambdaChangeTimesInput.get().getValues() : new Double[]{};
-        this.rateChangeTimes = this.lambdaChangeTimes;
+        this.muChangeTimes =
+                (muChangeTimesInput.get() != null) ? muChangeTimesInput.get().getValues() : new Double[]{};
+        this.rateChangeTimes = new Double[this.lambdaChangeTimes.length + this.muChangeTimes.length];
+        for (int ix = 0; ix < this.rateChangeTimes.length; ix++) {
+            if (ix < this.lambdaChangeTimes.length) {
+                this.rateChangeTimes[ix] = this.lambdaChangeTimes[ix];
+            } else if (ix < this.lambdaChangeTimes.length + this.muChangeTimes.length) {
+                this.rateChangeTimes[ix] = this.muChangeTimes[ix-this.lambdaChangeTimes.length];
+            }
+        }
+        Arrays.sort(this.rateChangeTimes);
 
         // We need to be careful in counting the number of time intervals because there may be multiple
         // tree nodes counted as a single catastrophe.
@@ -215,6 +229,7 @@ public class TimTam extends TreeDistribution {
         this.lncs = new double[this.numTimeIntervals];
         this.lnls = new double[this.numTimeIntervals];
         this.lambdaValues = new double[this.numTimeIntervals];
+        this.muValues = new double[this.numTimeIntervals];
 
         this.intervalStartTimes = new double[this.numTimeIntervals];
         this.intervalEndTimes = new double[this.numTimeIntervals];
@@ -223,13 +238,15 @@ public class TimTam extends TreeDistribution {
         this.intervalEndTimes[0] = this.intervalTerminators[0].getBwdTime();
         this.kValues[0] = 1;
         this.lambdaValues[0] = this.lambdaInput.get().getValues()[0];
+        this.muValues[0] = this.muInput.get().getValues()[0];
 
         String tt;
         for (int ix = 1; ix < this.numTimeIntervals; ix++) {
             this.intervalStartTimes[ix] = this.intervalTerminators[ix-1].getBwdTime();
             this.intervalEndTimes[ix] = this.intervalTerminators[ix].getBwdTime();
 
-            this.lambdaValues[ix] = this.birth(0.5 * (this.intervalStartTimes[ix] + this.intervalEndTimes[ix]));
+            this.lambdaValues[ix] = this.birth(this.intervalStartTimes[ix]);
+            this.muValues[ix] = this.death(this.intervalStartTimes[ix]);
 
             tt = this.intervalTerminators[ix-1].getType();
             if (Objects.equals(tt, "birth")) {
@@ -323,8 +340,34 @@ public class TimTam extends TreeDistribution {
         }
     }
 
-    public double death() {
-        return mu;
+    public double death(int intervalIx) {
+        return this.muValues[intervalIx];
+    }
+
+    public double death(double bwdTime) {
+        Double[] mu = this.muInput.get().getValues();
+        if (mu.length > 1) {
+            double cBwdTime = Double.POSITIVE_INFINITY;
+            double cMu = mu[0];
+            double nBwdTime = this.muChangeTimes[0];
+            int ix = 0;
+            while (true) {
+                if (cBwdTime >= bwdTime & bwdTime > nBwdTime) {
+                    return cMu;
+                } else {
+                    ix+=1;
+                    cBwdTime = this.muChangeTimes[ix-1];
+                    cMu = mu[ix];
+                    if (ix < this.muChangeTimes.length) {
+                        nBwdTime = this.muChangeTimes[ix];
+                    } else {
+                        nBwdTime = Double.NEGATIVE_INFINITY;
+                    }
+                }
+            }
+        } else {
+            return mu[0];
+        }
     }
 
     public double psi() {
@@ -353,7 +396,6 @@ public class TimTam extends TreeDistribution {
      * Update the (primitive) local parameters to match the input.
      */
     private void updateRateAndProbParams() {
-        this.mu = muInput.get().getValue();
         this.psi = psiInput.get().getValue();
         this.rho = (rhoInput.get() != null) ? rhoInput.get().getValue() : null;
         this.omega = (omegaInput.get() != null) ? omegaInput.get().getValue() : 0.0;
@@ -582,8 +624,9 @@ public class TimTam extends TreeDistribution {
     private double ohX1, ohX2, ohDiscriminant, ohExpFact;
 
     private void odeHelpers(double intervalDuration, double bwdTimeIntervalEnd) {
-        double gamma = birth(bwdTimeIntervalEnd) + death() + psi() + omega();
-        this.ohDiscriminant = Math.pow(gamma, 2.0) - 4.0 * birth(bwdTimeIntervalEnd) * death();
+        // the 0.5*intervalDuration here is to ensure that this takes the value in the middle of the interval.
+        double gamma = birth(bwdTimeIntervalEnd) + death(bwdTimeIntervalEnd + 0.5*intervalDuration) + psi() + omega();
+        this.ohDiscriminant = Math.pow(gamma, 2.0) - 4.0 * birth(bwdTimeIntervalEnd) * death(bwdTimeIntervalEnd + 0.5*intervalDuration);
         double sqrtDisc = Math.sqrt(this.ohDiscriminant);
         this.ohX1 = (gamma - sqrtDisc) / (2 * birth(bwdTimeIntervalEnd));
         this.ohX2 = (gamma + sqrtDisc) / (2 * birth(bwdTimeIntervalEnd));
@@ -593,8 +636,8 @@ public class TimTam extends TreeDistribution {
     private void odeHelpers(int intervalIx) {
         double intervalDuration = this.intervalStartTimes[intervalIx] - this.intervalEndTimes[intervalIx];
         double bwdTimeIntervalEnd = this.intervalTerminators[intervalIx].getBwdTime();
-        double gamma = birth(intervalIx) + death() + psi() + omega();
-        this.ohDiscriminant = Math.pow(gamma, 2.0) - 4.0 * birth(intervalIx) * death();
+        double gamma = birth(intervalIx) + death(intervalIx) + psi() + omega();
+        this.ohDiscriminant = Math.pow(gamma, 2.0) - 4.0 * birth(intervalIx) * death(intervalIx);
         double sqrtDisc = Math.sqrt(this.ohDiscriminant);
         this.ohX1 = (gamma - sqrtDisc) / (2 * birth(intervalIx));
         this.ohX2 = (gamma + sqrtDisc) / (2 * birth(intervalIx));

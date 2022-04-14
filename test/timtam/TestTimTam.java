@@ -103,6 +103,45 @@ public class TestTimTam {
         assertTrue(tmpWithVarying > tmpWith1p9);
     }
 
+    /** This is pretty much the same as {@link #testLikelihoodCalculationSimple()} but
+     * it uses a variable death rate. The resulting log-likelihood should sit somewhere
+     * between the likelihoods of the two extremes used. This is a little more complicated than
+     * {@link #testLikelihoodCalculationVariableBirthRate()} because the becoming
+     * uninfectious rate moves through the calculation.
+     */
+    @Test
+    public void testLikelihoodCalculationVariableDeathRate() {
+
+        TimTam tt =  new TimTam();
+
+        Tree tree = new TreeParser("((3 : 1.5, 4 : 0.5) : 1 , (1 : 2, 2 : 1) : 3);",false);
+        tt.setInputValue("tree", tree);
+        tt.setInputValue("originTime", new RealParameter("10.0"));
+
+        tt.setInputValue("psi",new RealParameter("0.5"));
+        tt.setInputValue("lambda",new RealParameter("2.5"));
+
+        double lnPWith1p5, lnPWith1p6, lnPWithVarying;
+
+        tt.setInputValue("mu",new RealParameter("1.5"));
+        tt.initAndValidate();
+        lnPWith1p5 = tt.calculateLogP();
+
+        tt.setInputValue("mu",new RealParameter("1.6"));
+        tt.initAndValidate();
+        lnPWith1p6 = tt.calculateLogP();
+
+        tt.setInputValue("mu",new RealParameter("1.5 1.6"));
+        tt.setInputValue("muChangeTimes",new RealParameter("3.0"));
+        tt.initAndValidate();
+        lnPWithVarying = tt.calculateLogP();
+
+        assertTrue((
+                (lnPWith1p5 < lnPWithVarying & lnPWithVarying < lnPWith1p6) |
+                (lnPWith1p5 > lnPWithVarying & lnPWithVarying > lnPWith1p6)
+        ));
+    }
+
     @Test
     public void testLikelihood() {
 
