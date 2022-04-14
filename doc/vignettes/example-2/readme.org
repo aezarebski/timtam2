@@ -1,16 +1,46 @@
 #+title: Example 2
 #+author: Alexander E. Zarebski
-#+Time-stamp: <Last modified: 2022-04-01 12:14:53>
+#+Time-stamp: <Last modified: 2022-04-14 16:19:40>
 
 The details of the simulation of this data set are [[file:../simulating-data/readme.org::*Example 2][here]]. The input data is in
 =data/= and there is an XML for using BDSky (serial) and TimTam to analyse this
 data in =xml/=. The script =src/make-posterior-plots.R= should produce some sensible
 figures displaying the results.
 
-#+caption: Estimates of the birth rate through time using the BDSky.
+- Fig [[fig:r0-est][1]] shows the estimates of the birth rate through time using each model.
+- Fig [[fig:prev-est][2]] shows the estimates of the prevalence at the prevalence using TimTam.
+- Listing [[src:runner][1]] is a runner script.
+
+#+caption: Figure 1: Estimates of the birth rate through time using the BDSky. The purple values are those using TimTam and the green ones come from BDSKY.
 #+name: fig:r0-est
 #+attr_org: :width 500px
 #+attr_html: :width 400px
 [[./out/demonstration-plot.png]]
 
-#  LocalWords:  TimTam
+#+caption: Figure 2: Estimates of the final prevalence using TimTam.
+#+name: fig:prev-est
+#+attr_org: :width 500px
+#+attr_html: :width 400px
+[[./out/prevalence-estimate.png]]
+
+#+name: src:runner
+#+begin_src sh :tangle main.sh
+#!/usr/bin/env sh
+
+CHAIN_LENGTH=100000
+BEAST_JAR=../../../../beast2/build/dist/beast.jar
+BEAST_CLASS=beast.app.beastapp.BeastMain
+
+EXTRA_ARGS="-overwrite -seed 1 -D chainLength=$CHAIN_LENGTH"
+BEAST_CMD="java -cp $BEAST_JAR $BEAST_CLASS $EXTRA_ARGS"
+
+$BEAST_CMD xml/bdsky-serial.xml
+mv ex2-bdsky-serial.log out/
+
+$BEAST_CMD xml/timtam.xml
+mv ex2-timtam.log out/
+
+Rscript src/make-posterior-plots.R
+#+end_src
+
+#  LocalWords:  TimTam attr px
