@@ -1,6 +1,6 @@
 #+title: Vignettes
 #+author: Alexander E. Zarebski
-#+Time-stamp: <Last modified: 2022-04-04 17:05:07>
+#+Time-stamp: <Last modified: 2022-04-12 18:22:10>
 
 * Vignettes
 
@@ -31,7 +31,9 @@ accounts for sampling and unobserved recovery.
 ** Interval
 
 In the code, reference is made to /intervals of time/, this is used to indicate an
-interval of time can end in either an [[*Observation][observation]] or a change in a rate.
+interval of time can end in either an [[*Observation][observation]] or a change in a rate. Since
+rates can only change between intervals this means that we can treat the
+calculation within each interval as a constant parameter problem.
 
 ** Observation
 
