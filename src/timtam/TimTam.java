@@ -126,7 +126,6 @@ public class TimTam extends TreeDistribution {
     private TimTamIntervalTerminator[] intervalTerminators;
 
     // START SNEAKY
-    private int intIx;
     private double[] intervalStartTimes;
     private double[] intervalEndTimes;
     private double[] lncs;
@@ -217,98 +216,16 @@ public class TimTam extends TreeDistribution {
                 this.disasterTimes.length + this.occurrenceTimes.length +
                 this.tree.getNodesAsArray().length - this.totalCatastropheSizes + this.catastropheTimes.length;
         this.intervalTerminators = new TimTamIntervalTerminator[this.numTimeIntervals];
+        updateIntervalTerminators();
 
-        int iTx = 0;
-
-        for (Double rateChangeTime : rateChangeTimes) {
-            this.intervalTerminators[iTx] =
-                    new TimTamIntervalTerminator("rateChange", rateChangeTime, OptionalInt.empty());
-            iTx++;
-        }
-
-        for (Double occurrenceTime : this.occurrenceTimes) {
-            this.intervalTerminators[iTx] =
-                    new TimTamIntervalTerminator("occurrence", occurrenceTime, OptionalInt.empty());
-            iTx++;
-        }
-
-        for (int ix = 0; ix < this.catastropheTimes.length; ix++) {
-            this.intervalTerminators[iTx] =
-                    new TimTamIntervalTerminator("catastrophe", this.catastropheTimes[ix], OptionalInt.of(this.catastropheSizes[ix]));
-            iTx++;
-        }
-
-        for (int ix = 0; ix < this.disasterTimes.length; ix++) {
-            this.intervalTerminators[iTx] =
-                    new TimTamIntervalTerminator("disaster", this.disasterTimes[ix], OptionalInt.of(this.disasterSizes[ix]));
-            iTx++;
-        }
-
-        for (Node node : this.tree.getNodesAsArray()) {
-            if (isUnscheduledTreeNode(node)) {
-                this.intervalTerminators[iTx] =
-                        new TimTamIntervalTerminator(node.isLeaf() ? "sample" : "birth", node.getHeight(), OptionalInt.empty());
-                iTx++;
-            }
-        }
-        Arrays.sort(this.intervalTerminators);
-
-        updateRateAndProbParams();
-
-        // START SNEAKY
         this.lncs = new double[this.numTimeIntervals];
         this.lnls = new double[this.numTimeIntervals];
         this.lambdaValues = new double[this.numTimeIntervals];
         this.muValues = new double[this.numTimeIntervals];
         this.psiValues = new double[this.numTimeIntervals];
         this.omegaValues = new double[this.numTimeIntervals];
-
-        this.intervalStartTimes = new double[this.numTimeIntervals];
-        this.intervalEndTimes = new double[this.numTimeIntervals];
         this.kValues = new int[this.numTimeIntervals];
-        this.intervalStartTimes[0] = originTime;
-        this.intervalEndTimes[0] = this.intervalTerminators[0].getBwdTime();
-        this.kValues[0] = 1;
-        this.lambdaValues[0] = this.lambdaInput.get().getValues()[0];
-        this.muValues[0] = this.muInput.get().getValues()[0];
-        this.psiValues[0] = this.psiInput.get().getValues()[0];
-        if (this.omegaInput.get() != null) {
-            this.omegaValues[0] = this.omegaInput.get().getValues()[0];
-        } else {
-            this.omegaValues[0] = 0.0;
-        }
-
-        String tt;
-        for (int ix = 1; ix < this.numTimeIntervals; ix++) {
-            this.intervalStartTimes[ix] = this.intervalTerminators[ix-1].getBwdTime();
-            this.intervalEndTimes[ix] = this.intervalTerminators[ix].getBwdTime();
-
-            this.lambdaValues[ix] = this.birth(this.intervalStartTimes[ix]);
-            this.muValues[ix] = this.death(this.intervalStartTimes[ix]);
-            this.psiValues[ix] = this.psi(this.intervalStartTimes[ix]);
-            this.omegaValues[ix] = this.omega(this.intervalStartTimes[ix]);
-
-            tt = this.intervalTerminators[ix-1].getType();
-            if (Objects.equals(tt, "birth")) {
-                this.kValues[ix] = this.kValues[ix-1] + 1;
-            } else if (Objects.equals(tt, "sample")) {
-                this.kValues[ix] = this.kValues[ix-1] - 1;
-            } else if (
-                    Objects.equals(tt, "occurrence") |
-                    Objects.equals(tt, "rateChange") |
-                    Objects.equals(tt, "disaster")
-            ) {
-                this.kValues[ix] = this.kValues[ix-1];
-            } else if (Objects.equals(tt, "catastrophe")) {
-                this.kValues[ix] = this.kValues[ix-1] - this.intervalTerminators[ix].getCount();
-            } else {
-                throw new RuntimeException("Unexpected interval terminator type: " + tt);
-            }
-        }
-        this.timeFromOriginToFinalDatum = this.originTime - this.intervalEndTimes[this.numTimeIntervals-1];
-        // END SNEAKY
-
-        this.nb.setZero();
+        updateRateAndProbParams();
     }
 
     /**
@@ -459,8 +376,68 @@ public class TimTam extends TreeDistribution {
 
     @Override
     public double calculateLogP() {
+        this.nb.setZero();
+        updateIntervalTerminators();
         updateRateAndProbParams();
-        return calculateTreeLogLikelihood();
+        for (int ix = 0; ix < this.numTimeIntervals; ix++) {
+            processInterval(ix);
+            processObservation(ix);
+        }
+
+        // if the likelihood conditions upon the observation of the process then we need to account for this in the
+        // log-likelihood.
+        if (this.conditionOnObservation) {
+            double probUnobserved = p0(this.timeFromOriginToFinalDatum, 0.0, 1.0);
+            return arraySum(this.lnls) + arraySum(this.lncs) - Math.log(1 - probUnobserved);
+        } else {
+            return arraySum(this.lnls) + arraySum(this.lncs);
+        }
+    }
+
+    private void updateIntervalTerminators() {
+        int iTx = 0;
+
+        for (Double rateChangeTime : this.rateChangeTimes) {
+            this.intervalTerminators[iTx] =
+                    new TimTamIntervalTerminator("rateChange", rateChangeTime, OptionalInt.empty());
+            iTx++;
+        }
+
+        for (Double occurrenceTime : this.occurrenceTimes) {
+            this.intervalTerminators[iTx] =
+                    new TimTamIntervalTerminator("occurrence", occurrenceTime, OptionalInt.empty());
+            iTx++;
+        }
+
+        for (int ix = 0; ix < this.catastropheTimes.length; ix++) {
+            this.intervalTerminators[iTx] =
+                    new TimTamIntervalTerminator("catastrophe", this.catastropheTimes[ix], OptionalInt.of(this.catastropheSizes[ix]));
+            iTx++;
+        }
+
+        for (int ix = 0; ix < this.disasterTimes.length; ix++) {
+            this.intervalTerminators[iTx] =
+                    new TimTamIntervalTerminator("disaster", this.disasterTimes[ix], OptionalInt.of(this.disasterSizes[ix]));
+            iTx++;
+        }
+
+        for (Node node : this.tree.getNodesAsArray()) {
+            if (isUnscheduledTreeNode(node)) {
+                this.intervalTerminators[iTx] =
+                        new TimTamIntervalTerminator(node.isLeaf() ? "sample" : "birth", node.getHeight(), OptionalInt.empty());
+                iTx++;
+            }
+        }
+        Arrays.sort(this.intervalTerminators);
+        this.intervalStartTimes = new double[this.numTimeIntervals];
+        this.intervalEndTimes = new double[this.numTimeIntervals];
+        this.intervalStartTimes[0] = this.originTime;
+        this.intervalEndTimes[0] = this.intervalTerminators[0].getBwdTime();
+        for (int ix = 1; ix < this.numTimeIntervals; ix++) {
+            this.intervalStartTimes[ix] = this.intervalTerminators[ix-1].getBwdTime();
+            this.intervalEndTimes[ix] = this.intervalTerminators[ix].getBwdTime();
+        }
+        this.timeFromOriginToFinalDatum = this.originTime - this.intervalEndTimes[this.numTimeIntervals-1];
     }
 
     /**
@@ -470,9 +447,42 @@ public class TimTam extends TreeDistribution {
         this.rho = (rhoInput.get() != null) ? rhoInput.get().getValue() : null;
         this.nu = (nuInput.get() != null) ? nuInput.get().getValue() : null;
 
+        this.kValues[0] = 1;
+        this.lambdaValues[0] = this.lambdaInput.get().getValues()[0];
+        this.muValues[0] = this.muInput.get().getValues()[0];
+        this.psiValues[0] = this.psiInput.get().getValues()[0];
+        if (this.omegaInput.get() != null) {
+            this.omegaValues[0] = this.omegaInput.get().getValues()[0];
+        } else {
+            this.omegaValues[0] = 0.0;
+        }
+
+        String tt;
+        for (int ix = 1; ix < this.numTimeIntervals; ix++) {
+            this.lambdaValues[ix] = this.birth(this.intervalStartTimes[ix]);
+            this.muValues[ix] = this.death(this.intervalStartTimes[ix]);
+            this.psiValues[ix] = this.psi(this.intervalStartTimes[ix]);
+            this.omegaValues[ix] = this.omega(this.intervalStartTimes[ix]);
+
+            tt = this.intervalTerminators[ix-1].getType();
+            if (Objects.equals(tt, "birth")) {
+                this.kValues[ix] = this.kValues[ix-1] + 1;
+            } else if (Objects.equals(tt, "sample")) {
+                this.kValues[ix] = this.kValues[ix-1] - 1;
+            } else if (
+                    Objects.equals(tt, "occurrence") |
+                            Objects.equals(tt, "rateChange") |
+                            Objects.equals(tt, "disaster")
+            ) {
+                this.kValues[ix] = this.kValues[ix-1];
+            } else if (Objects.equals(tt, "catastrophe")) {
+                this.kValues[ix] = this.kValues[ix-1] - this.intervalTerminators[ix].getCount();
+            } else {
+                throw new RuntimeException("Unexpected interval terminator type: " + tt);
+            }
+        }
     }
 
-    // SNEAKY
     public double arraySum(double[] xs) {
         double tmp = 0.0;
         for (int ix = 0; ix < xs.length; ix++) {
@@ -490,32 +500,6 @@ public class TimTam extends TreeDistribution {
     }
 
     /**
-     * Generic likelihood calculation
-     */
-    public final double calculateTreeLogLikelihood() {
-        this.nb.setZero();
-
-        this.intIx = 0; // SNEAKY
-        for (int ix = 0; ix < this.numTimeIntervals; ix++) {
-            processInterval(
-                    this.intIx,
-                    this.kValues[ix]
-            );
-            processObservation(this.intervalTerminators[ix], this.kValues[ix]);
-            this.intIx++; // SNEAKY
-        }
-
-        // if the likelihood conditions upon the observation of the process then we need to account for this in the
-        // log-likelihood.
-        if (this.conditionOnObservation) {
-            double probUnobserved = p0(this.timeFromOriginToFinalDatum, 0.0, 1.0);
-            return arraySum(this.lnls) + arraySum(this.lncs) - Math.log(1 - probUnobserved);
-        } else {
-            return arraySum(this.lnls) + arraySum(this.lncs);
-        }
-    }
-
-    /**
      * This method should mutate the attributes of this object to account for
      * the observation that occurred.
      *
@@ -529,22 +513,23 @@ public class TimTam extends TreeDistribution {
      * @see TimTamIntervalTerminator
      *
      */
-    private void processObservation(TimTamIntervalTerminator intTerminator, int k) {
+    private void processObservation(int intNum) {
+        TimTamIntervalTerminator intTerminator = this.intervalTerminators[intNum];
+        int k = this.kValues[intNum];
         String intTypeStr = intTerminator.getType();
-        Double obsBwdTime = intTerminator.getBwdTime();
 
         if (Objects.equals(intTypeStr, "birth")) {
-            this.lnls[this.intIx] = Math.log(birth(obsBwdTime));
+            this.lnls[intNum] = Math.log(birth(intNum));
         } else if (Objects.equals(intTypeStr, "sample")) {
-            this.lnls[this.intIx] = Math.log(psi(obsBwdTime));
+            this.lnls[intNum] = Math.log(psi(intNum));
         } else if (Objects.equals(intTypeStr, "occurrence")) {
-            this.lnls[this.intIx] = Math.log(omega(obsBwdTime)) + this.nb.lnPGFDash1(1.0);
+            this.lnls[intNum] = Math.log(omega(intNum)) + this.nb.lnPGFDash1(1.0);
             double lnRp1 = Math.log(Math.exp(this.nb.getLnR()) + 1.0);
             this.nb.setLnPAndLnR(this.nb.getLnP(), lnRp1);
         } else if (Objects.equals(intTypeStr, "catastrophe")) {
             int n = intTerminator.getCount();
             double rho = rho();
-            this.lnls[this.intIx] = (k - n) * Math.log(1 - rho)
+            this.lnls[intNum] = (k - n) * Math.log(1 - rho)
                     + n * Math.log(rho)
                     + this.nb.lnPGF(1 - rho);
             this.nb.setLnPAndLnR(Math.log(1 - rho) + this.nb.getLnP(),
@@ -553,11 +538,11 @@ public class TimTam extends TreeDistribution {
             int h = intTerminator.getCount();
             double nu = nu();
             if (h > 0) {
-                this.lnls[this.intIx] = k * Math.log(1 - nu)
+                this.lnls[intNum] = k * Math.log(1 - nu)
                         + h * Math.log(nu)
                         + this.nb.lnPGFDash(h, 1 - nu);
             } else if (h == 0) {
-                this.lnls[this.intIx] = k * Math.log(1 - nu)
+                this.lnls[intNum] = k * Math.log(1 - nu)
                         + this.nb.lnPGFDash(h, 1 - nu); // this should just be the lnPGF.
             } else {
                 throw new RuntimeException("a disaster with a negative number of cases should never happen.");
@@ -582,22 +567,20 @@ public class TimTam extends TreeDistribution {
      * @param k the number of lineages in the reconstructed tree during the interval.
      */
 //    private void processInterval(double intervalDuration, double bwdTimeIntervalEnd, int k) {
-    private void processInterval(int intervalIx, int k) {
-
+    private void processInterval(int intNum) {
+        int k = this.kValues[intNum];
         double lnC, lnMean, lnVariance;
-
-        double p0Val = p0(intervalIx, 1.0);
-        double lnP0Dash1Val = lnP0Dash1(intervalIx);
-        double lnP0Dash2Val = lnP0Dash2(intervalIx);
-        double lnRVal = lnR(intervalIx);
-        double lnRDash1Val = lnRDash1(intervalIx);
-        double lnRDash2Val = lnRDash2(intervalIx);
+        double p0Val = p0(intNum, 1.0);
+        double lnP0Dash1Val = lnP0Dash1(intNum);
+        double lnP0Dash2Val = lnP0Dash2(intNum);
+        double lnRVal = lnR(intNum);
+        double lnRDash1Val = lnRDash1(intNum);
+        double lnRDash2Val = lnRDash2(intNum);
 
         double lnFM0, lnFM1, lnFM2;
         if (!this.nb.isZero) {
             assert k >= 0;
             if (k > 0) {
-
                 lnFM0 = this.nb.lnPGF(p0Val) + k * lnRVal;
                 tmpArry[0] = this.nb.lnPGFDash1(p0Val) + lnP0Dash1Val + k * lnRVal;
                 tmpArry[1] = Math.log(k) + (k-1) * lnRVal + lnRDash1Val + this.nb.lnPGF(p0Val);
@@ -609,7 +592,6 @@ public class TimTam extends TreeDistribution {
                 tmpArry[4] = this.nb.lnPGF(p0Val) + Math.log(k) + (k-1) * lnRVal + lnRDash2Val;
                 lnFM2 = logSumExp(tmpArry, 5);
             } else {
-
                 lnFM0 = this.nb.lnPGF(p0Val);
                 lnFM1 = this.nb.lnPGFDash1(p0Val) + lnP0Dash1Val;
                 tmpArry[0] = this.nb.lnPGFDash2(p0Val) + 2 * lnP0Dash1Val;
@@ -617,20 +599,16 @@ public class TimTam extends TreeDistribution {
                 lnFM2 = logSumExp(tmpArry, 2);
             }
         } else {
-
             lnFM0 = lnRVal;
             lnFM1 = lnRDash1Val;
             lnFM2 = lnRDash2Val;
-
         }
-
         lnC = lnFM0;
         lnMean = lnFM1 - lnFM0;
         lnVariance = Math.log(Math.exp(lnFM2 - lnFM0) + Math.exp(lnMean) * (1 - Math.exp(lnMean)));
 
         this.nb.setLnMeanAndLnVariance(lnMean, lnVariance);
-
-        this.lncs[this.intIx] = lnC; // SNEAKY
+        this.lncs[intNum] = lnC; // SNEAKY
     }
 
     private double lnR(int intervalIx) {
