@@ -93,20 +93,20 @@ public class TimTam extends TreeDistribution {
     protected Double nu;
     protected Double originTime;
 
-    private Double[] rateChangeTimes;
+    private double[] rateChangeTimes;
 
-    protected Double[] catastropheTimes;
-    protected Integer[] catastropheSizes;
-    private Integer totalCatastropheSizes;
+    protected double[] catastropheTimes;
+    protected int[] catastropheSizes;
+    private int totalCatastropheSizes;
 
     // A disaster is a scheduled sample of lineages where sampled lineages are *not* sequenced so do not appear in the
     // reconstructed tree. Typically, these data will form a time series.
-    protected Double[] disasterTimes;
-    protected Integer[] disasterSizes;
+    protected double[] disasterTimes;
+    protected int[] disasterSizes;
 
     // the times at which there was an occurrence sample measured in backwards time with the final tip in the tree being
     // used as zero. An occurrence is an unscheduled and unsequenced sample. These data form a point process of events.
-    protected Double[] occurrenceTimes;
+    protected double[] occurrenceTimes;
 
     boolean conditionOnObservation;
 
@@ -149,27 +149,37 @@ public class TimTam extends TreeDistribution {
         super.initAndValidate();
 
         this.tree = (Tree) treeInput.get();
-
         this.originTime = originTimeInput.get().getValue();
 
         if (catastropheTimesInput.get() != null) {
-            this.catastropheTimes = catastropheTimesInput.get().getValues();
-            this.catastropheSizes = new Integer[this.catastropheTimes.length];
-            measureCatastrophes();
+            this.catastropheTimes = catastropheTimesInput.get().getDoubleValues();
+            this.catastropheSizes = new int[this.catastropheTimes.length];
+            Node[] nodes = this.tree.getNodesAsArray();
+            for (int ix = 0; ix < this.catastropheTimes.length; ix++) {
+                this.catastropheSizes[ix] = 0;
+                for (int jx = 0; jx < this.tree.getLeafNodeCount(); jx++) {
+                    if (Math.abs(nodes[jx].getHeight() - this.catastropheTimes[ix]) < this.timeEpsilon) {
+                        this.catastropheSizes[ix]++;
+                    }
+                }
+            }
+            this.totalCatastropheSizes = arraySum(this.catastropheSizes);
         } else {
-            this.catastropheTimes = new Double[] {};
-            this.catastropheSizes = new Integer[] {};
+            this.catastropheTimes = new double[] {};
+            this.catastropheSizes = new int[] {};
             this.totalCatastropheSizes = 0;
         }
 
-        this.occurrenceTimes = occurrenceTimesInput.get() != null ? occurrenceTimesInput.get().getValues() : new Double[] {};
+        this.occurrenceTimes = occurrenceTimesInput.get() != null ? occurrenceTimesInput.get().getDoubleValues() : new double[] {};
 
         if (disasterTimesInput.get() != null) {
-            this.disasterTimes = disasterTimesInput.get().getValues();
-            this.disasterSizes = disasterSizesInput.get().getValues();
+            this.disasterTimes = disasterTimesInput.get().getDoubleValues();
+            for (int ix = 0; ix < disasterSizesInput.get().getValues().length; ix++) {
+                this.disasterSizes[ix] = disasterSizesInput.get().getNativeValue(ix);
+            }
         } else {
-            this.disasterTimes = new Double[] {};
-            this.disasterSizes = new Integer[] {};
+            this.disasterTimes = new double[] {};
+            this.disasterSizes = new int[] {};
         }
 
         this.conditionOnObservation = conditionOnObservationInput.get();
@@ -182,7 +192,7 @@ public class TimTam extends TreeDistribution {
                 (psiChangeTimesInput.get() != null) ? psiChangeTimesInput.get().getValues() : new Double[]{};
         this.omegaChangeTimes =
                 (omegaChangeTimesInput.get() != null) ? omegaChangeTimesInput.get().getValues() : new Double[]{};
-        this.rateChangeTimes = new Double[
+        this.rateChangeTimes = new double[
                 this.lambdaChangeTimes.length +
                 this.muChangeTimes.length +
                 this.psiChangeTimes.length +
@@ -295,10 +305,10 @@ public class TimTam extends TreeDistribution {
                 throw new RuntimeException("Unexpected interval terminator type: " + tt);
             }
         }
+        this.timeFromOriginToFinalDatum = this.originTime - this.intervalEndTimes[this.numTimeIntervals-1];
         // END SNEAKY
 
         this.nb.setZero();
-        this.timeFromOriginToFinalDatum = this.originTime - this.intervalEndTimes[this.numTimeIntervals-1];
     }
 
     /**
@@ -314,30 +324,6 @@ public class TimTam extends TreeDistribution {
             }
         }
         return true;
-    }
-
-    /**
-     * Loop over the tree and count the number of tips in each catastrophe. The member variables of the tree and the
-     * timing of catastrophes will allow this to be done.
-     */
-    private void measureCatastrophes() {
-
-        Node[] nodes = this.tree.getNodesAsArray();
-        Double cT;
-        int cS;
-
-        this.totalCatastropheSizes = 0;
-        for (int ix = 0; ix < this.catastropheTimes.length; ix++) {
-            cT = this.catastropheTimes[ix];
-            cS = 0;
-            for (int jx = 0; jx < this.tree.getLeafNodeCount(); jx++) {
-                if (Math.abs(nodes[jx].getHeight() - cT) < this.timeEpsilon) {
-                    cS++;
-                }
-            }
-            this.catastropheSizes[ix] = cS;
-            this.totalCatastropheSizes += cS;
-        }
     }
 
     public double birth(int intervalIx) {
@@ -487,8 +473,16 @@ public class TimTam extends TreeDistribution {
     }
 
     // SNEAKY
-    public double sneakySum(double[] xs) {
-        double tmp = 0;
+    public double arraySum(double[] xs) {
+        double tmp = 0.0;
+        for (int ix = 0; ix < xs.length; ix++) {
+            tmp += xs[ix];
+        }
+        return(tmp);
+    }
+
+    public int arraySum(int[] xs) {
+        int tmp = 0;
         for (int ix = 0; ix < xs.length; ix++) {
             tmp += xs[ix];
         }
@@ -515,9 +509,9 @@ public class TimTam extends TreeDistribution {
         // log-likelihood.
         if (this.conditionOnObservation) {
             double probUnobserved = p0(this.timeFromOriginToFinalDatum, 0.0, 1.0);
-            return sneakySum(this.lnls) + sneakySum(this.lncs) - Math.log(1 - probUnobserved);
+            return arraySum(this.lnls) + arraySum(this.lncs) - Math.log(1 - probUnobserved);
         } else {
-            return sneakySum(this.lnls) + sneakySum(this.lncs);
+            return arraySum(this.lnls) + arraySum(this.lncs);
         }
     }
 
