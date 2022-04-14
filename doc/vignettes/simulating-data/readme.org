@@ -1,6 +1,6 @@
 #+title: Simulating datasets
 #+author: Alexander E. Zarebski
-#+Time-stamp: <Last modified: 2022-04-01 18:13:18>
+#+Time-stamp: <Last modified: 2022-04-14 16:21:14>
 
 * Example 1
 
@@ -45,7 +45,7 @@ Rscript src/ex1/prep-data.R
 
 The results of this can be seen in Figure [[fig:ex1-fig]].
 
-* TODO Example 2
+* Example 2
 
 This example contains a variable rate simulation without any scheduled samples.
 Figure [[fig:ex2-fig]] displays the full transmission tree in the simulation.

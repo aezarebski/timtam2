@@ -1,6 +1,6 @@
 #+title: Vignettes
 #+author: Alexander E. Zarebski
-#+Time-stamp: <Last modified: 2022-04-12 18:22:10>
+#+Time-stamp: <Last modified: 2022-04-14 16:58:45>
 
 * Vignettes
 
@@ -9,6 +9,8 @@ There is a description of the process used to [[file:./simulating-data/readme.or
 - [[file:./example-1/readme.org][Example 1]] a known tree constant rates and no scheduled or aggregated samples.
 - [[file:./example-2/readme.org][Example 2]] a known tree with varying rates and no scheduled or aggregated
   samples.
+
+** Old (and probably broken) vignettes
 
 - [[file:./fixed-tree-with-rho/README.org][Fixed tree with \(\rho\)-sample]]
 - [[file:./fixed-tree-with-nu/README.org][Fixed tree with \(\nu\)-sample]]
@@ -28,6 +30,11 @@ The rate at which an individual ceases to be infectious if they are not sampled.
 This is not to be confused with the "total becoming uninfectious rate" which
 accounts for sampling and unobserved recovery.
 
+** Hidden lineage
+
+This is a lineage that exists in the full transmission tree but does not appear
+in the reconstructed tree.
+
 ** Interval
 
 In the code, reference is made to /intervals of time/, this is used to indicate an
@@ -43,12 +50,18 @@ unsequenced).
 
 ** Occurrence data
 
-See [[*Unsequenced sample][unsequenced sample]].
+This is unscheduled data, i.e. data that is not generated during a [[*Scheduled sample][scheduled
+sample]]. See [[*Unsequenced sample][unsequenced sample]] for additional information.
 
 ** Origin
 
 The time that the first individual started to be infectious. This should not be
 confused with the tMRCA of the reconstructed tree.
+
+** Reconstructed tree
+
+This is the tree of all the sequenced samples, this is not to be confused with
+the [[*Transmission tree][transmission tree]].
 
 ** Scheduled sample
 
@@ -59,8 +72,13 @@ A sample in which multiple lineages may be sampled at the sample time.
 Data that appears in the phylogeny, as a way to distinguish from [[*Unsequenced sample][unsequenced
 samples]].
 
+** Transmission tree
+
+This is the tree of all infections in the epidemic, this is not to be confused
+with the [[*Reconstructed tree][reconstructed tree]].
+
 ** Unsequenced sample
 
 Data that is not included in the phylogeny, a.k.a. /occurrence data/.
 
-#  LocalWords: unsequenced uninfectious
+#  LocalWords: unsequenced uninfectious tMRCA
