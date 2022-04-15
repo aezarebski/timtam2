@@ -1,6 +1,6 @@
 #+title: TimTam
 #+author: Alexander E. Zarebski
-#+Time-stamp: <Last modified: 2022-04-14 16:53:39>
+#+Time-stamp: <Last modified: 2022-04-15 12:44:59>
 
 This repository is an attempt to implement the [[https://github.com/aezarebski/timtam][TimTam]] likelihood (described in
 the PLOS Computational Biology [[https://doi.org/10.1371/journal.pcbi.1009805][paper]]) as a BEAST2 package. There are [[file:./doc/vignettes/README.org::*Vignettes][vignettes]]
@@ -85,10 +85,9 @@ $ java -cp ./beast2/build/dist/beast.jar beast.app.beastapp.BeastMain timtam.xml
 
 * Remaining tasks and open problems
 
-1. FIX WHAT APPEARS TO BE A MEMORY LEAK WHEN USING VARIABLE RATES.
-2. Use proper dates on the nodes and point process to avoid needing to
+1. Use proper dates on the nodes and point process to avoid needing to
    pre-compute these for the XML
    - The [[https://cran.r-project.org/web/packages/phangorn/index.html][phangorn]] package can simulate sequences on a tree.
    - There is a Taming the Beast [[https://taming-the-beast.org/tutorials/Molecular-Dating-Tutorial/][tutorial]] which looks at dates on nodes.
-3. The [[file:./doc/vignettes/example-1/xml/bdsky-serial.xml][Example 1 XML]] still uses the R-nought parameterisation, but the Example 2
+2. The [[file:./doc/vignettes/example-1/xml/bdsky-serial.xml][Example 1 XML]] still uses the R-nought parameterisation, but the Example 2
    XML shows that it is easy to move over to the canonical parameterisation.

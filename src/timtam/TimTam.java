@@ -386,6 +386,7 @@ public class TimTam extends TreeDistribution {
         updateIntervalTerminators();
         updateRateAndProbParams();
         for (int ix = 0; ix < this.numTimeIntervals; ix++) {
+            updateOdeHelpers(ix);
             processInterval(ix);
             processObservation(ix);
         }
@@ -626,7 +627,6 @@ public class TimTam extends TreeDistribution {
     }
 
     private double lnR(int intervalIx) {
-        odeHelpers(intervalIx);
         return Math.log(this.ohDiscriminant)
                 + Math.log(this.ohExpFact)
                 - (2 * Math.log(birth(intervalIx)))
@@ -634,7 +634,6 @@ public class TimTam extends TreeDistribution {
     }
 
     private double lnRDash1(int intervalIx) {
-        odeHelpers(intervalIx);
         return Math.log(2)
                 + Math.log(1 - this.ohExpFact)
                 + Math.log(this.ohExpFact)
@@ -644,7 +643,6 @@ public class TimTam extends TreeDistribution {
     }
 
     private double lnRDash2(int intervalIx) {
-        odeHelpers(intervalIx);
         return Math.log(6)
                 + 2 * Math.log(1 - this.ohExpFact)
                 + Math.log(this.ohExpFact)
@@ -654,16 +652,15 @@ public class TimTam extends TreeDistribution {
     }
 
     protected double p0(double intervalDuration, double bwdTimeIntervalEnd, double z) {
-        odeHelpers(intervalDuration, bwdTimeIntervalEnd);
+        updateOdeHelpers(intervalDuration, bwdTimeIntervalEnd);
         return (this.ohX1 * (this.ohX2 - z) - this.ohX2 * (this.ohX1 - z) * this.ohExpFact) / ((this.ohX2 - z) - (this.ohX1 - z) * this.ohExpFact);
     }
 
     protected double p0(int intervalIx, double z) {
-        odeHelpers(intervalIx);
         return (this.ohX1 * (this.ohX2 - z) - this.ohX2 * (this.ohX1 - z) * this.ohExpFact) / ((this.ohX2 - z) - (this.ohX1 - z) * this.ohExpFact);
     }
     protected double lnP0Dash1(double intervalDuration, double bwdTimeIntervalEnd) {
-        odeHelpers(intervalDuration, bwdTimeIntervalEnd);
+        updateOdeHelpers(intervalDuration, bwdTimeIntervalEnd);
         double aa = this.ohX2 - this.ohX1 * this.ohExpFact;
         double bb = 1 - this.ohExpFact;
         double cc = this.ohX2 * this.ohExpFact - this.ohX1;
@@ -671,7 +668,6 @@ public class TimTam extends TreeDistribution {
                 - 2.0 * Math.log(aa - bb);
     }
     protected double lnP0Dash1(int intervalIx) {
-        odeHelpers(intervalIx);
         double aa = this.ohX2 - this.ohX1 * this.ohExpFact;
         double bb = 1 - this.ohExpFact;
         double cc = this.ohX2 * this.ohExpFact - this.ohX1;
@@ -680,7 +676,6 @@ public class TimTam extends TreeDistribution {
     }
 
     private double lnP0Dash2(int intervalIx) {
-        odeHelpers(intervalIx);
         double aa = this.ohX2 - this.ohX1 * this.ohExpFact;
         double bb = 1 - this.ohExpFact;
         double cc = this.ohX2 * this.ohExpFact - this.ohX1;
@@ -692,7 +687,7 @@ public class TimTam extends TreeDistribution {
 
     private double ohX1, ohX2, ohDiscriminant, ohExpFact;
 
-    private void odeHelpers(double intervalDuration, double bwdTimeIntervalEnd) {
+    private void updateOdeHelpers(double intervalDuration, double bwdTimeIntervalEnd) {
         double bwdRateTime = bwdTimeIntervalEnd + 0.5 * intervalDuration;
         // the 0.5*intervalDuration here is to ensure that this takes the value in the middle of the interval.
         double gamma = birth(bwdRateTime) + death(bwdRateTime) + psi(bwdRateTime) + omega(bwdRateTime);
@@ -703,13 +698,25 @@ public class TimTam extends TreeDistribution {
         this.ohExpFact = Math.exp(- sqrtDisc * intervalDuration);
     }
 
-    private void odeHelpers(int intervalIx) {
+    /**
+     * Update some expressions that are useful in multiple calculations. This function gets called once before each
+     * interval is processed since the results do not change within an interval.
+     *
+     * @implNote The local variables <code>br</code> and <code>dr</code> are there to avoid repeated calls to the
+     * function that looks these values up. The use of {@link java.lang.Math#pow} seems to be quicker than using
+     * <code>gamma * gamma</code>, possibly because this is using native code.
+     *
+     * @param intervalIx
+     */
+    private void updateOdeHelpers(int intervalIx) {
         double intervalDuration = this.intervalStartTimes[intervalIx] - this.intervalEndTimes[intervalIx];
-        double gamma = birth(intervalIx) + death(intervalIx) + psi(intervalIx) + omega(intervalIx);
-        this.ohDiscriminant = Math.pow(gamma, 2.0) - 4.0 * birth(intervalIx) * death(intervalIx);
+        double br = this.lambdaValues[intervalIx];
+        double dr = this.muValues[intervalIx];
+        double gamma = br + dr + psi(intervalIx) + omega(intervalIx);
+        this.ohDiscriminant = Math.pow(gamma, 2.0) - 4.0 * br * dr;
         double sqrtDisc = Math.sqrt(this.ohDiscriminant);
-        this.ohX1 = (gamma - sqrtDisc) / (2 * birth(intervalIx));
-        this.ohX2 = (gamma + sqrtDisc) / (2 * birth(intervalIx));
+        this.ohX1 = (gamma - sqrtDisc) / (2 * br);
+        this.ohX2 = (gamma + sqrtDisc) / (2 * br);
         this.ohExpFact = Math.exp(- sqrtDisc * intervalDuration);
     }
 
