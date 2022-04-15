@@ -1,16 +1,23 @@
 #!/usr/bin/env Rscript
 #'
-VERSION <- c(0,2,1)
+VERSION <- c(0, 2, 1)
 #' =======
 #' ape-sim
 #' =======
 #'
 #' Use the ape package to simulate the BDSCOD process from the command line.
 #'
+#' Details
+#' =======
+#'
 #' Simulations are conditioned on there being more than one sequenced sample. If
 #' no satisfactory simulation is generated in 100 replicates then the program
 #' will crash. The parameters for the simulation are read in from an XML file as
 #' demonstrated below.
+#'
+#' The tips of the reconstructed tree are labelled with their forwards time
+#' treating the origin as time zero. This is done so that it is easier to
+#' specify time dependent rates as a step function.
 #'
 #' Usage
 #' =====
@@ -43,6 +50,9 @@ VERSION <- c(0,2,1)
 #' being the only real schema for the XML is the \code{parse_xml_configuration}
 #' function.
 #'
+#' There are some example XML configurations at the bottom of this script
+#' demonstrating the different functionality.
+#'
 #' Help
 #' ====
 #'
@@ -51,7 +61,11 @@ VERSION <- c(0,2,1)
 #' ChangeLog
 #' =========
 #'
+#' Where feasible semantic versioning should be used.
+#'
 #' - 0.2.1
+#'   + Include example where sequences are simulated.
+#'   + Fix bug where \code{configuration_is_valid} behaves poorly.
 #'   + Fix bug where version was not printing properly.
 #'
 #' - 0.2.0
@@ -853,7 +867,13 @@ write_aggregated_plot <- function(simulation_results,
 }
 
 #' Predicate for the configuration read from XML being valid.
-configuration_is_valid <- function(config) {
+#'
+#' @details This function will throw warnings depending on why the configruation
+#'   is not valid but will not throw an error.
+configuration_is_valid <- function(config, is_verbose=FALSE) {
+  if (is_verbose) {
+    cat("checking if the configuration appears valid...\n")
+  }
   params <- config$params
   opts <- config$options
   if ((!is.null(params$rho)) && (!is.null(params$seq_agg_times))) {
@@ -887,10 +907,12 @@ configuration_is_valid <- function(config) {
   ## If we are simulating sequences we need the data to do this.
   if (opts$simulate_sequences) {
     if (is.null(params$substitution_rate)) {
-      stop("cannot simulate sequences without a substitution rate.")
+      warning("cannot simulate sequences without a substitution rate.")
+      return(FALSE)
     }
     if (is.null(params$seq_length)) {
-      stop("cannot simulate sequences without a sequence length.")
+      warning("cannot simulate sequences without a sequence length.")
+      return(FALSE)
     }
   }
   return(TRUE)
@@ -907,7 +929,7 @@ main <- function(args, config) {
     return(0)
   }
 
-  if (!configuration_is_valid(config)) {
+  if (!configuration_is_valid(config, args$verbose)) {
     print(config)
     stop("THE CONFIGURATION IS NOT VALID.")
   }
@@ -1017,9 +1039,10 @@ if (!interactive()) {
   demo_xml_1 <- "<ape version=\"0.1.2\"><configuration><parameters birthRate=\"3.0\" deathRate=\"1.0\" samplingRate=\"0.5\" occurrenceRate=\"0.5\" duration=\"4.0\" /><options seed=\"2\" writeNewick=\"true\" makePlots=\"true\" outputDirectory=\"out\" simulateSequences=\"false\" seq_agg_times=\"\" occ_agg_times=\"1.0 4.0 1.0\" /></configuration></ape>"
   demo_xml_2 <- "<ape version=\"0.2.0\"><stepFunction name=\"stepBirthRate\" times=\"2.0 3.0\" values=\"3.0 2.5 2.0\" /><configuration><parameters birthRate=\"@stepBirthRate\" deathRate=\"1.0\" samplingRate=\"0.5\" occurrenceRate=\"0.5\" duration=\"4.0\" /><options seed=\"2\" writeNewick=\"true\" makePlots=\"true\" outputDirectory=\"out\" simulateSequences=\"false\" seq_agg_times=\"\" occ_agg_times=\"1.0 4.0 1.0\" /></configuration></ape>"
   demo_xml_3 <- "<ape version=\"0.1.2\"><configuration><parameters birthRate=\"3.0\" deathRate=\"1.0\" samplingRate=\"0.5\" occurrenceRate=\"0.5\" duration=\"4.0\" rho=\"0.5\" /><options seed=\"2\" writeNewick=\"true\" makePlots=\"true\" outputDirectory=\"out\" simulateSequences=\"false\" /></configuration></ape>"
+  demo_xml_4 <- "<ape version=\"0.2.1\"><configuration><parameters birthRate=\"3.0\" deathRate=\"1.0\" samplingRate=\"0.5\" occurrenceRate=\"0.5\" duration=\"5.0\" substitutionRate=\"1.0\" seqLength=\"100\" /><options seed=\"1\" writeNewick=\"true\" makePlots=\"true\" outputDirectory=\"out\" simulateSequences=\"true\" seq_agg_times=\"\" occ_agg_times=\"\" /></configuration></ape>"
   tmp_file <- tempfile()
   writeLines(
-    text = demo_xml_3,
+    text = demo_xml_4,
     con = tmp_file
   )
   args <- list(
