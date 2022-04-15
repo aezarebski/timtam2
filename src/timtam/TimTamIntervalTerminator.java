@@ -20,9 +20,14 @@ public class TimTamIntervalTerminator implements Comparable<TimTamIntervalTermin
         return bwdTime;
     }
 
-    private final String type;
-    private final int count;
-    private final Double bwdTime;
+    private String type;
+    private int count;
+    private Double bwdTime;
+    Set<String> validTerminatorNames =
+            new HashSet<>(Arrays.asList("birth", "sample", "occurrence", "catastrophe", "disaster", "rateChange"));
+
+    public TimTamIntervalTerminator() {
+    }
 
     /**
      * Construct a description of why an interval terminated.
@@ -31,10 +36,23 @@ public class TimTamIntervalTerminator implements Comparable<TimTamIntervalTermin
      * @param bwdTime the time that the interval ended
      * @param count the size of the event
      */
-    TimTamIntervalTerminator(String type, Double bwdTime, OptionalInt count) {
-        final Set<String> validTerminatorNames =
-                new HashSet<>(Arrays.asList("birth", "sample", "occurrence", "catastrophe", "disaster", "rateChange"));
+    public TimTamIntervalTerminator(String type, Double bwdTime, OptionalInt count) {
+        if (validTerminatorNames.contains(type)) {
+            this.type = type;
+            this.bwdTime = bwdTime;
+            if (count.isPresent() & (Objects.equals(type, "catastrophe") | Objects.equals(type, "disaster"))) {
+                this.count = count.getAsInt();
+            } else if ((!count.isPresent()) & (!Objects.equals(type, "catastrophe")) & (!Objects.equals(type, "disaster"))) {
+                this.count = -1;
+            } else {
+                throw new RuntimeException("count cannot be "+ count + " in TimTamIntervalTerminator if type is " + type);
+            }
+        } else {
+            throw new IllegalArgumentException("Unexpected interval terminator type: " + type);
+        }
+    }
 
+    public void setTypeTimeAndCount(String type, Double bwdTime, OptionalInt count) {
         if (validTerminatorNames.contains(type)) {
             this.type = type;
             this.bwdTime = bwdTime;

@@ -1,6 +1,5 @@
 package timtam;
 
-
 import beast.core.parameter.RealParameter;
 import beast.evolution.tree.Tree;
 import beast.util.TreeParser;
@@ -78,6 +77,7 @@ public class TestTimTam {
         Tree tree = new TreeParser("((3 : 1.5, 4 : 0.5) : 1 , (1 : 2, 2 : 1) : 3);",false);
         tt.setInputValue("tree", tree);
         tt.setInputValue("originTime", new RealParameter("10.0"));
+        tt.setInputValue("conditionOnObservation", false);
 
         double becomeUninfectiousRate = 1.5;
         double samplingProportion = 0.3;
@@ -117,7 +117,7 @@ public class TestTimTam {
         Tree tree = new TreeParser("((3 : 1.5, 4 : 0.5) : 1 , (1 : 2, 2 : 1) : 3);",false);
         tt.setInputValue("tree", tree);
         tt.setInputValue("originTime", new RealParameter("10.0"));
-
+        tt.setInputValue("conditionOnObservation", false);
         tt.setInputValue("psi",new RealParameter("0.5"));
         tt.setInputValue("lambda",new RealParameter("2.5"));
 

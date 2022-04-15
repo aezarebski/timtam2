@@ -125,7 +125,6 @@ public class TimTam extends TreeDistribution {
     // change.
     private TimTamIntervalTerminator[] intervalTerminators;
 
-    // START SNEAKY
     private double[] intervalStartTimes;
     private double[] intervalEndTimes;
     private double[] lncs;
@@ -135,7 +134,6 @@ public class TimTam extends TreeDistribution {
     private double[] psiValues;
     private double[] omegaValues;
     private int[] kValues;
-    // END SNEAKY
 
     // Unclear why it is necessary, but BEAST expects there to be a zero-argument
     // constructor and if there isn't one it freaks out.
@@ -143,6 +141,9 @@ public class TimTam extends TreeDistribution {
 
     }
 
+    /**
+     * This function gets called once at the start of the run.
+     */
     @Override
     public void initAndValidate() {
         super.initAndValidate();
@@ -216,6 +217,11 @@ public class TimTam extends TreeDistribution {
                 this.disasterTimes.length + this.occurrenceTimes.length +
                 this.tree.getNodesAsArray().length - this.totalCatastropheSizes + this.catastropheTimes.length;
         this.intervalTerminators = new TimTamIntervalTerminator[this.numTimeIntervals];
+        for (int ix = 0; ix < this.numTimeIntervals; ix++) {
+            this.intervalTerminators[ix] = new TimTamIntervalTerminator();
+        }
+        this.intervalStartTimes = new double[this.numTimeIntervals];
+        this.intervalEndTimes = new double[this.numTimeIntervals];
         updateIntervalTerminators();
 
         this.lncs = new double[this.numTimeIntervals];
@@ -387,50 +393,54 @@ public class TimTam extends TreeDistribution {
         // if the likelihood conditions upon the observation of the process then we need to account for this in the
         // log-likelihood.
         if (this.conditionOnObservation) {
+            if (this.rateChangeTimes.length == 0) {
             double probUnobserved = p0(this.timeFromOriginToFinalDatum, 0.0, 1.0);
             return arraySum(this.lnls) + arraySum(this.lncs) - Math.log(1 - probUnobserved);
+            } else {
+                throw new RuntimeException("conditioning upon observation is not yet implemented for varying rates.");
+            }
         } else {
             return arraySum(this.lnls) + arraySum(this.lncs);
         }
     }
 
+    /**
+     * This function updates the interval terminators which could change if there are changes to the Tree object.
+     *
+     * <p>The use of {@link java.util.Arrays#sort} here is appropriate according to the
+     * <a href="https://docs.oracle.com/javase/7/docs/api/java/util/Arrays.html#sort(java.lang.Object[])">documentation</a>
+     * because it is suitable for sorting concatenated sorted arrays.</p>
+     */
     private void updateIntervalTerminators() {
         int iTx = 0;
 
         for (Double rateChangeTime : this.rateChangeTimes) {
-            this.intervalTerminators[iTx] =
-                    new TimTamIntervalTerminator("rateChange", rateChangeTime, OptionalInt.empty());
+            this.intervalTerminators[iTx].setTypeTimeAndCount("rateChange", rateChangeTime, OptionalInt.empty());
             iTx++;
         }
 
         for (Double occurrenceTime : this.occurrenceTimes) {
-            this.intervalTerminators[iTx] =
-                    new TimTamIntervalTerminator("occurrence", occurrenceTime, OptionalInt.empty());
+            this.intervalTerminators[iTx].setTypeTimeAndCount("occurrence", occurrenceTime, OptionalInt.empty());
             iTx++;
         }
 
         for (int ix = 0; ix < this.catastropheTimes.length; ix++) {
-            this.intervalTerminators[iTx] =
-                    new TimTamIntervalTerminator("catastrophe", this.catastropheTimes[ix], OptionalInt.of(this.catastropheSizes[ix]));
+            this.intervalTerminators[iTx].setTypeTimeAndCount("catastrophe", this.catastropheTimes[ix], OptionalInt.of(this.catastropheSizes[ix]));
             iTx++;
         }
 
         for (int ix = 0; ix < this.disasterTimes.length; ix++) {
-            this.intervalTerminators[iTx] =
-                    new TimTamIntervalTerminator("disaster", this.disasterTimes[ix], OptionalInt.of(this.disasterSizes[ix]));
+            this.intervalTerminators[iTx].setTypeTimeAndCount("disaster", this.disasterTimes[ix], OptionalInt.of(this.disasterSizes[ix]));
             iTx++;
         }
 
         for (Node node : this.tree.getNodesAsArray()) {
             if (isUnscheduledTreeNode(node)) {
-                this.intervalTerminators[iTx] =
-                        new TimTamIntervalTerminator(node.isLeaf() ? "sample" : "birth", node.getHeight(), OptionalInt.empty());
+                this.intervalTerminators[iTx].setTypeTimeAndCount(node.isLeaf() ? "sample" : "birth", node.getHeight(), OptionalInt.empty());
                 iTx++;
             }
         }
         Arrays.sort(this.intervalTerminators);
-        this.intervalStartTimes = new double[this.numTimeIntervals];
-        this.intervalEndTimes = new double[this.numTimeIntervals];
         this.intervalStartTimes[0] = this.originTime;
         this.intervalEndTimes[0] = this.intervalTerminators[0].getBwdTime();
         for (int ix = 1; ix < this.numTimeIntervals; ix++) {
@@ -577,25 +587,29 @@ public class TimTam extends TreeDistribution {
         double lnRDash1Val = lnRDash1(intNum);
         double lnRDash2Val = lnRDash2(intNum);
 
+        double lnPGFVal = this.nb.lnPGF(p0Val);
+        double lnPGFDash1Val = this.nb.lnPGFDash1(p0Val);
+        double lnPGFDash2Val = this.nb.lnPGFDash2(p0Val);
+
         double lnFM0, lnFM1, lnFM2;
         if (!this.nb.isZero) {
             assert k >= 0;
             if (k > 0) {
-                lnFM0 = this.nb.lnPGF(p0Val) + k * lnRVal;
-                tmpArry[0] = this.nb.lnPGFDash1(p0Val) + lnP0Dash1Val + k * lnRVal;
-                tmpArry[1] = Math.log(k) + (k-1) * lnRVal + lnRDash1Val + this.nb.lnPGF(p0Val);
+                lnFM0 = lnPGFVal + k * lnRVal;
+                tmpArry[0] = lnPGFDash1Val + lnP0Dash1Val + k * lnRVal;
+                tmpArry[1] = Math.log(k) + (k-1) * lnRVal + lnRDash1Val + lnPGFVal;
                 lnFM1 = logSumExp(tmpArry, 2);
-                tmpArry[0] = this.nb.lnPGFDash2(p0Val) + 2 * lnP0Dash1Val + k * lnRVal;
-                tmpArry[1] = this.nb.lnPGFDash1(p0Val) + lnP0Dash2Val + k * lnRVal;
-                tmpArry[2] = Math.log(2) + this.nb.lnPGFDash1(p0Val) + lnP0Dash1Val + Math.log(k) + (k - 1) * lnRVal + lnRDash1Val;
-                tmpArry[3] = this.nb.lnPGF(p0Val) + Math.log(k) + Math.log(k - 1) + (k - 2) * lnRVal + 2 * lnRDash1Val;
-                tmpArry[4] = this.nb.lnPGF(p0Val) + Math.log(k) + (k-1) * lnRVal + lnRDash2Val;
+                tmpArry[0] = lnPGFDash2Val + 2 * lnP0Dash1Val + k * lnRVal;
+                tmpArry[1] = lnPGFDash1Val + lnP0Dash2Val + k * lnRVal;
+                tmpArry[2] = Math.log(2) + lnPGFDash1Val + lnP0Dash1Val + Math.log(k) + (k - 1) * lnRVal + lnRDash1Val;
+                tmpArry[3] = lnPGFVal + Math.log(k) + Math.log(k - 1) + (k - 2) * lnRVal + 2 * lnRDash1Val;
+                tmpArry[4] = lnPGFVal + Math.log(k) + (k-1) * lnRVal + lnRDash2Val;
                 lnFM2 = logSumExp(tmpArry, 5);
             } else {
-                lnFM0 = this.nb.lnPGF(p0Val);
-                lnFM1 = this.nb.lnPGFDash1(p0Val) + lnP0Dash1Val;
-                tmpArry[0] = this.nb.lnPGFDash2(p0Val) + 2 * lnP0Dash1Val;
-                tmpArry[1] = this.nb.lnPGFDash1(p0Val) + lnP0Dash2Val;
+                lnFM0 = lnPGFVal;
+                lnFM1 = lnPGFDash1Val + lnP0Dash1Val;
+                tmpArry[0] = lnPGFDash2Val + 2 * lnP0Dash1Val;
+                tmpArry[1] = lnPGFDash1Val + lnP0Dash2Val;
                 lnFM2 = logSumExp(tmpArry, 2);
             }
         } else {
