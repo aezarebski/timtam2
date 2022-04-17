@@ -1,6 +1,6 @@
 #+title: Example 1
 #+author: Alexander E. Zarebski
-#+Time-stamp: <Last modified: 2022-04-14 15:29:28>
+#+Time-stamp: <Last modified: 2022-04-17 14:51:21>
 
 The details of the simulation of this data set are [[file:../simulating-data/readme.org::*Example 1][here]]. The input data is in
 =data/= and there is an XML for using BDSky (serial) and TimTam to analyse this
@@ -49,5 +49,13 @@ mv ex1-timtam.log out/
 
 Rscript src/make-posterior-plots.R
 #+end_src
+
+** Performance
+
+Using the version of =xml/timtam.xml= on commit
+=ae30efef018e5d96c54b07f8e683b3017a44b49b=, to run a chain of length 1000 required
+a total calculation time of about 16 seconds when run through IntelliJ. Creating
+an array containing the logarithms of integers does not substantially improve
+the run time of the calculation.
 
 #  LocalWords:  TimTam CrI
