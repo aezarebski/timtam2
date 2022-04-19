@@ -1,0 +1,28 @@
+#+title: Example 3
+#+author: Alexander E. Zarebski
+#+Time-stamp: <Last modified: 2022-04-19 16:50:12>
+
+As a sanity check we should ensure that there is some temporal signal in out
+data. This does require putting the data into a sensible format though.
+
+#+begin_src R
+library(ape)
+library(jsonlite)
+input_data <- read_json("data/ex3.json")
+write.nexus(read.tree(text = input_data$nj),
+            file="out/nj.nexus")
+writeLines(
+  text=unlist(input_data$fasta),
+  con="out/sim.fasta"
+)
+#+end_src
+
+#+caption: Figure 1: TempEst shows that there is temporal signal in the data.
+#+name: fig:tempest
+#+attr_org: :width 500px
+#+attr_html: :width 400px
+[[./out/tempest.png]]
+
+#+begin_example
+java -cp ../../../../beast2/build/dist/beast.jar beast.app.beauti.Beauti
+#+end_example
