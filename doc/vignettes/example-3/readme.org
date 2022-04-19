@@ -1,6 +1,6 @@
 #+title: Example 3
 #+author: Alexander E. Zarebski
-#+Time-stamp: <Last modified: 2022-04-19 16:50:12>
+#+Time-stamp: <Last modified: 2022-04-19 17:12:17>
 
 As a sanity check we should ensure that there is some temporal signal in out
 data. This does require putting the data into a sensible format though.
@@ -22,6 +22,8 @@ writeLines(
 #+attr_org: :width 500px
 #+attr_html: :width 400px
 [[./out/tempest.png]]
+
+Using the FASTA file we can make a BDSKY analysis
 
 #+begin_example
 java -cp ../../../../beast2/build/dist/beast.jar beast.app.beauti.Beauti
