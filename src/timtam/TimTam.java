@@ -385,6 +385,12 @@ public class TimTam extends TreeDistribution {
 
     @Override
     public double calculateLogP() {
+        // If the tree is tall enough that the root happens before the origin then this point in parameter space has
+        // probability zero.
+        if (this.tree.getRoot().getHeight() >= this.originTime.doubleValue()) {
+            return Double.NEGATIVE_INFINITY;
+        }
+
         this.nb.setZero();
         updateIntervalTerminators();
         updateRateAndProbParams();
