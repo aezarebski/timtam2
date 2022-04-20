@@ -1,6 +1,6 @@
 #+title: Example 3
 #+author: Alexander E. Zarebski
-#+Time-stamp: <Last modified: 2022-04-19 17:12:17>
+#+Time-stamp: <Last modified: 2022-04-20 16:21:34>
 
 As a sanity check we should ensure that there is some temporal signal in out
 data. This does require putting the data into a sensible format though.
@@ -23,8 +23,30 @@ writeLines(
 #+attr_html: :width 400px
 [[./out/tempest.png]]
 
-Using the FASTA file we can make a BDSKY analysis
+Using the FASTA file we can make a BDSKY analysis, =xml/bdsky.xml=, and then we
+can edit that to use the TimTam likelihood in =xml/timtam.xml=. To run this
 
 #+begin_example
-java -cp ../../../../beast2/build/dist/beast.jar beast.app.beauti.Beauti
+java -cp ../../../../beast2/build/dist/beast.jar beast.app.beastapp.BeastMain -seed 1 -overwrite xml/timtam.xml
+#+end_example
+
+Sadly this seems to break down
+
+#+begin_example
+         Sample     likelihood          prior birthRa_.t:sim TreeHei_.t:sim BDSKY_S_e.mean BDSKY_S_riance originT_.t:sim
+              0   -736581.8820       680.8160         2.5            9.5           72.2023       204.6623        10.0    --
+           1000   -462251.2696        74.9901         2.5            9.8685       158.1494       485.1710        10.0    --
+           2000   -434481.9248      -270.0044         2.5            9.9741       222.1448       692.4820        10.0    --
+           3000   -411135.6500      -659.4749         2.5            9.8523       283.2084       894.2973        10.0    --
+           4000   -394542.2522      -884.0255         2.5            9.9626       324.0815      1024.8614        10.0    --
+
+           ...
+
+          42000   -183541.0786     -6338.5007         2.5            9.9877       698.3367      2292.3292        10.0    35m48s/Msamples
+          43000   -181974.1977     -6348.7515         2.5            9.9877       698.4974      2292.8882        10.0    35m45s/Msamples
+          44000   -180340.2048     -6400.9958         2.5            9.9877       698.1783      2291.7933        10.0    35m43s/Msamples
+          45000   -178723.8516     -6488.6282         2.5            9.9877       698.3380      2292.3850        10.0    35m42s/Msamples
+          46000   -177499.4556       894.7004         2.5            9.9877         0.0013         0.0013        10.0    35m22s/Msamples
+          47000   -176059.9527       894.6573         2.5            9.9877         0.0013         0.0013        10.0    35m4s/Msamples
+          48000   -174871.7063       894.6535         2.5            9.9877         0.0013         0.0013        10.0    34m45s/Msamples
 #+end_example
