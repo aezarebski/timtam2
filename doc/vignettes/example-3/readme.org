@@ -1,6 +1,6 @@
 #+title: Example 3
 #+author: Alexander E. Zarebski
-#+Time-stamp: <Last modified: 2022-04-20 16:34:53>
+#+Time-stamp: <Last modified: 2022-04-20 18:08:14>
 
 As a sanity check we should ensure that there is some temporal signal in out
 data. This does require putting the data into a sensible format though.
@@ -28,22 +28,4 @@ can edit that to use the TimTam likelihood in =xml/timtam.xml=. To run this
 
 #+begin_example
 java -cp ../../../../beast2/build/dist/beast.jar beast.app.beastapp.BeastMain -seed 1 -overwrite xml/timtam.xml
-#+end_example
-
-Sadly this seems to break down
-
-#+begin_example
-         Sample     likelihood          prior birthRa_.t:sim TreeHei_.t:sim BDSKY_S_e.mean BDSKY_S_riance originT_.t:sim
-              0   -504585.2427       561.3520         2.5            9.9364        96.9764       280.7171        10.0    --
-           1000   -474085.4414       251.5061         2.5            9.6957       151.2315       460.1118        10.0    --
-           2000   -417127.9661      -310.0963         2.5            9.9785       222.6252       696.5469        10.0    --
-
-           ...
-
-          35000   -198807.9904     -5626.4215         2.5            9.9829       697.1443      2287.6822        10.0    36m15s/Msamples
-          36000   -197022.2817     -5680.1501         2.5            9.9829       697.0464      2287.6596        10.0    36m18s/Msamples
-          37000   -194829.6755     -5736.8816         2.5            9.9829       697.6713      2289.8864        10.0    36m19s/Msamples
-          38000   -193028.9886       894.4426         2.5            9.9896         0.0013         0.0013        10.0    36m20s/Msamples
-          39000   -190773.0041       894.4800         2.5            9.9896         0.0013         0.0013        10.0    35m58s/Msamples
-          40000   -188844.7608       894.4930         2.5            9.9896         0.0013         0.0013        10.0    35m37s/Msamples
 #+end_example

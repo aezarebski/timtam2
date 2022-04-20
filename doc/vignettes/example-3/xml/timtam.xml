@@ -1049,8 +1049,7 @@ name="alignment">
     <operator id="BDSKY_SerialNarrow.t:sim" spec="Exchange" tree="@Tree.t:sim" weight="15.0"/>
     <operator id="BDSKY_SerialWide.t:sim" spec="Exchange" isNarrow="false" tree="@Tree.t:sim" weight="3.0"/>
     <operator id="BDSKY_SerialWilsonBalding.t:sim" spec="WilsonBalding" tree="@Tree.t:sim" weight="3.0"/>
-    <!-- TODO Obviously this should be something we estimate toooooo -->
-    <!-- <operator id="birthRateWalk.t:sim" spec="RealRandomWalkOperator" parameter="@birthRate.t:sim" useGaussian="true" weight="3.0" windowSize="0.1"/> -->
+    <operator id="birthRateWalk.t:sim" spec="RealRandomWalkOperator" parameter="@birthRate.t:sim" useGaussian="true" weight="3.0" windowSize="0.1"/>
     <logger id="tracelog" spec="Logger" fileName="sim.log" logEvery="1000" model="@posterior" sanitiseHeaders="true" sort="smart">
         <log idref="posterior"/>
         <log idref="likelihood"/>
