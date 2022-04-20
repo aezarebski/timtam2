@@ -18,7 +18,7 @@ public class TestTimTamNegBinom {
     public void testTimTamNegBinom() {
 
         TimTamNegBinom myNB = new TimTamNegBinom();
-        myNB.setZero();
+        myNB.setIsZero(true);
 
         assertTrue(
                 approxEqual.test(

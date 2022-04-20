@@ -391,7 +391,7 @@ public class TimTam extends TreeDistribution {
             return Double.NEGATIVE_INFINITY;
         }
 
-        this.nb.setZero();
+        this.nb.setIsZero(true);
         updateIntervalTerminators();
         updateRateAndProbParams();
         for (int ix = 0; ix < this.numTimeIntervals; ix++) {
@@ -602,7 +602,7 @@ public class TimTam extends TreeDistribution {
         double lnPGFDash2Val = this.nb.lnPGFDash2(p0Val);
 
         double lnFM0, lnFM1, lnFM2;
-        if (!this.nb.isZero) {
+        if (!this.nb.getIsZero()) {
             assert k >= 0;
             if (k > 0) {
                 lnFM0 = lnPGFVal + k * lnRVal;
