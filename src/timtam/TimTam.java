@@ -150,6 +150,9 @@ public class TimTam extends TreeDistribution {
 
         this.tree = (Tree) treeInput.get();
         this.originTime = originTimeInput.get().getValue();
+        if (this.tree.getRoot().getHeight() >= this.originTime.doubleValue()) {
+            throw new RuntimeException("tree has a root which comes before the originTime.");
+        }
 
         if (catastropheTimesInput.get() != null) {
             this.catastropheTimes = catastropheTimesInput.get().getDoubleValues();
