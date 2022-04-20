@@ -1010,7 +1010,7 @@ name="alignment">
         <parameter id="birthRate.t:sim" spec="parameter.RealParameter" name="stateNode">2.5</parameter>
     </state>
     <!-- TODO The root height is hard coded here. The value comes from looking at the range of sample times and picking something before the earliest sample. -->
-    <init id="RandomTree.t:sim" spec="beast.evolution.tree.RandomTree" estimate="false" initial="@Tree.t:sim" taxa="@sim" rootHeight="9.5">
+    <init id="RandomTree.t:sim" spec="beast.evolution.tree.RandomTree" estimate="false" initial="@Tree.t:sim" taxa="@sim" >
         <populationModel id="ConstantPopulation0.t:sim" spec="ConstantPopulation">
             <parameter id="randomPopSize.t:sim" spec="parameter.RealParameter" name="popSize">1.0</parameter>
         </populationModel>
