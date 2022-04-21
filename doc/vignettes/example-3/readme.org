@@ -1,10 +1,37 @@
 #+title: Example 3
 #+author: Alexander E. Zarebski
-#+Time-stamp: <Last modified: 2022-04-20 18:08:14>
+#+Time-stamp: <Last modified: 2022-04-21 10:40:13>
 
 As a sanity check we should ensure that there is some temporal signal in out
-data. This does require putting the data into a sensible format though.
+data. A simple neighbour-joining tree demonstrates that there clear signal in
+these sequences, as shown in Figure [[fig:tempest][1]]. To run this requires putting the data
+into a suitable ([[https://en.wikipedia.org/wiki/Nexus_file][nexus]]) format though. A snippet of R demonstrating how to do
+this is shown in Listing [[lsting:nexus-format][1]]. The XML to analyse this data is [[file:./xml/timtam.xml][here]]. The R script
+used to summarise the results of the BEAST2 run is [[file:./src/make-posterior-plots.R][here]].
 
+Recall that the parameters used to simulate the dataset are [[file:../simulating-data/src/ex3/sim-params.xml][here]]. Figure [[fig:prev-est][2]] shows
+the posterior distribution of the prevalence. Figure [[fig:br-est][3]] shows the posterior
+distribution of the birth rate.
+
+#+caption: Figure 1: TempEst shows that there is temporal signal in the data.
+#+name: fig:tempest
+#+attr_org: :width 500px
+#+attr_html: :width 400px
+[[./out/tempest.png]]
+
+#+caption: Figure 2: Posterior distribution of the prevalence.
+#+name: fig:prev-est
+#+attr_org: :width 500px
+#+attr_html: :width 400px
+[[./out/prevalence-estimate.png]]
+
+#+caption: Figure 3: Posterior distribution of the birth rate. The prior distribution is shown as the solid line.
+#+name: fig:br-est
+#+attr_org: :width 500px
+#+attr_html: :width 400px
+[[./out/birth-rate-estimate.png]]
+
+#+name: lsting:nexus-format
 #+begin_src R
 library(ape)
 library(jsonlite)
@@ -17,15 +44,12 @@ writeLines(
 )
 #+end_src
 
-#+caption: Figure 1: TempEst shows that there is temporal signal in the data.
-#+name: fig:tempest
-#+attr_org: :width 500px
-#+attr_html: :width 400px
-[[./out/tempest.png]]
-
 Using the FASTA file we can make a BDSKY analysis, =xml/bdsky.xml=, and then we
-can edit that to use the TimTam likelihood in =xml/timtam.xml=. To run this
+can edit that to use the TimTam likelihood in =xml/timtam.xml=. To run this use
+the following command. Note that this takes a while to run.
 
 #+begin_example
 java -cp ../../../../beast2/build/dist/beast.jar beast.app.beastapp.BeastMain -seed 1 -overwrite xml/timtam.xml
 #+end_example
+
+#  LocalWords:  TempEst TimTam
