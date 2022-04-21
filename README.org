@@ -1,11 +1,9 @@
 #+title: TimTam
 #+author: Alexander E. Zarebski
-#+Time-stamp: <Last modified: 2022-04-15 12:44:59>
+#+Time-stamp: <Last modified: 2022-04-21 11:55:00>
 
 This repository is an attempt to implement the [[https://github.com/aezarebski/timtam][TimTam]] likelihood (described in
-the PLOS Computational Biology [[https://doi.org/10.1371/journal.pcbi.1009805][paper]]) as a BEAST2 package. There are [[file:./doc/vignettes/README.org::*Vignettes][vignettes]]
-demonstrating how to use this. There is also a [[file:./doc/vignettes/readme.org::*Glossary][glossary]] for definitions specific
-to TimTam.
+the PLOS Computational Biology [[https://doi.org/10.1371/journal.pcbi.1009805][paper]]) as a BEAST2 package.
 
 * Installation
 
