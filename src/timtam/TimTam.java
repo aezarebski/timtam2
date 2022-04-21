@@ -150,6 +150,9 @@ public class TimTam extends TreeDistribution {
 
         this.tree = (Tree) treeInput.get();
         this.originTime = originTimeInput.get().getValue();
+        if (this.tree.getRoot().getHeight() >= this.originTime.doubleValue()) {
+            throw new RuntimeException("tree has a root which comes before the originTime.");
+        }
 
         if (catastropheTimesInput.get() != null) {
             this.catastropheTimes = catastropheTimesInput.get().getDoubleValues();
@@ -382,7 +385,13 @@ public class TimTam extends TreeDistribution {
 
     @Override
     public double calculateLogP() {
-        this.nb.setZero();
+        // If the tree is tall enough that the root happens before the origin then this point in parameter space has
+        // probability zero.
+        if (this.tree.getRoot().getHeight() >= this.originTime.doubleValue()) {
+            return Double.NEGATIVE_INFINITY;
+        }
+
+        this.nb.setIsZero(true);
         updateIntervalTerminators();
         updateRateAndProbParams();
         for (int ix = 0; ix < this.numTimeIntervals; ix++) {
@@ -593,7 +602,7 @@ public class TimTam extends TreeDistribution {
         double lnPGFDash2Val = this.nb.lnPGFDash2(p0Val);
 
         double lnFM0, lnFM1, lnFM2;
-        if (!this.nb.isZero) {
+        if (!this.nb.getIsZero()) {
             assert k >= 0;
             if (k > 0) {
                 lnFM0 = lnPGFVal + k * lnRVal;

@@ -7,8 +7,7 @@ import org.junit.Test;
 
 import java.util.function.BiPredicate;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class TestTimTam {
 
@@ -270,6 +269,20 @@ public class TestTimTam {
         assertTrue(approxEqual.test(tt.birth(lct1 + 0.1), lv1));
         assertTrue(approxEqual.test(tt.birth(lct1), lv2));
         assertTrue(approxEqual.test(tt.birth(lct1 - 0.1), lv2));
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void testTMRCABeforeOriginThrowsException() {
+
+        Tree tree = new TreeParser("((1:6.0,2:4.0):2.0,3:4.0);",false);
+        TimTam tt = new TimTam();
+        tt.setInputValue("lambda", "3.0");
+        tt.setInputValue("mu", "1.0");
+        tt.setInputValue("psi", "1.0");
+        tt.setInputValue("originTime", "5.0");
+        tt.setInputValue("tree", tree);
+        tt.setInputValue("conditionOnObservation", "false");
+        tt.initAndValidate();
     }
 }
 

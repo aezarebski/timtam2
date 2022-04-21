@@ -1,6 +1,6 @@
 #+title: Vignettes
 #+author: Alexander E. Zarebski
-#+Time-stamp: <Last modified: 2022-04-14 16:58:45>
+#+Time-stamp: <Last modified: 2022-04-19 16:17:17>
 
 * Vignettes
 
@@ -9,6 +9,7 @@ There is a description of the process used to [[file:./simulating-data/readme.or
 - [[file:./example-1/readme.org][Example 1]] a known tree constant rates and no scheduled or aggregated samples.
 - [[file:./example-2/readme.org][Example 2]] a known tree with varying rates and no scheduled or aggregated
   samples.
+- [[file:./example-3/readme.org][Example 3]] an unknown tree with constant rates and only sequenced samples.
 
 ** Old (and probably broken) vignettes
 

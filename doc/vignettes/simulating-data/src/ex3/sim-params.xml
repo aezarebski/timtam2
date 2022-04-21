@@ -1,0 +1,6 @@
+<ape version="0.2.1">
+    <configuration>
+        <parameters birthRate="2.5" deathRate="1.0" samplingRate="1.0" occurrenceRate="0.0" duration="10.0" substitutionRate="0.01" seqLength="1000" />
+        <options seed="2" writeNewick="true" makePlots="true" outputDirectory="out/ex3" simulateSequences="true" seq_agg_times="" occ_agg_times="" />
+    </configuration>
+</ape>
