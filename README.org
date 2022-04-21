@@ -1,6 +1,6 @@
 #+title: TimTam
 #+author: Alexander E. Zarebski
-#+Time-stamp: <Last modified: 2022-04-21 11:57:29>
+#+Time-stamp: <Last modified: 2022-04-21 14:33:05>
 
 This repository is an attempt to implement the [[https://github.com/aezarebski/timtam][TimTam]] likelihood (described in
 the PLOS Computational Biology [[https://doi.org/10.1371/journal.pcbi.1009805][paper]]) as a BEAST2 package.
@@ -35,13 +35,10 @@ $ cd ..
 
 ** Clone and compile TimTam
 
-For the time being, only the =skyline= branch can be used comfortably
-
 #+begin_example
 $ git clone git@github.com:aezarebski/timtam2.git
 ...
 $ cd timtam2
-$ git checkout skyline
 $ ant
 ...
 $ cd ..
