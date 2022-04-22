@@ -17,23 +17,51 @@ public class TestTimTam {
     private final BiPredicate<Double, Double> kindaEqual = (x, y) -> (Math.abs(x - y) / Math.abs(y)) < 5e-2;
 
     /**
-     * This test draws on a similar one in BDSKY (see the
+     * <p>This test draws on a similar one in BDSKY (see the
      * testLikelihoodCalculationSimple test in BirthDeathSkylineTest.java)
      * and checks that the TimTam values look similar in a special case.
      * These values were computed assuming constant parameters. The modified
      * version of testLikelihoodCalculationSimple in
-     * BirthDeathSkylineTest.java is included at the end of this file.
+     * BirthDeathSkylineTest.java is included at the end of this file.</p>
      *
-     *  | R0  | lBDSKY              |
-     *  |-----+---------------------|
-     *  | 1.5 | -26.10536013426608  |
-     *  | 1.6 | -27.39912704449781  |
-     *  | 1.7 | -28.76692080906782  |
-     *  | 1.8 | -30.199269844913694 |
-     *  | 1.9 | -31.68804261637826  |
-     *  | 2.0 | -33.2262519906258   |
-     *  | 3.0 | -50.33479549906616  |
-     *  | 4.0 | -68.99855263104962  |
+     *  <table style="border:solid;">
+     *  <tr>
+     *  <th>R0</th>
+     *  <th>lBDSKY</th>
+     *  </tr>
+     *  <tr>
+     *  <td>1.5</td>
+     *  <td>-26.10536013426608</td>
+     *  </tr>
+     *  <tr>
+     *  <td>1.6</td>
+     *  <td>-27.39912704449781</td>
+     *  </tr>
+     *  <tr>
+     *  <td>1.7</td>
+     *  <td>-28.76692080906782</td>
+     *  </tr>
+     *  <tr>
+     *  <td>1.8</td>
+     *  <td>-30.199269844913694</td>
+     *  </tr>
+     *  <tr>
+     *  <td>1.9</td>
+     *  <td>-31.68804261637826</td>
+     *  </tr>
+     *  <tr>
+     *  <td>2.0</td>
+     *  <td>-33.2262519906258</td>
+     *  </tr>
+     *  <tr>
+     *  <td>3.0</td>
+     *  <td>-50.33479549906616</td>
+     *  </tr>
+     *  <tr>
+     *  <td>4.0</td>
+     *  <td>-68.99855263104962</td>
+     *  </tr>
+     *  </table>
      */
     @Test
     public void testLikelihoodCalculationSimple() {

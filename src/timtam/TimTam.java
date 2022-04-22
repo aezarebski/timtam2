@@ -14,13 +14,15 @@ import java.util.Objects;
 import java.util.OptionalInt;
 
 /**
- * Tree prior for birth-death-sampling while tracking the distribution of hidden
+ * <p>Tree prior for birth-death-sampling while tracking the distribution of hidden
  * lineages. This used BirthDeathSerialSampling.java as a starting point. There
  * is a nested class, NegativeBinomial, which is the approximation used for the
- * number of unobserved lineages in the likelihood.
+ * number of unobserved lineages in the likelihood.</p>
  *
- * Time is measured backwards from the last sequenced sample (which is treated
- * as having been collected at time zero).
+ * <p>Time is measured backwards from the last sequenced sample (which is treated
+ * as having been collected at time zero). This is important because the times of
+ * any unsequenced observations or changes in parameters need their times provided
+ * this way.</p>
  *
  * @author Alexander Zarebski
  */
