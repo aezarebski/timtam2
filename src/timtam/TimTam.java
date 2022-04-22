@@ -152,7 +152,9 @@ public class TimTam extends TreeDistribution {
     }
 
     /**
-     * This function gets called once at the start of the run.
+     * <p>This function gets called once at the start of an MCMC run so any heavy
+     * pre-calculations should be done here rather than in the likelihood
+     * calculation.</p>
      */
     @Override
     public void initAndValidate() {
@@ -261,7 +263,10 @@ public class TimTam extends TreeDistribution {
     }
 
     /**
-     * Predicate for being an unscheduled node.
+     * <p>Predicate for being an unscheduled node.</p>
+     * <p>Because there is the possibility of numerical issues we use the timeEpsilon
+     * to check if a node is sufficiently close to a catastrophe to be
+     * considered one.</p>
      */
     private boolean isUnscheduledTreeNode(Node node) {
         if (!node.isLeaf()) {
@@ -676,7 +681,6 @@ public class TimTam extends TreeDistribution {
      * @param bwdTimeIntervalEnd the time at which the interval ended
      * @param k the number of lineages in the reconstructed tree during the interval.
      */
-//    private void processInterval(double intervalDuration, double bwdTimeIntervalEnd, int k) {
     private void processInterval(int intNum) {
         int k = this.kValues[intNum];
         double lnC, lnMean, lnVariance;
@@ -722,7 +726,7 @@ public class TimTam extends TreeDistribution {
         lnVariance = Math.log(Math.exp(lnFM2 - lnFM0) + Math.exp(lnMean) * (1 - Math.exp(lnMean)));
 
         this.nb.setLnMeanAndLnVariance(lnMean, lnVariance);
-        this.lncs[intNum] = lnC; // SNEAKY
+        this.lncs[intNum] = lnC;
     }
 
     private double lnR(int intervalIx) {
