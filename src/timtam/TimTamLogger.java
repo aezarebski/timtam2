@@ -9,7 +9,7 @@ import java.io.PrintStream;
 
 public class TimTamLogger extends BEASTObject implements Loggable {
 
-    final public Input<TimTam> timTamInput = new Input<>("timtam", "the prevalence distribution generated while calculating the likelihood using timtam.", Input.Validate.REQUIRED);
+    final public Input<TimTam> timTamInput = new Input<TimTam>("timtam", "the prevalence distribution generated while calculating the likelihood using timtam.", Input.Validate.REQUIRED);
 
     @Override
     public void init(PrintStream out) {

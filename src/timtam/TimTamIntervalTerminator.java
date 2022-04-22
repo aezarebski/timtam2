@@ -24,7 +24,7 @@ public class TimTamIntervalTerminator implements Comparable<TimTamIntervalTermin
     private int count;
     private Double bwdTime;
     Set<String> validTerminatorNames =
-            new HashSet<>(Arrays.asList("birth", "sample", "occurrence", "catastrophe", "disaster", "rateChange"));
+            new HashSet<>(Arrays.asList("birth", "sample", "occurrence", "catastrophe", "disaster", "paramValueChange"));
 
     public TimTamIntervalTerminator() {
     }
