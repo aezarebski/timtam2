@@ -301,6 +301,7 @@ public class TestTimTam {
         tt.initAndValidate();
         y[2] = tt.calculateLogP();
 
+        assertTrue(y[0] != y[1]);
         assertTrue(
                 (y[0] < y[1] & y[1] < y[2]) |
                         (y[2] < y[1] & y[1] < y[0])
