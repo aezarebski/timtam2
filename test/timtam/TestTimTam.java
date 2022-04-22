@@ -311,6 +311,7 @@ public class TestTimTam {
         tt.setInputValue("originTime", "7.0");
         tt.setInputValue("tree", tree);
         tt.setInputValue("conditionOnObservation", "false");
+        tt.setInputValue("catastropheTimes", "1.0 0.0");
 
         double[] y = new double[3];
 
