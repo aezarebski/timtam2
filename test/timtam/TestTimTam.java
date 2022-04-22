@@ -313,7 +313,7 @@ public class TestTimTam {
         tt.setInputValue("conditionOnObservation", "false");
         tt.setInputValue("catastropheTimes", "1.0 0.0");
 
-        double[] y = new double[3];
+        double[] y = new double[4];
 
         tt.setInputValue("rho", "0.3 0.3");
         tt.setInputValue("rhoChangeTimes", "0.5");
@@ -330,11 +330,16 @@ public class TestTimTam {
         tt.initAndValidate();
         y[2] = tt.calculateLogP();
 
+        tt.setInputValue("rho", "0.4");
+        tt.initAndValidate();
+        y[3] = tt.calculateLogP();
+
         assertTrue(y[0] != y[1]);
         assertTrue(
                 (y[0] < y[1] & y[1] < y[2]) |
                         (y[2] < y[1] & y[1] < y[0])
         );
+        assertTrue(approxEqual.test(y[2], y[3]));
     }
 
     @Test(expected = RuntimeException.class)
