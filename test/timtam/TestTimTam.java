@@ -271,6 +271,42 @@ public class TestTimTam {
         assertTrue(approxEqual.test(tt.birth(lct1 - 0.1), lv2));
     }
 
+    @Test
+    public void testVariableRhoProb() {
+        String newickString =
+            "(((1:2.0,2:1.0):2.0,3:4.0):2.0,((4:2.0,5:3.0):2.0,6:4.0):1.0);";
+        Tree tree = new TreeParser(newickString,false);
+        TimTam tt = new TimTam();
+        tt.setInputValue("lambda", "2.0");
+        tt.setInputValue("mu", "1.0");
+        tt.setInputValue("psi", "0.0");
+        tt.setInputValue("originTime", "7.0");
+        tt.setInputValue("tree", tree);
+        tt.setInputValue("conditionOnObservation", "false");
+
+        double[] y = new double[3];
+
+        tt.setInputValue("rho", "0.3 0.3");
+        tt.setInputValue("rhoChangeTimes", "0.5");
+        tt.initAndValidate();
+        y[0] = tt.calculateLogP();
+
+        tt.setInputValue("rho", "0.3 0.4");
+        tt.setInputValue("rhoChangeTimes", "0.5");
+        tt.initAndValidate();
+        y[1] = tt.calculateLogP();
+
+        tt.setInputValue("rho", "0.4 0.4");
+        tt.setInputValue("rhoChangeTimes", "0.5");
+        tt.initAndValidate();
+        y[2] = tt.calculateLogP();
+
+        assertTrue(
+                (y[0] < y[1] & y[1] < y[2]) |
+                        (y[2] < y[1] & y[1] < y[0])
+        );
+    }
+
     @Test(expected = RuntimeException.class)
     public void testTMRCABeforeOriginThrowsException() {
 
