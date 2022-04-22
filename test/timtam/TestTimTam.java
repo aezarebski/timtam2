@@ -342,6 +342,51 @@ public class TestTimTam {
         assertTrue(approxEqual.test(y[2], y[3]));
     }
 
+    @Test
+    public void testVariableNuProb() {
+        String newickString =
+                "((1:3.0,2:1.0):3.0,3:1.0);";
+        Tree tree = new TreeParser(newickString,false);
+        TimTam tt = new TimTam();
+        tt.setInputValue("lambda", "2.0");
+        tt.setInputValue("mu", "1.0");
+        tt.setInputValue("psi", "0.0");
+        tt.setInputValue("originTime", "7.0");
+        tt.setInputValue("tree", tree);
+        tt.setInputValue("conditionOnObservation", "false");
+
+        tt.setInputValue("disasterTimes", "4.0 1.0");
+        tt.setInputValue("disasterSizes", "2 3");
+
+        double[] y = new double[4];
+
+        tt.setInputValue("nu", "0.3 0.3");
+        tt.setInputValue("nuChangeTimes", "2.5");
+        tt.initAndValidate();
+        y[0] = tt.calculateLogP();
+
+        tt.setInputValue("nu", "0.3 0.4");
+        tt.setInputValue("nuChangeTimes", "2.5");
+        tt.initAndValidate();
+        y[1] = tt.calculateLogP();
+
+        tt.setInputValue("nu", "0.4 0.4");
+        tt.setInputValue("nuChangeTimes", "2.5");
+        tt.initAndValidate();
+        y[2] = tt.calculateLogP();
+
+        tt.setInputValue("nu", "0.4");
+        tt.initAndValidate();
+        y[3] = tt.calculateLogP();
+
+        assertTrue(y[0] != y[1]);
+        assertTrue(
+                (y[0] < y[1] & y[1] < y[2]) |
+                        (y[2] < y[1] & y[1] < y[0])
+        );
+        assertTrue(approxEqual.test(y[2], y[3]));
+    }
+
     @Test(expected = RuntimeException.class)
     public void testTMRCABeforeOriginThrowsException() {
 
