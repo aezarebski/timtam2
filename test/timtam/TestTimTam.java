@@ -350,7 +350,7 @@ public class TestTimTam {
         TimTam tt = new TimTam();
         tt.setInputValue("lambda", "2.0");
         tt.setInputValue("mu", "1.0");
-        tt.setInputValue("psi", "0.0");
+        tt.setInputValue("psi", "1.0");
         tt.setInputValue("originTime", "7.0");
         tt.setInputValue("tree", tree);
         tt.setInputValue("conditionOnObservation", "false");
