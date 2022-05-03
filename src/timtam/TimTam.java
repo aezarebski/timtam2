@@ -862,4 +862,13 @@ public class TimTam extends TreeDistribution {
     protected boolean requiresRecalculation() {
         return true;
     }
+
+    /**
+     * This is used to report the first interval duration as a way to assess if the chain is mixing properly.
+     *
+     * @return the duration of the first interval.
+     */
+    protected double getFirstIntervalDuration() {
+        return this.intervalStartTimes[0] - this.intervalEndTimes[0];
+    }
 }
