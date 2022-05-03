@@ -1,6 +1,7 @@
 package timtam;
 
 import beast.core.parameter.RealParameter;
+import beast.evolution.operators.ScaleOperator;
 import beast.evolution.tree.Tree;
 import beast.util.TreeParser;
 import org.junit.Test;
@@ -90,6 +91,47 @@ public class TestTimTam {
             tt.initAndValidate();
             assertTrue(kindaEqual.test(llhdValues[ix] - 2, tt.calculateLogP()));
         }
+    }
+
+    /**
+     * <p>This test ensures that if an operator drops the origin below the height of the tree then the resulting log
+     * probability becomes negative infinity.</p>
+     */
+    @Test
+    public void testOriginLessThanHeightIsImpossible() {
+
+        TimTam tt =  new TimTam();
+        Tree tree = new TreeParser("((3 : 1.5, 4 : 0.5) : 1 , (1 : 2, 2 : 1) : 3);",false);
+
+        tt.setInputValue("tree", tree);
+        RealParameter oT = new RealParameter("10.0");
+        oT.setUpper(11.0);
+        oT.setLower(0.1);
+        tt.setInputValue("originTime", oT);
+
+        tt.setInputValue("lambda", "2.25");
+        tt.setInputValue("mu", "1.05");
+        tt.setInputValue("psi", "0.45");
+
+        tt.initAndValidate();
+
+        assertTrue(kindaEqual.test(-26.105360134266082 - 2, tt.calculateLogP()));
+
+        ScaleOperator operator = new ScaleOperator();
+        operator.initByName(
+                "parameter", oT,
+                "scaleFactor", 0.5,
+                "scaleAllIndependently", true,
+                "weight", 10.0
+        );
+
+        // while the origin is older than the root of the tree the log-probability should be finite but once it drops
+        // below that it should be infinite.
+        while (oT.getValue() > 5.0) {
+            assertTrue(tt.calculateLogP() > Double.NEGATIVE_INFINITY);
+            operator.proposal();
+        }
+        assertTrue(tt.calculateLogP() == Double.NEGATIVE_INFINITY);
     }
 
     /** This is pretty much the same as {@link #testLikelihoodCalculationSimple()} but

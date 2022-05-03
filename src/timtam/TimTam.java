@@ -145,12 +145,6 @@ public class TimTam extends TreeDistribution {
     private double[] nuValues;
     private int[] kValues;
 
-    // Unclear why it is necessary, but BEAST expects there to be a zero-argument
-    // constructor and if there isn't one it freaks out.
-    public TimTam() {
-
-    }
-
     /**
      * <p>This function gets called once at the start of an MCMC run so any heavy
      * pre-calculations should be done here rather than in the likelihood
@@ -242,12 +236,14 @@ public class TimTam extends TreeDistribution {
                 this.paramChangeTimes.length +
                 this.disasterTimes.length + this.occurrenceTimes.length +
                 this.tree.getNodesAsArray().length - this.totalCatastropheSizes + this.catastropheTimes.length;
+        this.intervalStartTimes = new double[this.numTimeIntervals];
+        this.intervalEndTimes = new double[this.numTimeIntervals];
+
+        // We can re-use the same TimTamIntervalTerminator objects in this array, but we need to initialise them first.
         this.intervalTerminators = new TimTamIntervalTerminator[this.numTimeIntervals];
         for (int ix = 0; ix < this.numTimeIntervals; ix++) {
             this.intervalTerminators[ix] = new TimTamIntervalTerminator();
         }
-        this.intervalStartTimes = new double[this.numTimeIntervals];
-        this.intervalEndTimes = new double[this.numTimeIntervals];
         updateIntervalTerminators();
 
         this.lncs = new double[this.numTimeIntervals];
@@ -501,7 +497,11 @@ public class TimTam extends TreeDistribution {
     }
 
     /**
-     * This function updates the interval terminators which could change if there are changes to the Tree object.
+     * <p>This function updates the interval terminators which could change if there are changes to the Tree object.</p>
+     *
+     * <p>Note that all the times are relative to a zero which is the time of the last leaf in the tree. This means that
+     * when parameter change times and occurrence observations are included they need to be with relation to this
+     * time.</p>
      *
      * <p>The use of {@link java.util.Arrays#sort} here is appropriate according to the
      * <a href="https://docs.oracle.com/javase/7/docs/api/java/util/Arrays.html#sort(java.lang.Object[])">documentation</a>
@@ -511,28 +511,43 @@ public class TimTam extends TreeDistribution {
         int iTx = 0;
 
         for (Double paramChangeTime : this.paramChangeTimes) {
-            this.intervalTerminators[iTx].setTypeTimeAndCount("paramValueChange", paramChangeTime, OptionalInt.empty());
+            this.intervalTerminators[iTx].setTypeTimeAndCount(
+                    "paramValueChange",
+                    paramChangeTime,
+                    OptionalInt.empty());
             iTx++;
         }
 
         for (Double occurrenceTime : this.occurrenceTimes) {
-            this.intervalTerminators[iTx].setTypeTimeAndCount("occurrence", occurrenceTime, OptionalInt.empty());
+            this.intervalTerminators[iTx].setTypeTimeAndCount(
+                    "occurrence",
+                    occurrenceTime,
+                    OptionalInt.empty());
             iTx++;
         }
 
         for (int ix = 0; ix < this.catastropheTimes.length; ix++) {
-            this.intervalTerminators[iTx].setTypeTimeAndCount("catastrophe", this.catastropheTimes[ix], OptionalInt.of(this.catastropheSizes[ix]));
+            this.intervalTerminators[iTx].setTypeTimeAndCount(
+                    "catastrophe",
+                    this.catastropheTimes[ix],
+                    OptionalInt.of(this.catastropheSizes[ix]));
             iTx++;
         }
 
         for (int ix = 0; ix < this.disasterTimes.length; ix++) {
-            this.intervalTerminators[iTx].setTypeTimeAndCount("disaster", this.disasterTimes[ix], OptionalInt.of(this.disasterSizes[ix]));
+            this.intervalTerminators[iTx].setTypeTimeAndCount(
+                    "disaster",
+                    this.disasterTimes[ix],
+                    OptionalInt.of(this.disasterSizes[ix]));
             iTx++;
         }
 
         for (Node node : this.tree.getNodesAsArray()) {
             if (isUnscheduledTreeNode(node)) {
-                this.intervalTerminators[iTx].setTypeTimeAndCount(node.isLeaf() ? "sample" : "birth", node.getHeight(), OptionalInt.empty());
+                this.intervalTerminators[iTx].setTypeTimeAndCount(
+                        node.isLeaf() ? "sample" : "birth",
+                        node.getHeight(),
+                        OptionalInt.empty());
                 iTx++;
             }
         }
