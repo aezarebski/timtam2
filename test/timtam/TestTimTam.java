@@ -286,6 +286,8 @@ public class TestTimTam {
         tt.setInputValue("omega", "0.6");
         tt.setInputValue("originTime", "7.0");
         tt.setInputValue("occurrenceTimes", occTimes);
+        // there are multiple leaves at the same depth so there must be a catastrophe.
+        tt.setInputValue("catastropheTimes", "0.0");
         tt.setInputValue("tree", tree);
         tt.setInputValue("conditionOnObservation", "false");
         tt.initAndValidate();
