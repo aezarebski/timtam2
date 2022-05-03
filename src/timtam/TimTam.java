@@ -99,7 +99,7 @@ public class TimTam extends TreeDistribution {
     protected Double[] rhoChangeTimes;
     protected Double[] omegaChangeTimes;
     protected Double[] nuChangeTimes;
-    protected Double originTime;
+    protected RealParameter originTime;
 
     private double[] paramChangeTimes;
 
@@ -161,8 +161,8 @@ public class TimTam extends TreeDistribution {
         super.initAndValidate();
 
         this.tree = (Tree) treeInput.get();
-        this.originTime = originTimeInput.get().getValue();
-        if (this.tree.getRoot().getHeight() >= this.originTime.doubleValue()) {
+        this.originTime = originTimeInput.get();
+        if (this.tree.getRoot().getHeight() >= this.originTime.getValue()) {
             throw new RuntimeException("tree has a root which comes before the originTime.");
         }
 
@@ -473,7 +473,7 @@ public class TimTam extends TreeDistribution {
     public double calculateLogP() {
         // If the tree is tall enough that the root happens before the origin then this point in parameter space has
         // probability zero.
-        if (this.tree.getRoot().getHeight() >= this.originTime.doubleValue()) {
+        if (this.tree.getRoot().getHeight() >= this.originTime.getValue()) {
             return Double.NEGATIVE_INFINITY;
         }
 
@@ -537,13 +537,13 @@ public class TimTam extends TreeDistribution {
             }
         }
         Arrays.sort(this.intervalTerminators);
-        this.intervalStartTimes[0] = this.originTime;
+        this.intervalStartTimes[0] = this.originTime.getValue();
         this.intervalEndTimes[0] = this.intervalTerminators[0].getBwdTime();
         for (int ix = 1; ix < this.numTimeIntervals; ix++) {
             this.intervalStartTimes[ix] = this.intervalTerminators[ix-1].getBwdTime();
             this.intervalEndTimes[ix] = this.intervalTerminators[ix].getBwdTime();
         }
-        this.timeFromOriginToFinalDatum = this.originTime - this.intervalEndTimes[this.numTimeIntervals-1];
+        this.timeFromOriginToFinalDatum = this.originTime.getValue() - this.intervalEndTimes[this.numTimeIntervals-1];
     }
 
     /**
