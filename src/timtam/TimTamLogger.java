@@ -9,20 +9,29 @@ import java.io.PrintStream;
 
 public class TimTamLogger extends BEASTObject implements Loggable {
 
-    final public Input<TimTam> timTamInput = new Input<TimTam>("timtam", "the prevalence distribution generated while calculating the likelihood using timtam.", Input.Validate.REQUIRED);
+    final public Input<TimTam> timTamInput = new Input<>("timtam", "the prevalence distribution generated while calculating the likelihood using timtam.", Input.Validate.REQUIRED);
+
+    final public Input<Boolean> reportFirstIntervalInput = new Input<>("reportFirstInterval", "if is true log the length of the first interval. The default value is false.", false);
+
+    private boolean reportFirstInterval;
+    private TimTam timTam;
 
     @Override
     public void init(PrintStream out) {
-        final TimTam tt = timTamInput.get();
-        out.print(tt.getID() + ".prevalence.mean\t");
-        out.print(tt.getID() + ".prevalence.variance\t");
+        out.print(this.timTam.getID() + ".prevalence.mean\t");
+        out.print(this.timTam.getID() + ".prevalence.variance\t");
+        if (reportFirstInterval) {
+            out.println(this.timTam.getID() + "first.interval\t");
+        }
     }
 
     @Override
     public void log(long sample, PrintStream out) {
-        final TimTam tt = timTamInput.get();
-        out.print(Math.exp(tt.getTimTamNegBinom().getLnMean()) + "\t");
-        out.print(Math.exp(tt.getTimTamNegBinom().getLnVariance()) + "\t");
+        out.print(Math.exp(this.timTam.getTimTamNegBinom().getLnMean()) + "\t");
+        out.print(Math.exp(this.timTam.getTimTamNegBinom().getLnVariance()) + "\t");
+        if (reportFirstInterval) {
+            out.print(this.timTam.getFirstIntervalDuration() + "\t");
+        }
     }
 
     @Override
@@ -32,6 +41,7 @@ public class TimTamLogger extends BEASTObject implements Loggable {
 
     @Override
     public void initAndValidate() {
-
+        this.reportFirstInterval = reportFirstIntervalInput.get();
+        this.timTam = timTamInput.get();
     }
 }
