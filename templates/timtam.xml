@@ -1,5 +1,7 @@
 <beast version='2.0' namespace='beast.app.beauti:beast.core:beast.evolution.branchratemodel:beast.evolution.speciation:beast.evolution.tree.coalescent:beast.core.util:beast.evolution.nuc:beast.evolution.operators:beast.evolution.sitemodel:beast.evolution.substitutionmodel:beast.evolution.likelihood:beast.evolution:beast.math.distributions'>
 
+    <mergewith point='misc' fragment="@TreeOperators"/>
+
     <mergewith point='treePriorTemplates'>
 
         <subtemplate id='TimTam Model' class='timtam.TimTam' mainid='TimTam.t:$(n)'>
@@ -40,7 +42,7 @@
                 </distr>
             </prior>
 
-	          <!-- Operators -->
+	          <!-- Parameter operators -->
 
 	                   <operator
                        id='birthRateScaler.t:$(n)'
@@ -123,6 +125,8 @@
                 <connect srcID='$(p).t:$(n)' targetID='state' inputName='stateNode' if='inposterior(TimTam.t:$(n)) and $(p).t:$(n)/estimate=true' />
                 <connect srcID='$(p).t:$(n)' targetID='tracelog' inputName='log' if='inposterior(TimTam.t:$(n)) and $(p).t:$(n)/estimate=true' />
             </plate>
+
+			      <plate fragment="TreeOperators" var="m" range="TimTam"/>
         </subtemplate>
     </mergewith>
 
