@@ -111,13 +111,13 @@
             <connect srcID='samplingRatePrior.t:$(n)' targetID='prior' inputName='distribution' if='inposterior(TimTam.t:$(n)) and samplingRate.t:$(n)/estimate=true'>prior on sampling rate t:$(n)</connect>
             <connect srcID='nuProbPrior.t:$(n)' targetID='prior' inputName='distribution' if='inposterior(TimTam.t:$(n)) and nuProb.t:$(n)/estimate=true'>prior on scheduled unsequenced sampling probability t:$(n)</connect>
 
-            <connect srcID='birthRateScaler.t:$(n)' targetID='mcmc' inputName='operator' if='birthRate.t:$(n)/estimate=true'/>
-            <connect srcID='birthRateWalk.t:$(n)' targetID='mcmc' inputName='operator' if='birthRate.t:$(n)/estimate=true'/>
-            <connect srcID='samplingRateScaler.t:$(n)' targetID='mcmc' inputName='operator' if='samplingRate.t:$(n)/estimate=true'/>
-            <connect srcID='samplingRateWalk.t:$(n)' targetID='mcmc' inputName='operator' if='samplingRate.t:$(n)/estimate=true'/>
-            <connect srcID='updownBS.t:$(n)' targetID='mcmc' inputName='operator' if='birthRate.t:$(n)/estimate=true and samplingRate.t:$(n)/estimate=true'/>
-            <connect srcID='nuProbScaler.t:$(n)' targetID='mcmc' inputName='operator' if='nuProb.t:$(n)/estimate=true'/>
-            <connect srcID='nuProbWalk.t:$(n)' targetID='mcmc' inputName='operator' if='nuProb.t:$(n)/estimate=true'/>
+            <connect srcID='birthRateScaler.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTam.t:$(n)) and birthRate.t:$(n)/estimate=true'/>
+            <connect srcID='birthRateWalk.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTam.t:$(n)) and birthRate.t:$(n)/estimate=true'/>
+            <connect srcID='samplingRateScaler.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTam.t:$(n)) and samplingRate.t:$(n)/estimate=true'/>
+            <connect srcID='samplingRateWalk.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTam.t:$(n)) and samplingRate.t:$(n)/estimate=true'/>
+            <connect srcID='updownBS.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTam.t:$(n)) and birthRate.t:$(n)/estimate=true and samplingRate.t:$(n)/estimate=true'/>
+            <connect srcID='nuProbScaler.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTam.t:$(n)) and nuProb.t:$(n)/estimate=true'/>
+            <connect srcID='nuProbWalk.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTam.t:$(n)) and nuProb.t:$(n)/estimate=true'/>
 
             <connect srcID='TimTamLogger.t:$(n)' targetID='tracelog' inputName='log' if='inposterior(TimTam.t:$(n))' />
 
