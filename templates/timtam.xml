@@ -1,0 +1,133 @@
+<beast version='2.0' namespace='beast.app.beauti:beast.core:beast.evolution.branchratemodel:beast.evolution.speciation:beast.evolution.tree.coalescent:beast.core.util:beast.evolution.nuc:beast.evolution.operators:beast.evolution.sitemodel:beast.evolution.substitutionmodel:beast.evolution.likelihood:beast.evolution:beast.math.distributions'>
+
+    <mergewith point='misc' fragment="@TreeOperators"/>
+
+    <mergewith point='treePriorTemplates'>
+
+        <subtemplate id='TimTam Model' class='timtam.TimTam' mainid='TimTam.t:$(n)'>
+
+            <![CDATA[
+
+            <!-- Prior distribution -->
+            <plugin spec='timtam.TimTam' id="TimTam.t:$(n)" tree="@Tree.t:$(n)" mu="0.046" originTime="70.0" disasterTimes="0.0" disasterSizes="1">
+                <parameter name='lambda' id="birthRate.t:$(n)" value='0.75' estimate='true'/>
+                <parameter name='psi' id="samplingRate.t:$(n)" value='0.25' estimate='true'/>
+                <parameter name='nu' id="nuProb.t:$(n)" value='0.75' estimate='true'/>
+            </plugin>
+
+            <prior
+                id="birthRatePrior.t:$(n)"
+                x="@birthRate.t:$(n)">
+                <distr spec="beast.math.distributions.LogNormalDistributionModel">
+                    <parameter name="M" value="-2.0" estimate="false"/>
+                    <parameter name="S" value="1.0" estimate="false"/>
+                </distr>
+            </prior>
+
+            <prior
+                id="samplingRatePrior.t:$(n)"
+                x="@samplingRate.t:$(n)">
+                <distr spec="beast.math.distributions.LogNormalDistributionModel">
+                    <parameter name="M" value="-2.0" estimate="false"/>
+                    <parameter name="S" value="1.0" estimate="false"/>
+                </distr>
+            </prior>
+
+            <prior
+                id="nuProbPrior.t:$(n)"
+                x="@nuProb.t:$(n)">
+                <distr spec="beast.math.distributions.Beta">
+                    <parameter name="alpha" value="2.0" estimate="false"/>
+                    <parameter name="beta" value="2.0" estimate="false"/>
+                </distr>
+            </prior>
+
+	          <!-- Parameter operators -->
+
+	                   <operator
+                       id='birthRateScaler.t:$(n)'
+                       spec='ScaleOperator'
+                       scaleFactor=".9"
+                       weight="1.0"
+                       parameter="@birthRate.t:$(n)"/>
+
+                     <operator
+                       id="birthRateWalk.t:$(n)"
+                       spec="RealRandomWalkOperator"
+                       windowSize="0.01"
+                       parameter="@birthRate.t:$(n)"
+                       weight="1.0" />
+
+	                   <operator
+                       id='samplingRateScaler.t:$(n)'
+                       spec='ScaleOperator'
+                       scaleFactor=".9"
+                       weight="1.0"
+                       parameter="@samplingRate.t:$(n)"/>
+
+                     <operator
+                       id="samplingRateWalk.t:$(n)"
+                       spec="RealRandomWalkOperator"
+                       windowSize="0.01"
+                       parameter="@samplingRate.t:$(n)"
+                       weight="1.0" />
+
+                     <operator
+                       id="updownBS.t:$(n)"
+                       spec="UpDownOperator"
+                       scaleFactor="0.9"
+                       weight="2.0">
+                       <up idref="birthRate.t:$(n)" />
+                       <down idref="samplingRate.t:$(n)" />
+                     </operator>
+
+                     <operator
+                       id="nuProbScaler.t:$(n)"
+                       spec="ScaleOperator"
+                       scaleFactor="0.9"
+                       parameter="@nuProb.t:$(n)"
+                       weight="1.0" />
+
+                     <operator
+                       id="nuProbWalk.t:$(n)"
+                       spec="RealRandomWalkOperator"
+                       windowSize="0.01"
+                       parameter="@nuProb.t:$(n)"
+                       weight="1.0" />
+
+
+                     <log
+                       id="TimTamLogger.t:$(n)"
+                       spec="timtam.TimTamLogger"
+                       timtam="@TimTam.t:$(n)" />
+
+            ]]>
+
+
+            <connect srcID='TimTam.t:$(n)' targetID='prior' inputName='distribution' if='inposterior(TimTam.t:$(n)) and inlikelihood(Tree.t:$(n)) and Tree.t:$(n)/estimate=true' />
+            <connect srcID='RandomTree.t:$(n)' targetID='mcmc' inputName='init' if='inposterior(Tree.t:$(n))' />
+
+            <connect srcID='birthRatePrior.t:$(n)' targetID='prior' inputName='distribution' if='inposterior(TimTam.t:$(n)) and birthRate.t:$(n)/estimate=true'>prior on birth rate t:$(n)</connect>
+            <connect srcID='samplingRatePrior.t:$(n)' targetID='prior' inputName='distribution' if='inposterior(TimTam.t:$(n)) and samplingRate.t:$(n)/estimate=true'>prior on sampling rate t:$(n)</connect>
+            <connect srcID='nuProbPrior.t:$(n)' targetID='prior' inputName='distribution' if='inposterior(TimTam.t:$(n)) and nuProb.t:$(n)/estimate=true'>prior on scheduled unsequenced sampling probability t:$(n)</connect>
+
+            <connect srcID='birthRateScaler.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTam.t:$(n)) and birthRate.t:$(n)/estimate=true'/>
+            <connect srcID='birthRateWalk.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTam.t:$(n)) and birthRate.t:$(n)/estimate=true'/>
+            <connect srcID='samplingRateScaler.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTam.t:$(n)) and samplingRate.t:$(n)/estimate=true'/>
+            <connect srcID='samplingRateWalk.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTam.t:$(n)) and samplingRate.t:$(n)/estimate=true'/>
+            <connect srcID='updownBS.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTam.t:$(n)) and birthRate.t:$(n)/estimate=true and samplingRate.t:$(n)/estimate=true'/>
+            <connect srcID='nuProbScaler.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTam.t:$(n)) and nuProb.t:$(n)/estimate=true'/>
+            <connect srcID='nuProbWalk.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTam.t:$(n)) and nuProb.t:$(n)/estimate=true'/>
+
+            <connect srcID='TimTamLogger.t:$(n)' targetID='tracelog' inputName='log' if='inposterior(TimTam.t:$(n))' />
+
+            <plate var='p' range='birthRate,samplingRate,nuProb'>
+                <connect srcID='$(p).t:$(n)' targetID='state' inputName='stateNode' if='inposterior(TimTam.t:$(n)) and $(p).t:$(n)/estimate=true' />
+                <connect srcID='$(p).t:$(n)' targetID='tracelog' inputName='log' if='inposterior(TimTam.t:$(n)) and $(p).t:$(n)/estimate=true' />
+            </plate>
+
+			      <plate fragment="TreeOperators" var="m" range="TimTam"/>
+        </subtemplate>
+    </mergewith>
+
+</beast>
