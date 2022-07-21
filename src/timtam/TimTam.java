@@ -681,6 +681,12 @@ public class TimTam extends TreeDistribution {
                     Math.log(1 - nu(intNum)) + this.nb.getLnP(),
                     Math.log(Math.exp(this.nb.getLnR()) + h));
         } else if (Objects.equals(intTypeStr, "paramValueChange")) {
+            // We need to store a value of zero here because otherwise, if the
+            // order of observed events changes (for instance when the tree
+            // changes) then values from previous calculations can sneak
+            // through. Putting a zero here amounts to conditioning on the rate
+            // to change at a fixed point in time.
+            this.lnls[intNum] = 0.0;
         } else {
             throw new IllegalStateException("Unexpected value: " + intTerminator.getType() + "\n\tPlease look at the TimTamIntervalTerminator class to see the type of intervals that TimTam recognises.");
         }
@@ -690,11 +696,22 @@ public class TimTam extends TreeDistribution {
     private final double[] tmpArry = {0,0,0,0,0};
 
     /**
-     * This method should mutate the input to adjust for the interval during which there was no observation.
+     * Update the state of this object to account for the interval during which
+     * there was no observation.
      *
-     * @param intervalDuration the duration of time during which there was no observation
+     * <p>This method fills in an entry of the {@code this.lncs[intNum]} to
+     * account for the duration of time that there was no observed event. See
+     * Equation 1 of <a
+     * href="https://doi.org/10.1371/journal.pcbi.1009805">Zarebski <emph>et
+     * al</emph> (2022)</a> for further details. The method {@link
+     * #processObservation(int)} is used to account for the actual observation
+     * that was made at the end of the interval.</p>
+     *
+     * @param intervalDuration the duration of time during which there was no
+     * observation
      * @param bwdTimeIntervalEnd the time at which the interval ended
-     * @param k the number of lineages in the reconstructed tree during the interval.
+     * @param k the number of lineages in the reconstructed tree during the
+     * interval.
      */
     private void processInterval(int intNum) {
         int k = this.kValues[intNum];
