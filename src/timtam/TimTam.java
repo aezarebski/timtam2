@@ -177,9 +177,6 @@ public class TimTam extends TreeDistribution {
     public void initAndValidate() {
         super.initAndValidate();
 
-        // TODO There should be a check that parameter dimensions and the number
-        // of change points agree!
-
         this.tree = (Tree) treeInput.get();
         this.originTime = originTimeInput.get();
         if (this.tree.getRoot().getHeight() >= this.originTime.getValue()) {
@@ -255,18 +252,64 @@ public class TimTam extends TreeDistribution {
 
         this.conditionOnObservation = conditionOnObservationInput.get();
 
-        this.lambdaChangeTimes =
-                (lambdaChangeTimesInput.get() != null) ? lambdaChangeTimesInput.get().getValues() : new Double[]{};
-        this.muChangeTimes =
-                (muChangeTimesInput.get() != null) ? muChangeTimesInput.get().getValues() : new Double[]{};
-        this.psiChangeTimes =
-                (psiChangeTimesInput.get() != null) ? psiChangeTimesInput.get().getValues() : new Double[]{};
+        // This conditional checks that the number of change times is
+        // appropriate for the number of lambda parameters that we are
+        // estimating. This same pattern is repeated for the other parameters as
+        // well.
+        if (this.lambdaChangeTimesInput.get() != null) {
+            this.lambdaChangeTimes = lambdaChangeTimesInput.get().getValues();
+            if (this.lambdaInput.get().getDimension() !=
+                (this.lambdaChangeTimes.length + 1)) {
+                throw new RuntimeException(
+                  "The dimension of lambda and the number of times lambda changes are incompatible."
+                );
+            }
+        } else {
+            this.lambdaChangeTimes = new Double[]{};
+        }
+
+        if (this.muChangeTimesInput.get() != null) {
+            this.muChangeTimes = muChangeTimesInput.get().getValues();
+            if (this.muInput.get().getDimension() !=
+                (this.muChangeTimes.length + 1)) {
+                throw new RuntimeException(
+                    "The dimension of mu and the number of times mu changes are incompatible."
+                );
+            }
+        } else {
+            this.muChangeTimes = new Double[]{};
+        }
+
+        if (this.psiChangeTimesInput.get() != null) {
+            this.psiChangeTimes = psiChangeTimesInput.get().getValues();
+            if (this.psiInput.get().getDimension() !=
+                (this.psiChangeTimes.length + 1)) {
+                throw new RuntimeException(
+                    "The dimension of psi and the number of times psi changes are incompatible."
+                );
+            }
+        } else {
+            this.psiChangeTimes = new Double[]{};
+        }
+
         this.rhoChangeTimes =
                 (rhoChangeTimesInput.get() != null) ? rhoChangeTimesInput.get().getValues() : new Double[]{};
-        this.omegaChangeTimes =
-                (omegaChangeTimesInput.get() != null) ? omegaChangeTimesInput.get().getValues() : new Double[]{};
+
+        if (this.omegaChangeTimesInput.get() != null) {
+            this.omegaChangeTimes = omegaChangeTimesInput.get().getValues();
+            if (this.omegaInput.get().getDimension() !=
+                (this.omegaChangeTimes.length + 1)) {
+                throw new RuntimeException(
+                    "The dimension of omega and the number of times omega changes are incompatible."
+                );
+            }
+        } else {
+            this.omegaChangeTimes = new Double[]{};
+        }
+
         this.nuChangeTimes =
                 (nuChangeTimesInput.get() != null) ? nuChangeTimesInput.get().getValues() : new Double[]{};
+
         this.paramChangeTimes = new double[
                 this.lambdaChangeTimes.length +
                 this.muChangeTimes.length +

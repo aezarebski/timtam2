@@ -414,6 +414,36 @@ public class TestTimTam {
         tt.setInputValue("conditionOnObservation", "false");
         tt.initAndValidate();
     }
+
+    @Test(expected = RuntimeException.class)
+    public void testInvalidDimensionThrowsExceptionA() {
+
+        Tree tree = new TreeParser("((1:6.0,2:4.0):2.0,3:4.0);",false);
+        TimTam tt = new TimTam();
+        tt.setInputValue("lambda", "3.0 4.0 5.0");
+        tt.setInputValue("lambdaChangeTimes", "1.0");
+        tt.setInputValue("mu", "1.0");
+        tt.setInputValue("psi", "1.0");
+        tt.setInputValue("originTime", "10.0");
+        tt.setInputValue("tree", tree);
+        tt.setInputValue("conditionOnObservation", "false");
+        tt.initAndValidate();
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void testInvalidDimensionThrowsExceptionB() {
+
+        Tree tree = new TreeParser("((1:6.0,2:4.0):2.0,3:4.0);",false);
+        TimTam tt = new TimTam();
+        tt.setInputValue("lambda", "3.0");
+        tt.setInputValue("lambdaChangeTimes", "1.0");
+        tt.setInputValue("mu", "1.0");
+        tt.setInputValue("psi", "1.0");
+        tt.setInputValue("originTime", "10.0");
+        tt.setInputValue("tree", tree);
+        tt.setInputValue("conditionOnObservation", "false");
+        tt.initAndValidate();
+    }
 }
 
 
