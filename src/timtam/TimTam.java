@@ -16,7 +16,7 @@ import java.util.OptionalInt;
 /**
  * <p>Tree prior for birth-death-sampling while tracking the distribution of hidden
  * lineages. This used BirthDeathSerialSampling.java as a starting point. There
- * is a nested class, NegativeBinomial, which is the approximation used for the
+ * is a class, {@link HiddenLineageDist}, which is the approximation used for the
  * number of unobserved lineages in the likelihood.</p>
  *
  * <p>Time is measured backwards from the last sequenced sample (which is treated
@@ -24,7 +24,7 @@ import java.util.OptionalInt;
  * any unsequenced observations or changes in parameters need their times provided
  * this way.</p>
  *
- * @author Alexander Zarebski
+ * @author Alexander E. Zarebski
  */
 @Citation(value = "Zarebski AE, du Plessis L, Parag KV, Pybus OG (2022) A computationally tractable birth-death model that combines phylogenetic and epidemiological data. PLOS Computational Biology 18(2): e1009805. https://doi.org/10.1371/journal.pcbi.1009805",
         year = 2022, firstAuthorSurname = "Zarebski", DOI="10.1371/journal.pcbi.1009805")
@@ -84,7 +84,19 @@ public class TimTam extends TreeDistribution {
 
     public Input<IntegerParameter> disasterSizesInput =
             new Input<>("disasterSizes",
-                    "the size of each scheduled unsequenced sample",
+                    "The size of each scheduled unsequenced sample at the corresponding disaster time.",
+                    (IntegerParameter) null);
+
+    public Input<RealParameter> historyTimesInput =
+            new Input<>("historyTimes",
+                    "The times at which the historical number of hidden lineages is to be estimated for." +
+                            "This should be entered as backwards time relative to the final time in the tree which is treated as the present (time zero)." +
+                            "The default variable for this is null indicating that no scheduled unsequenced samples were attempted.",
+                    (RealParameter) null);
+
+    public Input<IntegerParameter> historySizesInput =
+            new Input<>("historySizes",
+                    "A parameter describing the number of hidden lineages at the corresponding historical time.",
                     (IntegerParameter) null);
 
     public Input<Boolean> conditionOnObservationInput = new Input<>("conditionOnObservation", "if is true then condition on sampling at least one individual (psi-sampling). The default value is true.", true);
@@ -105,33 +117,43 @@ public class TimTam extends TreeDistribution {
 
     protected double[] catastropheTimes;
     protected int[] catastropheSizes;
-    private int totalCatastropheSizes;
 
-    // A disaster is a scheduled sample of lineages where sampled lineages are *not* sequenced so do not appear in the
-    // reconstructed tree. Typically, these data will form a time series.
+    // A disaster is a scheduled sample of lineages where sampled lineages are
+    // *not* sequenced so do not appear in the reconstructed tree. Typically,
+    // these data will form a time series.
     protected double[] disasterTimes;
     protected int[] disasterSizes;
 
-    // the times at which there was an occurrence sample measured in backwards time with the final tip in the tree being
-    // used as zero. An occurrence is an unscheduled and unsequenced sample. These data form a point process of events.
+    // The history times and sizes are used to estimate the historical number of
+    // hidden lineages.
+    protected int numHistoryChecks;
+    protected double[] historyTimes;
+    protected int[] historySizes;
+
+    // the times at which there was an occurrence sample measured in backwards
+    // time with the final tip in the tree being used as zero. An occurrence is
+    // an unscheduled and unsequenced sample. These data form a point process of
+    // events.
     protected double[] occurrenceTimes;
 
     boolean conditionOnObservation;
 
-    // this is used to track the distribution of hidden lineages as we process the data.
-    private final TimTamNegBinom nb = new TimTamNegBinom();
+    // this is used to track the distribution of hidden lineages as we process
+    // the data.
+    private final HiddenLineageDist nb = new HiddenLineageDist();
 
     // this is the time from the origin until the time of the final observation.
     private double timeFromOriginToFinalDatum;
 
-    // this is the number of intervals of time that need to be considered when evaluating the likelihood. An interval
-    // could be due to a change in a rate parameter or an observation, e.g. a birth or an occurrence or a disaster.
+    // this is the number of intervals of time that need to be considered when
+    // evaluating the likelihood. An interval could be due to a change in a rate
+    // parameter or an observation, e.g. a birth or an occurrence or a disaster.
     private int numTimeIntervals;
 
 
-    // this array holds the reason each interval terminated, this could be because there was an observation or a rate
-    // change.
-    private TimTamIntervalTerminator[] intervalTerminators;
+    // this array holds the reason each interval terminated, this could be
+    // because there was an observation or a rate change.
+    private IntervalTerminator[] intervalTerminators;
 
     private double[] intervalStartTimes;
     private double[] intervalEndTimes;
@@ -149,17 +171,27 @@ public class TimTam extends TreeDistribution {
      * <p>This function gets called once at the start of an MCMC run so any heavy
      * pre-calculations should be done here rather than in the likelihood
      * calculation.</p>
+     *
      */
     @Override
     public void initAndValidate() {
         super.initAndValidate();
 
+        // TODO There should be a check that parameter dimensions and the number
+        // of change points agree!
+
         this.tree = (Tree) treeInput.get();
         this.originTime = originTimeInput.get();
         if (this.tree.getRoot().getHeight() >= this.originTime.getValue()) {
-            throw new RuntimeException("tree has a root which comes before the originTime.");
+            throw new RuntimeException(
+                    "The tree has a root which comes before the originTime." +
+                    "This is an event with probability zero so you may need to adjust your initial state to ensure this has not happened."
+            );
         }
 
+        // We need a way to store the total number of lineages removed through
+        // catastrophes because this can be tricky to get out of the tree alone.
+        int totalCatastropheSizes;
         if (catastropheTimesInput.get() != null) {
             this.catastropheTimes = catastropheTimesInput.get().getDoubleValues();
             this.catastropheSizes = new int[this.catastropheTimes.length];
@@ -172,14 +204,20 @@ public class TimTam extends TreeDistribution {
                     }
                 }
             }
-            this.totalCatastropheSizes = arraySum(this.catastropheSizes);
+            totalCatastropheSizes = Numerics.arraySum(this.catastropheSizes);
+            if (this.catastropheSizes.length != this.catastropheTimes.length) {
+                throw new RuntimeException(
+                        "The number of catastrophe times given does not match the number of catastrophe sizes given."
+                );
+            }
         } else {
             this.catastropheTimes = new double[] {};
             this.catastropheSizes = new int[] {};
-            this.totalCatastropheSizes = 0;
+            totalCatastropheSizes = 0;
         }
 
-        this.occurrenceTimes = occurrenceTimesInput.get() != null ? occurrenceTimesInput.get().getDoubleValues() : new double[] {};
+        this.occurrenceTimes =
+                occurrenceTimesInput.get() != null ? occurrenceTimesInput.get().getDoubleValues() : new double[] {};
 
         if (disasterTimesInput.get() != null) {
             this.disasterTimes = disasterTimesInput.get().getDoubleValues();
@@ -187,9 +225,32 @@ public class TimTam extends TreeDistribution {
             for (int ix = 0; ix < this.disasterSizes.length; ix++) {
                 this.disasterSizes[ix] = disasterSizesInput.get().getNativeValue(ix);
             }
+            if (this.disasterSizes.length != this.disasterTimes.length) {
+                throw new RuntimeException(
+                        "The number of disaster times given does not match the number of disaster sizes given."
+                );
+            }
         } else {
             this.disasterTimes = new double[] {};
             this.disasterSizes = new int[] {};
+        }
+
+        if (historyTimesInput.get() != null) {
+            if (this.historySizesInput.get().getDimension() !=
+                this.historyTimesInput.get().getDimension()) {
+                throw new RuntimeException(
+                    "History Sizes and History Times have different lengths."
+                );
+            } else {
+                this.numHistoryChecks = historySizesInput.get().getValues().length;
+                this.historySizes = new int[numHistoryChecks];
+                this.historyTimes = new double[numHistoryChecks];
+                updateHistoryChecks();
+            }
+        } else {
+            this.numHistoryChecks = 0;
+            this.historyTimes = new double[] {};
+            this.historySizes = new int[] {};
         }
 
         this.conditionOnObservation = conditionOnObservationInput.get();
@@ -230,19 +291,23 @@ public class TimTam extends TreeDistribution {
         }
         Arrays.sort(this.paramChangeTimes);
 
-        // We need to be careful in counting the number of time intervals because there may be multiple
-        // tree nodes counted as a single catastrophe.
+        // We need to be careful in counting the number of time intervals
+        // because there may be multiple tree nodes counted as a single
+        // catastrophe.
         this.numTimeIntervals =
                 this.paramChangeTimes.length +
-                this.disasterTimes.length + this.occurrenceTimes.length +
-                this.tree.getNodesAsArray().length - this.totalCatastropheSizes + this.catastropheTimes.length;
+                this.disasterTimes.length +
+                this.historyTimes.length +
+                this.occurrenceTimes.length +
+                this.tree.getNodesAsArray().length - totalCatastropheSizes + this.catastropheTimes.length;
         this.intervalStartTimes = new double[this.numTimeIntervals];
         this.intervalEndTimes = new double[this.numTimeIntervals];
 
-        // We can re-use the same TimTamIntervalTerminator objects in this array, but we need to initialise them first.
-        this.intervalTerminators = new TimTamIntervalTerminator[this.numTimeIntervals];
+        // We can re-use the same TimTamIntervalTerminator objects in this
+        // array, but we need to initialise them first.
+        this.intervalTerminators = new IntervalTerminator[this.numTimeIntervals];
         for (int ix = 0; ix < this.numTimeIntervals; ix++) {
-            this.intervalTerminators[ix] = new TimTamIntervalTerminator();
+            this.intervalTerminators[ix] = new IntervalTerminator();
         }
         updateIntervalTerminators();
 
@@ -259,10 +324,27 @@ public class TimTam extends TreeDistribution {
     }
 
     /**
+     * Update the history sizes and times.
+     *
+     * <p>The history times should not change, so this is not entirely
+     * necessary, unless there are uncertain tip dates on the tree in which case
+     * this would all break.</p>
+     */
+    private void updateHistoryChecks() {
+        if (this.numHistoryChecks > 0) {
+            for (int ix = 0; ix < this.numHistoryChecks; ix++) {
+                this.historySizes[ix] = this.historySizesInput.get().getNativeValue(ix);
+                this.historyTimes[ix] = this.historyTimesInput.get().getArrayValue(ix);
+            }
+        }
+    }
+
+    /**
      * <p>Predicate for being an unscheduled node.</p>
-     * <p>Because there is the possibility of numerical issues we use the timeEpsilon
-     * to check if a node is sufficiently close to a catastrophe to be
-     * considered one.</p>
+     *
+     * <p>Because there is the possibility of numerical issues we use the
+     * timeEpsilon to check if a node is sufficiently close to a catastrophe to
+     * be considered one.</p>
      */
     private boolean isUnscheduledTreeNode(Node node) {
         if (!node.isLeaf()) {
@@ -276,8 +358,8 @@ public class TimTam extends TreeDistribution {
         return true;
     }
 
-    public double birth(int intervalIx) {
-        return this.lambdaValues[intervalIx];
+    public double birth(int intNum) {
+        return this.lambdaValues[intNum];
     }
 
     public double birth(double bwdTime) {
@@ -306,8 +388,8 @@ public class TimTam extends TreeDistribution {
         }
     }
 
-    public double death(int intervalIx) {
-        return this.muValues[intervalIx];
+    public double death(int intNum) {
+        return this.muValues[intNum];
     }
 
     public double death(double bwdTime) {
@@ -336,8 +418,8 @@ public class TimTam extends TreeDistribution {
         }
     }
 
-    public double psi(int intervalIx) {
-        return this.psiValues[intervalIx];
+    public double psi(int intNum) {
+        return this.psiValues[intNum];
     }
 
     public double psi(double bwdTime) {
@@ -366,8 +448,8 @@ public class TimTam extends TreeDistribution {
         }
     }
 
-    public double rho(int intervalIx) {
-        return this.rhoValues[intervalIx];
+    public double rho(int intNum) {
+        return this.rhoValues[intNum];
     }
 
     public double rho(double bwdTime) {
@@ -399,8 +481,8 @@ public class TimTam extends TreeDistribution {
         }
     }
 
-    public double omega(int intervalIx) {
-        return this.omegaValues[intervalIx];
+    public double omega(int intNum) {
+        return this.omegaValues[intNum];
     }
 
     public double omega(double bwdTime) {
@@ -432,8 +514,8 @@ public class TimTam extends TreeDistribution {
         }
     }
 
-    public double nu(int intervalIx) {
-        return this.nuValues[intervalIx];
+    public double nu(int intNum) {
+        return this.nuValues[intNum];
     }
 
     public double nu(double bwdTime) {
@@ -467,13 +549,14 @@ public class TimTam extends TreeDistribution {
 
     @Override
     public double calculateLogP() {
-        // If the tree is tall enough that the root happens before the origin then this point in parameter space has
-        // probability zero.
+        // If the tree is tall enough that the root happens before the origin
+        // then this point in parameter space has probability zero.
         if (this.tree.getRoot().getHeight() >= this.originTime.getValue()) {
             return Double.NEGATIVE_INFINITY;
         }
 
-        this.nb.setIsZero(true);
+        this.nb.setIsDegenerate(0);
+        updateHistoryChecks();
         updateIntervalTerminators();
         updateRateAndProbParams();
         for (int ix = 0; ix < this.numTimeIntervals; ix++) {
@@ -482,30 +565,34 @@ public class TimTam extends TreeDistribution {
             processObservation(ix);
         }
 
-        // if the likelihood conditions upon the observation of the process then we need to account for this in the
-        // log-likelihood.
+        // if the likelihood conditions upon the observation of the process then
+        // we need to account for this in the log-likelihood.
         if (this.conditionOnObservation) {
             if (this.paramChangeTimes.length == 0) {
             double probUnobserved = p0(this.timeFromOriginToFinalDatum, 0.0, 1.0);
-            return arraySum(this.lnls) + arraySum(this.lncs) - Math.log(1 - probUnobserved);
+            return Numerics.arraySum(this.lnls) + Numerics.arraySum(this.lncs) - Math.log(1 - probUnobserved);
             } else {
                 throw new RuntimeException("conditioning upon observation is not yet implemented for varying rates.");
             }
         } else {
-            return arraySum(this.lnls) + arraySum(this.lncs);
+            return Numerics.arraySum(this.lnls) + Numerics.arraySum(this.lncs);
         }
     }
 
     /**
-     * <p>This function updates the interval terminators which could change if there are changes to the Tree object.</p>
+     * <p>This function updates the interval terminators which could change if
+     * there are changes to the Tree object that lead to the order of events
+     * changing.</p>
      *
-     * <p>Note that all the times are relative to a zero which is the time of the last leaf in the tree. This means that
-     * when parameter change times and occurrence observations are included they need to be with relation to this
+     * <p>Note that all the times are relative to a zero which is the time of
+     * the last sequenced sample, i.e. the most recent leaf in the tree. This
+     * means that when parameter change times, and occurrence observations and
+     * any other events are included, they need to be with relation to this
      * time.</p>
      *
-     * <p>The use of {@link java.util.Arrays#sort} here is appropriate according to the
+     * @implNote The use of {@link java.util.Arrays#sort} here is appropriate according to the
      * <a href="https://docs.oracle.com/javase/7/docs/api/java/util/Arrays.html#sort(java.lang.Object[])">documentation</a>
-     * because it is suitable for sorting concatenated sorted arrays.</p>
+     * because it is suitable for sorting concatenated sorted arrays.
      */
     private void updateIntervalTerminators() {
         int iTx = 0;
@@ -542,6 +629,8 @@ public class TimTam extends TreeDistribution {
             iTx++;
         }
 
+        // Note that we get this values from the Tree object directly because
+        // they may have changes since this method was last called.
         for (Node node : this.tree.getNodesAsArray()) {
             if (isUnscheduledTreeNode(node)) {
                 this.intervalTerminators[iTx].setTypeTimeAndCount(
@@ -551,6 +640,18 @@ public class TimTam extends TreeDistribution {
                 iTx++;
             }
         }
+
+        // Since this history checks array should have been updated prior to
+        // calling the update function to update the interval terminators the
+        // values being read here should be correct.
+        for (int ix = 0; ix < this.historyTimes.length; ix++) {
+            this.intervalTerminators[iTx].setTypeTimeAndCount(
+                    "historyEstimate",
+                    this.historyTimes[ix],
+                    OptionalInt.of(this.historySizes[ix]));
+            iTx++;
+        }
+
         Arrays.sort(this.intervalTerminators);
         this.intervalStartTimes[0] = this.originTime.getValue();
         this.intervalEndTimes[0] = this.intervalTerminators[0].getBwdTime();
@@ -563,6 +664,8 @@ public class TimTam extends TreeDistribution {
 
     /**
      * Update the (primitive) local parameters to match the input.
+     *
+     * @implNote The initial value of the LTT is hard coded in this function.
      */
     private void updateRateAndProbParams() {
         this.kValues[0] = 1;
@@ -601,13 +704,12 @@ public class TimTam extends TreeDistribution {
                 this.kValues[ix] = this.kValues[ix-1] - 1;
             } else if (
                     Objects.equals(tt, "occurrence") |
-                            Objects.equals(tt, "paramValueChange") |
-                            Objects.equals(tt, "disaster")
+                    Objects.equals(tt, "paramValueChange") |
+                    Objects.equals(tt, "disaster") |
+                    Objects.equals(tt, "historyEstimate")
             ) {
                 this.kValues[ix] = this.kValues[ix-1];
             } else if (Objects.equals(tt, "catastrophe")) {
-                this.kValues[ix] = this.kValues[ix-1] - this.intervalTerminators[ix-1].getCount();
-            } else if (Objects.equals(tt, "disaster")) {
                 this.kValues[ix] = this.kValues[ix-1] - this.intervalTerminators[ix-1].getCount();
             } else {
                 throw new RuntimeException("Unexpected interval terminator type: " + tt);
@@ -615,38 +717,22 @@ public class TimTam extends TreeDistribution {
         }
     }
 
-    public double arraySum(double[] xs) {
-        double tmp = 0.0;
-        for (int ix = 0; ix < xs.length; ix++) {
-            tmp += xs[ix];
-        }
-        return(tmp);
-    }
-
-    public int arraySum(int[] xs) {
-        int tmp = 0;
-        for (int ix = 0; ix < xs.length; ix++) {
-            tmp += xs[ix];
-        }
-        return(tmp);
-    }
 
     /**
      * This method should mutate the attributes of this object to account for
-     * the observation that occurred.
+     * the observation that occurred at the end of this interval.
      *
      * @implNote This method is implemented using if-else rather than a switch
      * because the switch syntax has changed between Java versions so this
      * guards against changes in versions.
      *
-     * @param intTerminator the reason the interval of time ended.
-     * @param k the number of lineages in the reconstructed tree just prior to the observation.
+     * @param intNum the number of the interval ending in the observation.
      *
-     * @see TimTamIntervalTerminator
+     * @see IntervalTerminator
      *
      */
     private void processObservation(int intNum) {
-        TimTamIntervalTerminator intTerminator = this.intervalTerminators[intNum];
+        IntervalTerminator intTerminator = this.intervalTerminators[intNum];
         int k = this.kValues[intNum];
         String intTypeStr = intTerminator.getType();
 
@@ -687,8 +773,19 @@ public class TimTam extends TreeDistribution {
             // through. Putting a zero here amounts to conditioning on the rate
             // to change at a fixed point in time.
             this.lnls[intNum] = 0.0;
+        } else if (Objects.equals(intTypeStr, "historyEstimate")) {
+            // We need to store the value of there actually being the estimated
+            // number of hidden lineages at this point and then update the
+            // distribution of hidden lineages to condition on there being that
+            // many.
+            int n = intTerminator.getCount();
+            this.lnls[intNum] = this.nb.lnPMF(n);
+            this.nb.setIsDegenerate(n);
         } else {
-            throw new IllegalStateException("Unexpected value: " + intTerminator.getType() + "\n\tPlease look at the TimTamIntervalTerminator class to see the type of intervals that TimTam recognises.");
+            throw new IllegalStateException(
+                    "Unexpected value: " +
+                    intTerminator.getType() +
+                    "\n\tPlease see TimTamIntervalTerminator for types of intervals.");
         }
     }
 
@@ -707,11 +804,8 @@ public class TimTam extends TreeDistribution {
      * #processObservation(int)} is used to account for the actual observation
      * that was made at the end of the interval.</p>
      *
-     * @param intervalDuration the duration of time during which there was no
-     * observation
-     * @param bwdTimeIntervalEnd the time at which the interval ended
-     * @param k the number of lineages in the reconstructed tree during the
-     * interval.
+     * @param intNum the number of the interval to process.
+     *
      */
     private void processInterval(int intNum) {
         int k = this.kValues[intNum];
@@ -723,36 +817,43 @@ public class TimTam extends TreeDistribution {
         double lnRDash1Val = lnRDash1(intNum);
         double lnRDash2Val = lnRDash2(intNum);
 
-        double lnPGFVal = this.nb.lnPGF(p0Val);
-        double lnPGFDash1Val = this.nb.lnPGFDash1(p0Val);
-        double lnPGFDash2Val = this.nb.lnPGFDash2(p0Val);
-
-        double lnFM0, lnFM1, lnFM2;
+        // See Equation (12) from the Supporting information of the paper
+        // mentioned above for rationale behind these expressions. The variables
+        // represent the logarithm of the zero-th, first and second partial
+        // derivatives of the PGF at the end of the interval. These are needed
+        // to update the PGF so it represents the number of hidden lineages at
+        // the end of the interval.
+        double lnFM0;
+        double lnFM1;
+        double lnFM2;
         if (!this.nb.getIsZero()) {
-            assert k >= 0;
+            double lnPGFVal = this.nb.lnPGF(p0Val);
+            double lnPGFDash1Val = this.nb.lnPGFDash1(p0Val);
+            double lnPGFDash2Val = this.nb.lnPGFDash2(p0Val);
             if (k > 0) {
                 lnFM0 = lnPGFVal + k * lnRVal;
                 tmpArry[0] = lnPGFDash1Val + lnP0Dash1Val + k * lnRVal;
                 tmpArry[1] = Math.log(k) + (k-1) * lnRVal + lnRDash1Val + lnPGFVal;
-                lnFM1 = logSumExp(tmpArry, 2);
+                lnFM1 = Numerics.logSumExp(tmpArry, 2);
                 tmpArry[0] = lnPGFDash2Val + 2 * lnP0Dash1Val + k * lnRVal;
                 tmpArry[1] = lnPGFDash1Val + lnP0Dash2Val + k * lnRVal;
                 tmpArry[2] = Math.log(2) + lnPGFDash1Val + lnP0Dash1Val + Math.log(k) + (k - 1) * lnRVal + lnRDash1Val;
                 tmpArry[3] = lnPGFVal + Math.log(k) + Math.log(k - 1) + (k - 2) * lnRVal + 2 * lnRDash1Val;
                 tmpArry[4] = lnPGFVal + Math.log(k) + (k-1) * lnRVal + lnRDash2Val;
-                lnFM2 = logSumExp(tmpArry, 5);
+                lnFM2 = Numerics.logSumExp(tmpArry, 5);
             } else {
                 lnFM0 = lnPGFVal;
                 lnFM1 = lnPGFDash1Val + lnP0Dash1Val;
                 tmpArry[0] = lnPGFDash2Val + 2 * lnP0Dash1Val;
                 tmpArry[1] = lnPGFDash1Val + lnP0Dash2Val;
-                lnFM2 = logSumExp(tmpArry, 2);
+                lnFM2 = Numerics.logSumExp(tmpArry, 2);
             }
         } else {
             lnFM0 = lnRVal;
             lnFM1 = lnRDash1Val;
             lnFM2 = lnRDash2Val;
         }
+
         lnC = lnFM0;
         lnMean = lnFM1 - lnFM0;
         lnVariance = Math.log(Math.exp(lnFM2 - lnFM0) + Math.exp(lnMean) * (1 - Math.exp(lnMean)));
@@ -761,28 +862,28 @@ public class TimTam extends TreeDistribution {
         this.lncs[intNum] = lnC;
     }
 
-    private double lnR(int intervalIx) {
+    private double lnR(int intNum) {
         return Math.log(this.ohDiscriminant)
                 + Math.log(this.ohExpFact)
-                - (2 * Math.log(birth(intervalIx)))
+                - (2 * Math.log(birth(intNum)))
                 - (2 * Math.log((this.ohX2 - 1.0) - (this.ohX1 - 1.0) * this.ohExpFact));
     }
 
-    private double lnRDash1(int intervalIx) {
+    private double lnRDash1(int intNum) {
         return Math.log(2)
                 + Math.log(1 - this.ohExpFact)
                 + Math.log(this.ohExpFact)
                 + Math.log(this.ohDiscriminant)
-                - 2 * Math.log(birth(intervalIx))
+                - 2 * Math.log(birth(intNum))
                 - 3 * Math.log((this.ohX2 - this.ohExpFact * (this.ohX1 - 1.0) - 1.0));
     }
 
-    private double lnRDash2(int intervalIx) {
+    private double lnRDash2(int intNum) {
         return Math.log(6)
                 + 2 * Math.log(1 - this.ohExpFact)
                 + Math.log(this.ohExpFact)
                 + Math.log(this.ohDiscriminant)
-                - 2 * Math.log(birth(intervalIx))
+                - 2 * Math.log(birth(intNum))
                 - 4 * Math.log((this.ohX2 - this.ohExpFact * (this.ohX1 - 1.0) - 1.0));
     }
 
@@ -791,9 +892,10 @@ public class TimTam extends TreeDistribution {
         return (this.ohX1 * (this.ohX2 - z) - this.ohX2 * (this.ohX1 - z) * this.ohExpFact) / ((this.ohX2 - z) - (this.ohX1 - z) * this.ohExpFact);
     }
 
-    protected double p0(int intervalIx, double z) {
+    protected double p0(int intNum, double z) {
         return (this.ohX1 * (this.ohX2 - z) - this.ohX2 * (this.ohX1 - z) * this.ohExpFact) / ((this.ohX2 - z) - (this.ohX1 - z) * this.ohExpFact);
     }
+
     protected double lnP0Dash1(double intervalDuration, double bwdTimeIntervalEnd) {
         updateOdeHelpers(intervalDuration, bwdTimeIntervalEnd);
         double aa = this.ohX2 - this.ohX1 * this.ohExpFact;
@@ -802,7 +904,8 @@ public class TimTam extends TreeDistribution {
         return Math.log(cc * aa + this.ohX1 * this.ohX2 * Math.pow(bb, 2.0))
                 - 2.0 * Math.log(aa - bb);
     }
-    protected double lnP0Dash1(int intervalIx) {
+
+    protected double lnP0Dash1(int intNum) {
         double aa = this.ohX2 - this.ohX1 * this.ohExpFact;
         double bb = 1 - this.ohExpFact;
         double cc = this.ohX2 * this.ohExpFact - this.ohX1;
@@ -810,7 +913,7 @@ public class TimTam extends TreeDistribution {
                 - 2.0 * Math.log(aa - bb);
     }
 
-    private double lnP0Dash2(int intervalIx) {
+    private double lnP0Dash2(int intNum) {
         double aa = this.ohX2 - this.ohX1 * this.ohExpFact;
         double bb = 1 - this.ohExpFact;
         double cc = this.ohX2 * this.ohExpFact - this.ohX1;
@@ -824,7 +927,8 @@ public class TimTam extends TreeDistribution {
 
     private void updateOdeHelpers(double intervalDuration, double bwdTimeIntervalEnd) {
         double bwdRateTime = bwdTimeIntervalEnd + 0.5 * intervalDuration;
-        // the 0.5*intervalDuration here is to ensure that this takes the value in the middle of the interval.
+        // the 0.5*intervalDuration here is to ensure that this takes the value
+        // in the middle of the interval.
         double gamma = birth(bwdRateTime) + death(bwdRateTime) + psi(bwdRateTime) + omega(bwdRateTime);
         this.ohDiscriminant = Math.pow(gamma, 2.0) - 4.0 * birth(bwdRateTime) * death(bwdRateTime);
         double sqrtDisc = Math.sqrt(this.ohDiscriminant);
@@ -834,20 +938,23 @@ public class TimTam extends TreeDistribution {
     }
 
     /**
-     * Update some expressions that are useful in multiple calculations. This function gets called once before each
-     * interval is processed since the results do not change within an interval.
+     * Update some expressions that are useful in multiple calculations. This
+     * function gets called once before each interval is processed since the
+     * results do not change within an interval.
      *
-     * @implNote The local variables <code>br</code> and <code>dr</code> are there to avoid repeated calls to the
-     * function that looks these values up. The use of {@link java.lang.Math#pow} seems to be quicker than using
+     * @implNote The local variables <code>br</code> and <code>dr</code> are
+     * there to avoid repeated calls to the function that looks these values up.
+     * The use of {@link java.lang.Math#pow} seems to be quicker than using
      * <code>gamma * gamma</code>, possibly because this is using native code.
      *
-     * @param intervalIx
+     * @param intNum the number of the interval to compute the ODE helper
+     * functions for.
      */
-    private void updateOdeHelpers(int intervalIx) {
-        double intervalDuration = this.intervalStartTimes[intervalIx] - this.intervalEndTimes[intervalIx];
-        double br = this.lambdaValues[intervalIx];
-        double dr = this.muValues[intervalIx];
-        double gamma = br + dr + psi(intervalIx) + omega(intervalIx);
+    private void updateOdeHelpers(int intNum) {
+        double intervalDuration = this.intervalStartTimes[intNum] - this.intervalEndTimes[intNum];
+        double br = this.lambdaValues[intNum];
+        double dr = this.muValues[intNum];
+        double gamma = br + dr + psi(intNum) + omega(intNum);
         this.ohDiscriminant = Math.pow(gamma, 2.0) - 4.0 * br * dr;
         double sqrtDisc = Math.sqrt(this.ohDiscriminant);
         this.ohX1 = (gamma - sqrtDisc) / (2 * br);
@@ -855,40 +962,10 @@ public class TimTam extends TreeDistribution {
         this.ohExpFact = Math.exp(- sqrtDisc * intervalDuration);
     }
 
-    public TimTamNegBinom getTimTamNegBinom() {
+    public HiddenLineageDist getTimTamNegBinom() {
         return this.nb;
     }
 
-    /**
-     * LogSumExp
-     *
-     * <p>This function implements a numerically safe way to take the logarithm of the sum of exponentials.</p>
-     *
-     * @see <a href="https://en.wikipedia.org/wiki/LogSumExp">Wikipedia page.</a>
-     */
-    final double logSumExp(double[] xs) {
-        return logSumExp(xs, xs.length);
-    }
-
-    /**
-     * This is a nitty gritty log-sum-exp which is useful when fine tuning memory usage by avoiding streams.
-     *
-     * @param xs array
-     * @param n number of leading entries to use
-     */
-    final double logSumExp(double[] xs, int n) {
-        double xMax = Double.NEGATIVE_INFINITY;
-        for (int i = 0; i < n; i++) {
-            if (xs[i] > xMax) {
-                xMax = xs[i];
-            }
-        }
-        double tmp = 0;
-        for (int i = 0; i < n; i++) {
-            tmp += Math.exp(xs[i] - xMax);
-        }
-        return xMax + Math.log(tmp);
-    }
 
     @Override
     protected boolean requiresRecalculation() {
@@ -896,7 +973,8 @@ public class TimTam extends TreeDistribution {
     }
 
     /**
-     * This is used to report the first interval duration as a way to assess if the chain is mixing properly.
+     * This is used to report the first interval duration as a way to assess if
+     * the chain is mixing properly.
      *
      * @return the duration of the first interval.
      */
