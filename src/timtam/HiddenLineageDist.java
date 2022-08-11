@@ -150,9 +150,33 @@ public class HiddenLineageDist {
         return lnVariance;
     }
 
-    public void setLnMeanAndLnVariance(double lnMean, double lnVariance) {
+
+    /**
+     * Update the state of the distribution of hidden lineages based on the mean
+     * and variance.
+     *
+     * @implNote The current implementation does not support the case where the
+     * variance is positive and less than the mean because this situation cannot
+     * be represented by either a negative binomial distribution or a degenerate
+     * distribution.
+     *
+     * @param lnMean the natural logarithm of the mean of the number of hidden
+     * lineages.
+     * @param lnVariance the natural logarithm of the variance in the number of
+     * hidden lineages.
+     * @throws RuntimeException
+     */
+    public void setLnMeanAndLnVariance(double lnMean, double lnVariance) throws RuntimeException {
         this.lnMean = lnMean;
         this.lnVariance = lnVariance;
+
+        if (Double.isFinite(this.lnVariance) & this.lnMean >= this.lnVariance) {
+            throw new RuntimeException(
+                "HiddenLineageDist does not support non-degenerate distributions where the " +
+                "variance is less than the mean. You may be able to fix this by adjusting the " +
+                "times at which you estimate the prevalence."
+            );
+        }
 
         double lnvmm = Math.log(Math.exp(lnVariance) - Math.exp(lnMean));
         this.lnP = lnvmm - lnVariance;
