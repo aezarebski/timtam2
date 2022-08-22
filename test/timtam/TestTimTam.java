@@ -94,6 +94,79 @@ public class TestTimTam {
     }
 
     /**
+     * Helper function to convert numbers to parameters that BEAST likes.
+     */
+    private RealParameter asRealParam(double d) {
+        return new RealParameter(Double.toString(d));
+    }
+
+    private RealParameter asRealParam(String s) {
+        return new RealParameter(s);
+    }
+
+    /**
+     * This test is a copy of {@link TestTimTam#testLikelihoodCalculationSimple}
+     * where instead of using the canonical parameterisation we will use the r0
+     * parameterisation.
+     */
+    @Test
+    public void testLikelihoodCalculationSimpleR0() {
+
+        double eps = 0.4;
+
+        TimTam tt =  new TimTam();
+
+        Tree tree = new TreeParser("((3 : 1.5, 4 : 0.5) : 1 , (1 : 2, 2 : 1) : 3);",false);
+        tt.setInputValue("tree", tree);
+        tt.setInputValue("originTime", asRealParam("10.0"));
+
+        double netBecomeUninfectiousRate = 1.5;
+        double propSeq = 0.3;
+        double propOcc = 0.0;
+        double[] r0Values = {1.5,1.6,1.7,1.8,1.9,2.0,3.0,4.0};
+        double[] llhdValues = {
+            -26.105360,-27.399127,-28.766920,-30.199269,
+            -31.688042,-33.226251,-50.334795,-68.998552};
+        double[] canonicalParamValues = new double[llhdValues.length];
+
+        for (int ix = 0; ix < r0Values.length; ix++) {
+            tt.setInputValue("mu", asRealParam(netBecomeUninfectiousRate * (1 - propSeq - propOcc)));
+            tt.setInputValue("psi", asRealParam(netBecomeUninfectiousRate * propSeq));
+            tt.setInputValue("omega", asRealParam(netBecomeUninfectiousRate * propOcc));
+            tt.setInputValue("lambda", asRealParam(r0Values[ix] * netBecomeUninfectiousRate));
+            tt.setInputValue("parameterisation", "canonical");
+            tt.initAndValidate();
+            canonicalParamValues[ix] = tt.calculateLogP();
+            assertEquals(llhdValues[ix] - 2, tt.calculateLogP(), eps);
+        }
+
+        tt.setInputValue("mu", null);
+        tt.setInputValue("psi", null);
+        tt.setInputValue("omega", null);
+        tt.setInputValue("lambda", null);
+        for (int ix = 0; ix < r0Values.length; ix++) {
+            // basic reproduction number
+            tt.setInputValue("r0",
+                new RealParameter(Double.toString(r0Values[ix])));
+            // net removal rate
+            tt.setInputValue("sigma",
+                new RealParameter(Double.toString(netBecomeUninfectiousRate)));
+            // proportion observed and sequenced
+            tt.setInputValue("propPsi",
+                new RealParameter(Double.toString(propSeq)));
+            // proportion observed and not sequenced
+            tt.setInputValue("propOmega",
+                new RealParameter(Double.toString(propOcc)));
+            tt.setInputValue("parameterisation",
+                "r0");
+            tt.initAndValidate();
+            assertEquals(llhdValues[ix] - 2, tt.calculateLogP(), eps);
+            assertEquals(canonicalParamValues[ix], tt.calculateLogP(), 1e-8);
+
+        }
+    }
+
+    /**
      * <p>This test ensures that if an operator drops the origin below the height of the tree then the resulting log
      * probability becomes negative infinity.</p>
      */
@@ -275,42 +348,6 @@ public class TestTimTam {
                         -47.0,
                         ttConditioned.calculateLogP()));
 
-    }
-
-    @Test
-    public void testVariableBirthRate() {
-
-        Tree tree = new TreeParser("(((1:3,2:1):1,3:4):2,4:6);",false);
-        RealParameter occTimes = new RealParameter();
-        occTimes.initByName("value", "5.0 1.0");
-
-        double lv0 = 3.1;
-        double lv1 = 4.1;
-        double lv2 = 5.9;
-        double lct0 = 4.3;
-        double lct1 = 2.1;
-        TimTam tt = new TimTam();
-        tt.setInputValue("lambda", lv0 + " " + lv1 + " " + lv2);
-        tt.setInputValue("lambdaChangeTimes", lct0 + " " + lct1);
-        tt.setInputValue("mu", "1.0");
-        tt.setInputValue("psi", "0.3");
-        tt.setInputValue("rho", "0.5");
-        tt.setInputValue("omega", "0.6");
-        tt.setInputValue("originTime", "7.0");
-        tt.setInputValue("occurrenceTimes", occTimes);
-        // there are multiple leaves at the same depth so there must be a catastrophe.
-        tt.setInputValue("catastropheTimes", "0.0");
-        tt.setInputValue("tree", tree);
-        tt.setInputValue("conditionOnObservation", "false");
-        tt.initAndValidate();
-
-        assertTrue(approxEqual.test(tt.birth(lct0 + 0.1), lv0));
-        assertTrue(approxEqual.test(tt.birth(lct0), lv1));
-        assertTrue(approxEqual.test(tt.birth(lct0 - 0.1), lv1));
-
-        assertTrue(approxEqual.test(tt.birth(lct1 + 0.1), lv1));
-        assertTrue(approxEqual.test(tt.birth(lct1), lv2));
-        assertTrue(approxEqual.test(tt.birth(lct1 - 0.1), lv2));
     }
 
     @Test

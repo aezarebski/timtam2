@@ -89,4 +89,27 @@ public class Numerics {
         }
         return xMax + Math.log(tmp);
     }
+
+    /**
+     * Concatenate the contents of the arguments into a new array.
+     *
+     * TODO This method needs testing!!!
+     */
+    public static Double[] concatenate(Double[] xs, Double[] ys) {
+        Double[] result = new Double[xs.length + ys.length];
+        int ix = 0;
+        for (Double x : xs) {
+            result[ix] = x;
+            ix++;
+        }
+        for (Double y : ys) {
+            result[ix] = y;
+            ix++;
+        }
+        return result;
+    }
+
+    public static Double[] concatenate(Double[] x1s, Double[] x2s, Double[] x3s) {
+        return concatenate(concatenate(x1s, x2s), x3s);
+    }
 }
