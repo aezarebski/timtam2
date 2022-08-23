@@ -7,6 +7,18 @@ import beast.core.Loggable;
 
 import java.io.PrintStream;
 
+/**
+ * <p>Class to log the distribution of the prevalence as computed by {@link
+ * TimTam}.</p>
+ *
+ * @deprecated As of version >0.3.0 the use of history checks with {@link
+ * TimTam#historyTimesInput} and {@link TimTam#historySizesInput} is the
+ * preferred method to estimate prevalence since it supports the estimation of
+ * prevalence in the past as well as the present.
+ *
+ * @author Alexander E. Zarebski
+ */
+@Deprecated
 public class TimTamLogger extends BEASTObject implements Loggable {
 
     final public Input<TimTam> timTamInput = new Input<>("timtam", "the prevalence distribution generated while calculating the likelihood using timtam.", Input.Validate.REQUIRED);
