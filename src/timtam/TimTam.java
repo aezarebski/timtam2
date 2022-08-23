@@ -970,7 +970,10 @@ public class TimTam extends TreeDistribution {
                     this.propPsiChangeTimes[ixPropPsi] :
                     Double.NEGATIVE_INFINITY;
 
-            propOmegas = this.propOmegaInput.get().getValues();
+            propOmegas =
+                this.propOmegaInput.get() != null ?
+                 this.propOmegaInput.get().getValues() :
+                    new Double[]{0.0};
             crrPropOmega = propOmegas[ixPropOmega];
             nxtPropOmegaChange =
                 propOmegas.length > 1 ?
