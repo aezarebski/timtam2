@@ -11,7 +11,7 @@ import java.io.PrintStream;
  * <p>Class to log the distribution of the prevalence as computed by {@link
  * TimTam}.</p>
  *
- * @deprecated As of version >0.3.0 the use of history checks with {@link
+ * @deprecated As of version 0.3.0 the use of history checks with {@link
  * TimTam#historyTimesInput} and {@link TimTam#historySizesInput} is the
  * preferred method to estimate prevalence since it supports the estimation of
  * prevalence in the past as well as the present.

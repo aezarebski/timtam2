@@ -12,10 +12,24 @@ import beast.evolution.tree.TreeDistribution;
 import java.util.*;
 
 /**
- * <p>Tree prior for birth-death-sampling while tracking the distribution of hidden
- * lineages. This used BirthDeathSerialSampling.java as a starting point. There
- * is a class, {@link HiddenLineageDist}, which is the approximation used for the
- * number of unobserved lineages in the likelihood.</p>
+ * <p>Tree prior based on the birth-death-sampling process which can also keep
+ * track of the number of lineages through time. This class was originally based
+ * on BirthDeathSerialSampling.java from the BDSKY package. There is a class,
+ * {@link HiddenLineageDist}, which is the approximation used for the number of
+ * unobserved lineages in the likelihood.</p>
+ *
+ * <p>There are a couple of parameterisations --- see
+ * {@link TimTam#parameterisationInput} --- for this model available:</p>
+ *
+ * <ul>
+ *     <li><code>canonical</code> (the default) is in terms of rates and
+ *     probabilities</li>
+ *     <li><code>r0</code> is in terms of R-naught and proportions but only
+ *     applies unscheduled samples</li>
+ *     <li><code>timeSeriesR0</code> is in terms of R-naught but only
+ *     applies to unschedules sequences and periodic scheduled unsequenced
+ *     samples (ie. a time series of cases).</li>
+ * </ul>
  *
  * <p>Time is measured backwards from the last sequenced sample (which is treated
  * as having been collected at time zero). This is important because the times of
@@ -90,6 +104,9 @@ public class TimTam extends TreeDistribution {
     public Input<RealParameter> propPsiChangeTimesInput = new Input<>("propPsiChangeTimes", "PUT TEXT HERE!", (RealParameter) null);
     public Input<RealParameter> propOmegaInput = new Input<>("propOmega", "PUT TEXT HERE!", (RealParameter) null);
     public Input<RealParameter> propOmegaChangeTimesInput = new Input<>("propOmegaChangeTimes", "PUT TEXT HERE!", (RealParameter) null);
+    // These are only used for the timeSeriesR0 parameterisation
+    public Input<RealParameter> propTimeSeriesInput = new Input<>("propTimeSeries", "PUT TEXT HERE!", (RealParameter) null);
+    public Input<RealParameter> propTimeSeriesChangeTimesInput = new Input<>("propTimeSeriesChangeTimes", "PUT TEXT HERE!", (RealParameter) null);
 
     public Input<RealParameter> rhoInput =
             new Input<>("rho", "The probability of sampling lineages in a scheduled sample, i.e. the probability of an individual being removed and sequenced in a scheduled sample. If you want to have this probability change through time you will also need to the rhoChangeTimes to be set.", (RealParameter) null);
@@ -137,19 +154,26 @@ public class TimTam extends TreeDistribution {
                 "The default value is true.",
             true);
 
-    // we provide a list of acceptable parameterisation names so that the
-    // intended parameterisation can be made explicit when this class is used in
-    // the XML. It is a bit more verbose, but it forces the user to be clear
-    // about their intentions. The default value should be the canonical
-    // (obviously...)
+    /**
+     * The name of the parameterisation of the model to be specified in the XML:
+     * one of <code>canonical</code>, <code>r0</code>, or
+     * <code>timeSeriesR0</code>. The default value is
+     * <code>canonical</code>.
+     */
     public Input<String> parameterisationInput =
         new Input<>("parameterisation",
-            "the name of the parameterisation of the model, one of 'canonical' or 'r0'. The " +
-                "default value is 'canonical'.",
+            "the name of the parameterisation of the model, one of 'canonical', 'r0', or " +
+                "'timeSeriesR0'. The default value is 'canonical'.",
             "canonical");
 
+    /**
+     * These attributes make it easier to check which parameterisation is being
+     * used.
+     */
+    private boolean usingCanonical, usingR0, usingTimeSeriesR0;
+
     // we specify a threshold below which two times are considered equal.
-    private final double timeEpsilon = 0.00001;
+    public final double timeEpsilon = 0.00001;
 
     Tree tree;
 
@@ -172,6 +196,8 @@ public class TimTam extends TreeDistribution {
     protected Double[] sigmaChangeTimes;
     protected Double[] propPsiChangeTimes;
     protected Double[] propOmegaChangeTimes;
+    // This is used in the timeSeriesR0 parameterisation.
+    protected Double[] propTimeSeriesChangeTimes;
 
     protected RealParameter originTime;
 
@@ -185,6 +211,10 @@ public class TimTam extends TreeDistribution {
     // these data will form a time series.
     protected double[] disasterTimes;
     protected int[] disasterSizes;
+
+    // when using the time series r0 parameterisation it is useful to be able to
+    // refer easily to the amount of time between disasters.
+    protected double disasterTimeSeriesDelta;
 
     // The history times and sizes are used to estimate the historical number of
     // hidden lineages.
@@ -234,14 +264,16 @@ public class TimTam extends TreeDistribution {
         super.initAndValidate();
 
         this.parameterisation = parameterisationInput.get();
+        this.usingCanonical = this.parameterisation.equals("canonical");
+        this.usingR0 = this.parameterisation.equals("r0");
+        this.usingTimeSeriesR0 = this.parameterisation.equals("timeSeriesR0");
 
-        if (!(this.parameterisation.equals("canonical") |
-              this.parameterisation.equals("r0"))) {
+        if (!(this.usingCanonical | this.usingR0 | this.usingTimeSeriesR0)) {
             throw new RuntimeException(
-              "The parameterisation must be one of {'canonical', 'r0'}. " +
+              "The parameterisation must be one of {'canonical', 'r0', 'timeSeriesR0'}. " +
               "The value provided is '" + parameterisation + "'."
             );
-        } else if (this.parameterisation.equals("r0") &
+        } else if (this.usingR0 &
             (this.lambdaInput.get() != null |
              this.muInput.get() != null |
              this.psiInput.get() != null |
@@ -250,14 +282,32 @@ public class TimTam extends TreeDistribution {
                 "The R0 parameterisation has been used but one of the canonical parameters " +
                 "({'lambda', 'mu', 'psi', 'omega'}) has a non-null value."
             );
-        } else if (this.parameterisation.equals("canonical") &
+        } else if (this.usingCanonical &
             (this.r0Input.get() != null |
-                this.sigmaInput.get() != null |
-                this.propPsiInput.get() != null |
-                this.propOmegaInput.get() != null)) {
+             this.sigmaInput.get() != null |
+             this.propPsiInput.get() != null |
+             this.propOmegaInput.get() != null)) {
             throw new RuntimeException(
                 "The canonical parameterisation has been used but one of the R0 parameters " +
                 "({'r0', 'sigma', 'propPsi', 'propOmega'}) has a non-null value."
+            );
+        } else if (this.usingTimeSeriesR0 &
+            (this.lambdaInput.get() != null |
+             this.muInput.get() != null |
+             this.psiInput.get() != null |
+             this.omegaInput.get() != null |
+             this.propOmegaInput.get() != null |
+             this.rhoInput.get() != null |
+             this.nuInput.get() != null |
+             this.disasterTimesInput.get() == null |
+             !disasterTimesAreUniform() |
+             this.catastropheTimesInput.get() != null)) {
+            throw new RuntimeException(
+                "The time series R0 parameterisation has been used but something is wrong: " +
+                    "one of the parameters ({'lambda', 'mu', 'psi', 'omega', 'rho', 'nu', 'propOmega'}) may have a non-null value, " +
+                    "there may not be any disasters times given, " +
+                    "the disaster times may not be uniformly spaced, " +
+                    "there are catastrophes given."
             );
         }
 
@@ -299,19 +349,24 @@ public class TimTam extends TreeDistribution {
         }
 
         this.occurrenceTimes =
-                occurrenceTimesInput.get() != null ? occurrenceTimesInput.get().getDoubleValues() : new double[] {};
+                occurrenceTimesInput.get() != null ?
+                    occurrenceTimesInput.get().getDoubleValues() :
+                    new double[] {};
 
         if (disasterTimesInput.get() != null) {
             this.disasterTimes = disasterTimesInput.get().getDoubleValues();
+            // The process of storing the disaster sizes is a bit messy because
+            // they are stored as unboxed values and this is not the best idea.
             this.disasterSizes = new int[disasterSizesInput.get().getValues().length];
             for (int ix = 0; ix < this.disasterSizes.length; ix++) {
                 this.disasterSizes[ix] = disasterSizesInput.get().getNativeValue(ix);
             }
             if (this.disasterSizes.length != this.disasterTimes.length) {
                 throw new RuntimeException(
-                        "The number of disaster times given does not match the number of disaster sizes given."
+                    "The number of disaster times given does not match the number of disaster sizes given."
                 );
             }
+            initDisasterTimeSeriesDelta();
         } else {
             this.disasterTimes = new double[] {};
             this.disasterSizes = new int[] {};
@@ -365,6 +420,52 @@ public class TimTam extends TreeDistribution {
     }
 
     /**
+     * Initialise the value of the times series delta after performing checks to
+     * make sure this makes sense.
+     */
+    private void initDisasterTimeSeriesDelta() {
+        if (this.usingTimeSeriesR0) {
+            if (disasterTimesAreUniform()) {
+                this.disasterTimeSeriesDelta =
+                    this.disasterTimes[0] - this.disasterTimes[1];
+            } else {
+                throw new RuntimeException(
+                    "Cannot use time series R0 parameterisation with the given disaster times."
+                );
+            }
+        } else {
+            this.disasterTimeSeriesDelta = Double.NaN;
+        }
+    }
+
+    /**
+     * Predicate to check that the disaster times are uniformly spaced within a
+     * tolerance of {@link TimTam#timeEpsilon}. If there are less than two
+     * disaster times then this defaults to false.
+     */
+    protected boolean disasterTimesAreUniform() {
+        if (disasterTimesInput.get() == null) {
+            return false;
+        }
+
+        Double[] dts = this.disasterTimesInput.get().getValues();
+        if (dts.length < 2) {
+            return false;
+        } else if (dts.length == 2) {
+            return true;
+        } else {
+            Double[] dds = new Double[dts.length-1];
+            for (int ix=1; ix<dts.length; ix++) {
+                dds[ix-1] = Math.abs(dts[ix-1] - dts[ix]);
+            }
+            List<Double> ddsL = Arrays.asList(dds);
+            return (
+                (Collections.max(ddsL) - Collections.min(ddsL)) < this.timeEpsilon
+            );
+        }
+    }
+
+    /**
      * Initialise the change time arrays.
      *
      * <p>Initialising the change time arrays is non-trivial because it depends
@@ -374,60 +475,51 @@ public class TimTam extends TreeDistribution {
      */
     private void initChangeTimes() {
 
-        if (this.parameterisation.equals("canonical")) {
+        if (this.usingCanonical) {
             // This conditional checks that the number of change times is
             // appropriate for the number of lambda parameters that we are
             // estimating. This same pattern is repeated for the other parameters as
             // well.
             if (this.lambdaChangeTimesInput.get() != null) {
+                checkChangeTimes(lambdaChangeTimesInput.get(),lambdaInput.get(),"lambda");
                 this.lambdaChangeTimes = lambdaChangeTimesInput.get().getValues();
-                if (this.lambdaInput.get().getDimension() !=
-                    (this.lambdaChangeTimes.length + 1)) {
-                    throw new RuntimeException(
-                        "The dimension of lambda and the number of times lambda changes are incompatible."
-                    );
-                }
             } else {
                 this.lambdaChangeTimes = new Double[]{};
             }
 
             if (this.muChangeTimesInput.get() != null) {
+                checkChangeTimes(muChangeTimesInput.get(), muInput.get(), "mu");
                 this.muChangeTimes = muChangeTimesInput.get().getValues();
-                if (this.muInput.get().getDimension() !=
-                    (this.muChangeTimes.length + 1)) {
-                    throw new RuntimeException(
-                        "The dimension of mu and the number of times mu changes are incompatible."
-                    );
-                }
             } else {
                 this.muChangeTimes = new Double[]{};
             }
 
             if (this.psiChangeTimesInput.get() != null) {
+                checkChangeTimes(psiChangeTimesInput.get(),psiInput.get(),"psi");
                 this.psiChangeTimes = psiChangeTimesInput.get().getValues();
-                if (this.psiInput.get().getDimension() !=
-                    (this.psiChangeTimes.length + 1)) {
-                    throw new RuntimeException(
-                        "The dimension of psi and the number of times psi changes are incompatible."
-                    );
-                }
             } else {
                 this.psiChangeTimes = new Double[]{};
             }
 
             if (this.omegaChangeTimesInput.get() != null) {
+                checkChangeTimes(omegaChangeTimesInput.get(),omegaInput.get(),"omega");
                 this.omegaChangeTimes = omegaChangeTimesInput.get().getValues();
-                if (this.omegaInput.get().getDimension() !=
-                    (this.omegaChangeTimes.length + 1)) {
-                    throw new RuntimeException(
-                        "The dimension of omega and the number of times omega changes are incompatible."
-                    );
-                }
             } else {
                 this.omegaChangeTimes = new Double[]{};
             }
 
-        } else if (this.parameterisation.equals("r0")) {
+            if (rhoChangeTimesInput.get() != null) {
+                this.rhoChangeTimes = rhoChangeTimesInput.get().getValues();
+            } else {
+                this.rhoChangeTimes = new Double[]{};
+            }
+
+            if (nuChangeTimesInput.get() != null) {
+                this.nuChangeTimes = nuChangeTimesInput.get().getValues();
+            } else {
+                this.nuChangeTimes = new Double[]{};
+            }
+        } else if (this.usingR0) {
 
             int numLambdaChanges = 0;
             int numMuChanges = 0;
@@ -435,12 +527,7 @@ public class TimTam extends TreeDistribution {
             int numOmegaChanges = 0;
 
             if (this.r0ChangeTimesInput.get() != null) {
-                if (this.r0Input.get().getDimension() !=
-                    (this.r0ChangeTimesInput.get().getDimension() + 1)) {
-                    throw new RuntimeException(
-                        "The dimension of R0 and the number of times R0 changes are incompatible."
-                    );
-                }
+                checkChangeTimes(r0ChangeTimesInput.get(),r0Input.get(),"r0");
                 this.r0ChangeTimes = this.r0ChangeTimesInput.get().getValues();
                 numLambdaChanges += this.r0ChangeTimes.length;
             } else {
@@ -448,12 +535,7 @@ public class TimTam extends TreeDistribution {
             }
 
             if (this.sigmaChangeTimesInput.get() != null) {
-                if (this.sigmaInput.get().getDimension() !=
-                    (this.sigmaChangeTimesInput.get().getDimension() + 1)) {
-                    throw new RuntimeException(
-                        "The dimension of sigma and the number of times sigma changes are incompatible."
-                    );
-                }
+                checkChangeTimes(sigmaChangeTimesInput.get(),sigmaInput.get(),"sigma");
                 this.sigmaChangeTimes = this.sigmaChangeTimesInput.get().getValues();
                 numLambdaChanges += this.sigmaChangeTimes.length;
                 numMuChanges += this.sigmaChangeTimes.length;
@@ -464,12 +546,7 @@ public class TimTam extends TreeDistribution {
             }
 
             if (this.propPsiChangeTimesInput.get() != null) {
-                if (this.propPsiInput.get().getDimension() !=
-                    (this.propPsiChangeTimesInput.get().getDimension() + 1)) {
-                    throw new RuntimeException(
-                        "The dimension of p-sub-psi and the number of times p-sub-psi changes are incompatible."
-                    );
-                }
+                checkChangeTimes(propPsiChangeTimesInput.get(),propPsiInput.get(),"p-sub-psi");
                 this.propPsiChangeTimes = this.propPsiChangeTimesInput.get().getValues();
                 numMuChanges += this.propPsiChangeTimes.length;
                 numPsiChanges += this.propPsiChangeTimes.length;
@@ -478,12 +555,7 @@ public class TimTam extends TreeDistribution {
             }
 
             if (this.propOmegaChangeTimesInput.get() != null) {
-                if (this.propOmegaInput.get().getDimension() !=
-                    (this.propOmegaChangeTimesInput.get().getDimension() + 1)) {
-                    throw new RuntimeException(
-                        "The dimension of p-sub-psi and the number of times p-sub-psi changes are incompatible."
-                    );
-                }
+                checkChangeTimes(propOmegaChangeTimesInput.get(),propOmegaInput.get(),"p-sub-omega");
                 this.propOmegaChangeTimes = this.propOmegaChangeTimesInput.get().getValues();
                 numMuChanges += this.propOmegaChangeTimes.length;
                 numOmegaChanges += this.propOmegaChangeTimes.length;
@@ -530,19 +602,107 @@ public class TimTam extends TreeDistribution {
             }
             Arrays.sort(this.omegaChangeTimes);
 
-        }
+            if (rhoChangeTimesInput.get() != null) {
+                this.rhoChangeTimes = rhoChangeTimesInput.get().getValues();
+            } else {
+                this.rhoChangeTimes = new Double[]{};
+            }
 
-        if (rhoChangeTimesInput.get() != null) {
-            this.rhoChangeTimes = rhoChangeTimesInput.get().getValues();
-        } else {
+            if (nuChangeTimesInput.get() != null) {
+                this.nuChangeTimes = nuChangeTimesInput.get().getValues();
+            } else {
+                this.nuChangeTimes = new Double[]{};
+            }
+        } else if (this.usingTimeSeriesR0) {
+            int numLambdaChanges = 0;
+            int numMuChanges = 0;
+            int numPsiChanges = 0;
+            int numNuChanges = 0;
+
+            if (this.r0ChangeTimesInput.get() != null) {
+                checkChangeTimes(r0ChangeTimesInput.get(),r0Input.get(),"r0");
+                this.r0ChangeTimes = this.r0ChangeTimesInput.get().getValues();
+                numLambdaChanges += this.r0ChangeTimes.length;
+            } else {
+                this.r0ChangeTimes = new Double[]{};
+            }
+
+            if (this.sigmaChangeTimesInput.get() != null) {
+                checkChangeTimes(sigmaChangeTimesInput.get(),sigmaInput.get(),"sigma");
+                this.sigmaChangeTimes = this.sigmaChangeTimesInput.get().getValues();
+                numLambdaChanges += this.sigmaChangeTimes.length;
+                numMuChanges += this.sigmaChangeTimes.length;
+                numPsiChanges += this.sigmaChangeTimes.length;
+                numNuChanges += this.sigmaChangeTimes.length;
+            } else {
+                this.sigmaChangeTimes = new Double[]{};
+            }
+
+            if (this.propPsiChangeTimesInput.get() != null) {
+                checkChangeTimes(propPsiChangeTimesInput.get(),propPsiInput.get(),"p-sub-psi");
+                this.propPsiChangeTimes = this.propPsiChangeTimesInput.get().getValues();
+                numMuChanges += this.propPsiChangeTimes.length;
+                numPsiChanges += this.propPsiChangeTimes.length;
+            } else {
+                this.propPsiChangeTimes = new Double[]{};
+            }
+
+            if (this.propTimeSeriesChangeTimesInput.get() != null) {
+                checkChangeTimes(propTimeSeriesChangeTimesInput.get(),propTimeSeriesInput.get(),"p-sub-ts");
+                this.propTimeSeriesChangeTimes = this.propTimeSeriesChangeTimesInput.get().getValues();
+                numMuChanges += this.propTimeSeriesChangeTimes.length;
+                numNuChanges += this.propTimeSeriesChangeTimes.length;
+            } else {
+                this.propTimeSeriesChangeTimes = new Double[]{};
+            }
+
+            if (numLambdaChanges == 0) {
+                this.lambdaChangeTimes = new Double[]{};
+            } else {
+                this.lambdaChangeTimes = Numerics.concatenate(
+                    this.r0ChangeTimesInput.get().getValues(),
+                    this.sigmaChangeTimesInput.get().getValues()
+                );
+            }
+            Arrays.sort(this.lambdaChangeTimes);
+
+            if (numMuChanges == 0) {
+                this.muChangeTimes = new Double[]{};
+            } else {
+                this.muChangeTimes = Numerics.concatenate(
+                    this.sigmaChangeTimesInput.get().getValues(),
+                    this.propPsiChangeTimesInput.get().getValues(),
+                    this.propTimeSeriesChangeTimesInput.get().getValues()
+                );
+            }
+            Arrays.sort(this.muChangeTimes);
+
+            if (numPsiChanges == 0) {
+                this.psiChangeTimes = new Double[]{};
+            } else {
+                this.psiChangeTimes = Numerics.concatenate(
+                    this.sigmaChangeTimesInput.get().getValues(),
+                    this.propPsiChangeTimesInput.get().getValues()
+                );
+            }
+            Arrays.sort(this.psiChangeTimes);
+
+            if (numNuChanges == 0) {
+                this.nuChangeTimes = new Double[]{};
+            } else {
+                this.nuChangeTimes = Numerics.concatenate(
+                    this.sigmaChangeTimesInput.get().getValues(),
+                    this.propTimeSeriesChangeTimesInput.get().getValues()
+                );
+            }
+            Arrays.sort(this.nuChangeTimes);
+
+            // Because this model assumes there is no rho or omega type
+            // surveillance.
             this.rhoChangeTimes = new Double[]{};
+            this.omegaChangeTimes = new Double[]{};
         }
 
-        if (nuChangeTimesInput.get() != null) {
-            this.nuChangeTimes = nuChangeTimesInput.get().getValues();
-        } else {
-            this.nuChangeTimes = new Double[]{};
-        }
 
         // Use a set to maintain a collection of the unique parameter change
         // times encountered to make it easier to handle the case where multiple
@@ -561,6 +721,21 @@ public class TimTam extends TreeDistribution {
             this.paramChangeTimes = new Double[]{};
         }
     }
+
+    /**
+     * Throw an informative error message if something about the change times
+     * given do not make sense.
+     */
+    private void checkChangeTimes(RealParameter changeTimes,
+                                  RealParameter values,
+                                  String name) {
+        if (values.getDimension() != (changeTimes.getDimension() + 1)) {
+            throw new RuntimeException(
+                "The dimension of " + name + " and the number of times it changes are incompatible."
+            );
+        }
+    }
+
 
     /**
      * Update the history sizes and times.
@@ -789,6 +964,11 @@ public class TimTam extends TreeDistribution {
         }
     }
 
+    /**
+     * This function is called to update parameters of the model once one of the
+     * inputs to the model has changed. Because it is called within the MCMC
+     * loop it needs to be efficient.
+     */
     private void updateRateAndProbParams() {
         Double nxtBwdTime;
         int ixLambda = 0;
@@ -801,7 +981,7 @@ public class TimTam extends TreeDistribution {
         Double nxtLambdaChange,nxtMuChange,nxtPsiChange,
             nxtOmegaChange,nxtRhoChange,nxtNuChange;
 
-        if (this.parameterisation.equals("canonical")) {
+        if (this.usingCanonical) {
             Double[] lambdas, mus, psis, omegas, rhos, nus;
             lambdas = this.lambdaInput.get().getValues();
             crrLambda = lambdas[ixLambda];
@@ -939,7 +1119,7 @@ public class TimTam extends TreeDistribution {
                 this.rhoValues[ix] = crrRho;
                 this.nuValues[ix] = crrNu;
             }
-        } else if (this.parameterisation.equals("r0")) {
+        } else if (this.usingR0) {
             int ixR0 = 0;
             int ixSigma = 0;
             int ixPropPsi = 0;
@@ -1062,6 +1242,7 @@ public class TimTam extends TreeDistribution {
                             this.rhoChangeTimes[ixRho] :
                             Double.NEGATIVE_INFINITY;
                 }
+
                 if (nxtBwdTime <= nxtNuChange) {
                     ixNu++;
                     crrNu = nus[ixNu];
@@ -1076,6 +1257,111 @@ public class TimTam extends TreeDistribution {
                 this.psiValues[ix] = crrPropPsi * crrSigma;
                 this.omegaValues[ix] = crrPropOmega * crrSigma;
                 this.rhoValues[ix] = crrRho;
+                this.nuValues[ix] = crrNu;
+            }
+        } else if (this.usingTimeSeriesR0) {
+            int ixR0 = 0;
+            int ixSigma = 0;
+            int ixPropPsi = 0;
+            int ixPropTS = 0;
+
+            Double[] r0s, sigmas, propPsis, omegas, propTSs, rhos, nus;
+            Double crrR0, crrSigma, crrPropPsi, crrPropTS;
+            Double nxtR0Change, nxtSigmaChange, nxtPropPsiChange,
+                nxtPropTSChange;
+            double tmp;
+
+            r0s = this.r0Input.get().getValues();
+            crrR0 = r0s[ixR0];
+            nxtR0Change =
+                r0s.length > 1 ?
+                    this.r0ChangeTimes[ixR0] :
+                    Double.NEGATIVE_INFINITY;
+
+            sigmas = this.sigmaInput.get().getValues();
+            crrSigma = sigmas[ixSigma];
+            nxtSigmaChange =
+                sigmas.length > 1 ?
+                    this.sigmaChangeTimes[ixSigma] :
+                    Double.NEGATIVE_INFINITY;
+
+            propPsis = this.propPsiInput.get().getValues();
+            crrPropPsi = propPsis[ixPropPsi];
+            nxtPropPsiChange =
+                propPsis.length > 1 ?
+                    this.propPsiChangeTimes[ixPropPsi] :
+                    Double.NEGATIVE_INFINITY;
+
+            propTSs = this.propTimeSeriesInput.get().getValues();
+            crrPropTS = propTSs[ixPropTS];
+            nxtPropTSChange =
+                propTSs.length > 1 ?
+                    this.propTimeSeriesChangeTimes[ixPropTS] :
+                    Double.NEGATIVE_INFINITY;
+
+            if (this.rhoInput.get() != null | this.nuInput.get() != null) {
+               throw new RuntimeException(
+                   "The time series R0 parameterisation assumes rho and nu are null."
+               ) ;
+            } else {
+                tmp = this.disasterTimeSeriesDelta * crrSigma * crrPropTS;
+                crrNu = 2 * tmp / (2 + tmp);
+            }
+
+            this.lambdaValues[0] = crrR0 * crrSigma;
+            this.muValues[0] = (1 - crrPropPsi - crrPropTS) * crrSigma;
+            this.psiValues[0] = crrPropPsi * crrSigma;
+            this.omegaValues[0] = 0.0;
+            this.rhoValues[0] = 0.0;
+            this.nuValues[0] = crrNu;
+
+            for (int ix=1; ix<this.numTimeIntervals; ix++) {
+                nxtBwdTime = this.intervalStartTimes[ix];
+
+                if (nxtBwdTime <= nxtR0Change) {
+                    ixR0++;
+                    crrR0 = r0s[ixR0];
+                    nxtR0Change =
+                        ixR0 < this.r0ChangeTimes.length ?
+                            this.r0ChangeTimes[ixR0] :
+                            Double.NEGATIVE_INFINITY;
+                }
+
+                if (nxtBwdTime <= nxtSigmaChange) {
+                    ixSigma++;
+                    crrSigma = sigmas[ixSigma];
+                    nxtSigmaChange =
+                        ixSigma < this.sigmaChangeTimes.length ?
+                            this.sigmaChangeTimes[ixSigma] :
+                            Double.NEGATIVE_INFINITY;
+                }
+
+                if (nxtBwdTime <= nxtPropPsiChange) {
+                    ixPropPsi++;
+                    crrPropPsi = propPsis[ixPropPsi];
+                    nxtPropPsiChange =
+                        ixPropPsi < this.propPsiChangeTimes.length ?
+                            this.propPsiChangeTimes[ixPropPsi] :
+                            Double.NEGATIVE_INFINITY;
+                }
+
+                if (nxtBwdTime <= nxtPropTSChange) {
+                    ixPropTS++;
+                    crrPropTS = propTSs[ixPropTS];
+                    nxtPropTSChange =
+                        ixPropTS < this.propTimeSeriesChangeTimes.length ?
+                            this.propTimeSeriesChangeTimes[ixPropTS] :
+                            Double.NEGATIVE_INFINITY;
+                }
+
+                tmp = this.disasterTimeSeriesDelta * crrSigma * crrPropTS;
+                crrNu = 2 * tmp / (2 + tmp);
+
+                this.lambdaValues[ix] = crrR0 * crrSigma;
+                this.muValues[ix] = (1 - crrPropPsi - crrPropTS) * crrSigma;
+                this.psiValues[ix] = crrPropPsi * crrSigma;
+                this.omegaValues[ix] = 0.0;
+                this.rhoValues[ix] = 0.0;
                 this.nuValues[ix] = crrNu;
             }
         }
