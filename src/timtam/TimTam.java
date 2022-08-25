@@ -751,6 +751,7 @@ public class TimTam extends TreeDistribution {
                 this.historyTimes[ix] = this.historyTimesInput.get().getArrayValue(ix);
             }
         }
+    }
 
     /**
      * <p>Predicate for being an unscheduled node.</p>
