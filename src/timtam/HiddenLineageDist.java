@@ -155,7 +155,7 @@ public class HiddenLineageDist {
      * Update the state of the distribution of hidden lineages based on the mean
      * and variance.
      *
-     * @implNote The current implementation does not support the case where the
+     * <b>NOTE:</b> The current implementation does not support the case where the
      * variance is positive and less than the mean because this situation cannot
      * be represented by either a negative binomial distribution or a degenerate
      * distribution.
