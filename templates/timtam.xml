@@ -9,7 +9,7 @@
             <![CDATA[
 
             <!-- Prior distribution -->
-            <plugin spec='timtam.TimTam' id="TimTam.t:$(n)" tree="@Tree.t:$(n)" >
+            <plugin spec='timtam.TimTam' id="TimTam.t:$(n)" tree="@Tree.t:$(n)" parameterisation="canonical">
                 <parameter name='mu' id='recoveryRate.t:$(n)' value='0.046' estimate='false'/>
                 <parameter name='lambda' id='birthRate.t:$(n)' value='0.75' estimate='true'/>
                 <parameter name='psi' id='samplingRate.t:$(n)' value='0.025' estimate='true'/>
@@ -130,7 +130,7 @@
             <connect srcID='birthRatePrior.t:$(n)' targetID='prior' inputName='distribution' if='inposterior(TimTam.t:$(n)) and birthRate.t:$(n)/estimate=true'>prior on the birth rate parameter</connect>
             <connect srcID='samplingRatePrior.t:$(n)' targetID='prior' inputName='distribution' if='inposterior(TimTam.t:$(n)) and samplingRate.t:$(n)/estimate=true'>prior on sampling rate parameter</connect>
             <connect srcID='nuProbPrior.t:$(n)' targetID='prior' inputName='distribution' if='inposterior(TimTam.t:$(n)) and nuProb.t:$(n)/estimate=true'>prior on probability of being sampled in a scheduled unsequenced event</connect>
-            <connect srcID='historySizesPrior.t:$(n)' targetID='prior' inputName='distribution' if='inposterior(TimTam.t:$(n)) and historySizes.t:$(n)/estimate=true'>BE VERY CAREFUL! the prevalence at the history times</connect>
+            <connect srcID='historySizesPrior.t:$(n)' targetID='prior' inputName='distribution' if='historySizes.t:$(n)/estimate=true'>BE VERY CAREFUL! the prevalence at the history times</connect>
 
             <connect srcID='birthRateScaler.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTam.t:$(n)) and birthRate.t:$(n)/estimate=true'/>
             <connect srcID='birthRateWalk.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTam.t:$(n)) and birthRate.t:$(n)/estimate=true'/>
@@ -139,7 +139,7 @@
             <connect srcID='updownBS.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTam.t:$(n)) and birthRate.t:$(n)/estimate=true and samplingRate.t:$(n)/estimate=true'/>
             <connect srcID='nuProbScaler.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTam.t:$(n)) and nuProb.t:$(n)/estimate=true'/>
             <connect srcID='nuProbWalk.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTam.t:$(n)) and nuProb.t:$(n)/estimate=true'/>
-            <connect srcID='historySizesWalk.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTam.t:$(n)) and historySizes.t:$(n)/estimate=true'/>
+            <connect srcID='historySizesWalk.t:$(n)' targetID='mcmc' inputName='operator' if='historySizes.t:$(n)/estimate=true'/>
 
             <connect srcID='TimTamLogger.t:$(n)' targetID='tracelog' inputName='log' if='inposterior(TimTam.t:$(n))' />
 

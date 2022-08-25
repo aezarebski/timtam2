@@ -481,6 +481,32 @@ public class TestTimTam {
         tt.setInputValue("conditionOnObservation", "false");
         tt.initAndValidate();
     }
+
+    @Test
+    public void testDisasterTimesAreUniform() {
+        TimTam tt = new TimTam();
+
+        assertFalse(tt.disasterTimesAreUniform());
+
+        tt.setInputValue("disasterTimes", "4.0");
+        assertFalse(tt.disasterTimesAreUniform());
+
+        tt.setInputValue("disasterTimes", "4.0 1.0");
+        assertTrue(tt.disasterTimesAreUniform());
+
+        tt.setInputValue("disasterTimes", "7.0 4.0 1.0");
+        assertTrue(tt.disasterTimesAreUniform());
+
+        tt.setInputValue("disasterTimes",
+            Double.toString(7.0 + 0.1 * tt.timeEpsilon) + " 4.0 1.0");
+        assertTrue(tt.disasterTimesAreUniform());
+
+        tt.setInputValue("disasterTimes", "7.01 4.0 1.0");
+        assertFalse(tt.disasterTimesAreUniform());
+
+        tt.setInputValue("disasterTimes", "6.99 4.0 1.0");
+        assertFalse(tt.disasterTimesAreUniform());
+    }
 }
 
 

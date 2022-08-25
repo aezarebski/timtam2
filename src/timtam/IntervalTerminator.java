@@ -29,7 +29,7 @@ public class IntervalTerminator implements Comparable<IntervalTerminator> {
      * @param bwdTime the time the interval ended measured backwards from the time of the last sequenced observation.
      * @param count the size of the event (typically the number of lineages involved in the event).
      *
-     * @implNote If there is no count given to this constructor will set it to a dummy value of -1.
+     * <b>NOTE:</b> If there is no count given to this constructor will set it to a dummy value of -1.
      *
      */
     public IntervalTerminator(String type, Double bwdTime, OptionalInt count) {
@@ -77,7 +77,7 @@ public class IntervalTerminator implements Comparable<IntervalTerminator> {
      * @param bwdTime the time the interval ended measured backwards from the time of the last sequenced observation.
      * @param count the size of the event (typically the number of lineages involved in the event).
      *
-     * @implNote If there is no count given to this constructor will set it to a dummy value of -1.
+     * <b>NOTE:</b> If there is no count given to this constructor will set it to a dummy value of -1.
      */
     public void setTypeTimeAndCount(String type, Double bwdTime, OptionalInt count) {
         if (validTerminatorNames.contains(type)) {
