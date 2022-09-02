@@ -659,9 +659,30 @@ public class TimTam extends TreeDistribution {
             if (numLambdaChanges == 0) {
                 this.lambdaChangeTimes = new Double[]{};
             } else {
+                // We need to be careful here, if one of the parameters does not
+                // changes through time then the value will be null so we need
+                // to use an empty array for its values. The temporary variables
+                // have been used because then we can always just concatenate
+                // the results, otherwise we would need to have a huge
+                // conditional to handle every possible combination. The same
+                // applies for the other parameters below.
+                Double[] tmpR0ChangeTimes;
+                Double[] tmpSigmaChangeTimes;
+                if (this.r0ChangeTimesInput.get() != null) {
+                    tmpR0ChangeTimes =
+                        this.r0ChangeTimesInput.get().getValues();
+                } else {
+                    tmpR0ChangeTimes = new Double[]{};
+                }
+                if (this.sigmaChangeTimesInput.get() != null) {
+                    tmpSigmaChangeTimes =
+                        this.sigmaChangeTimesInput.get().getValues();
+                } else {
+                    tmpSigmaChangeTimes = new Double[]{};
+                }
                 this.lambdaChangeTimes = Numerics.concatenate(
-                    this.r0ChangeTimesInput.get().getValues(),
-                    this.sigmaChangeTimesInput.get().getValues()
+                    tmpR0ChangeTimes,
+                    tmpSigmaChangeTimes
                 );
             }
             Arrays.sort(this.lambdaChangeTimes);
@@ -669,10 +690,23 @@ public class TimTam extends TreeDistribution {
             if (numMuChanges == 0) {
                 this.muChangeTimes = new Double[]{};
             } else {
+                Double[] tmpSigmaChangeTimes =
+                    this.sigmaChangeTimesInput.get() != null ?
+                        this.sigmaChangeTimesInput.get().getValues() :
+                        new Double[]{};
+                Double[] tmpPropPsiChangeTimes =
+                    this.propPsiChangeTimesInput.get() != null ?
+                        this.propPsiChangeTimesInput.get().getValues() :
+                        new Double[]{};
+                Double[] tmpPropTSChangeTimes =
+                    this.propTimeSeriesChangeTimesInput.get() != null ?
+                        this.propTimeSeriesChangeTimesInput.get().getValues() :
+                        new Double[]{};
+
                 this.muChangeTimes = Numerics.concatenate(
-                    this.sigmaChangeTimesInput.get().getValues(),
-                    this.propPsiChangeTimesInput.get().getValues(),
-                    this.propTimeSeriesChangeTimesInput.get().getValues()
+                    tmpSigmaChangeTimes,
+                    tmpPropPsiChangeTimes,
+                    tmpPropTSChangeTimes
                 );
             }
             Arrays.sort(this.muChangeTimes);
@@ -680,9 +714,17 @@ public class TimTam extends TreeDistribution {
             if (numPsiChanges == 0) {
                 this.psiChangeTimes = new Double[]{};
             } else {
+                Double[] tmpSigmaChangeTimes =
+                    this.sigmaChangeTimesInput.get() != null ?
+                        this.sigmaChangeTimesInput.get().getValues() :
+                        new Double[]{};
+                Double[] tmpPropPsiChangeTimes =
+                    this.propPsiChangeTimesInput.get() != null ?
+                        this.propPsiChangeTimesInput.get().getValues() :
+                        new Double[]{};
                 this.psiChangeTimes = Numerics.concatenate(
-                    this.sigmaChangeTimesInput.get().getValues(),
-                    this.propPsiChangeTimesInput.get().getValues()
+                    tmpSigmaChangeTimes,
+                    tmpPropPsiChangeTimes
                 );
             }
             Arrays.sort(this.psiChangeTimes);
@@ -690,9 +732,17 @@ public class TimTam extends TreeDistribution {
             if (numNuChanges == 0) {
                 this.nuChangeTimes = new Double[]{};
             } else {
+                Double[] tmpSigmaChangeTimes =
+                    this.sigmaChangeTimesInput.get() != null ?
+                        this.sigmaChangeTimesInput.get().getValues() :
+                        new Double[]{};
+                Double[] tmpPropTSChangeTimes =
+                    this.propTimeSeriesChangeTimesInput.get() != null ?
+                        this.propTimeSeriesChangeTimesInput.get().getValues() :
+                        new Double[]{};
                 this.nuChangeTimes = Numerics.concatenate(
-                    this.sigmaChangeTimesInput.get().getValues(),
-                    this.propTimeSeriesChangeTimesInput.get().getValues()
+                    tmpSigmaChangeTimes,
+                    tmpPropTSChangeTimes
                 );
             }
             Arrays.sort(this.nuChangeTimes);
