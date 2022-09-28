@@ -1,4 +1,4 @@
-<beast version='2.0' namespace='beast.app.beauti:beast.core:beast.evolution.branchratemodel:beast.evolution.speciation:beast.evolution.tree.coalescent:beast.core.util:beast.evolution.nuc:beast.evolution.operators:beast.evolution.sitemodel:beast.evolution.substitutionmodel:beast.evolution.likelihood:beast.evolution:beast.math.distributions'>
+<beast version='2.0' namespace='beast.app.beauti:beast.pkgmgmt:beast.base.core:beast.base.inference:beast.base.evolution.branchratemodel:beast.base.evolution.speciation:beast.base.evolution.tree.coalescent:beast.base.util:beast.base.math:beast.evolution.nuc:beast.base.evolution.operator:beast.base.inference.operator:beast.base.evolution.sitemodel:beast.base.evolution.substitutionmodel:beast.base.evolution.likelihood:beast.evolution:beast.base.math.distributions'>
 
     <mergewith point='misc' fragment="@TreeOperators"/>
 
@@ -24,7 +24,7 @@
             <prior
                 id="TTBirthRatePrior.t:$(n)"
                 x="@TTBirthRate.t:$(n)">
-                <distr spec="beast.math.distributions.LogNormalDistributionModel">
+                <distr spec="beast.base.inference.distribution.LogNormalDistributionModel">
                     <parameter name="M" value="-2.0" estimate="false"/>
                     <parameter name="S" value="1.0" estimate="false"/>
                 </distr>
@@ -33,7 +33,7 @@
             <prior
                 id="TTSamplingRatePrior.t:$(n)"
                 x="@TTSamplingRate.t:$(n)">
-                <distr spec="beast.math.distributions.LogNormalDistributionModel">
+                <distr spec="beast.base.inference.distribution.LogNormalDistributionModel">
                     <parameter name="M" value="-3.0" estimate="false"/>
                     <parameter name="S" value="1.0" estimate="false"/>
                 </distr>
@@ -42,7 +42,7 @@
             <prior
                 id="TTNuProbPrior.t:$(n)"
                 x="@TTNuProb.t:$(n)">
-                <distr spec="beast.math.distributions.Beta">
+                <distr spec="beast.base.inference.distribution.Beta">
                     <parameter name="alpha" value="2.0" estimate="false"/>
                     <parameter name="beta" value="10.0" estimate="false"/>
                 </distr>
@@ -51,7 +51,7 @@
             <prior
                 id="TTHistorySizesPrior.t:$(n)"
                 x="@TTHistorySizes.t:$(n)">
-                <distr spec="beast.math.distributions.Uniform" lower="0.0" upper="10000.0">
+                <distr spec="beast.base.inference.distribution.Uniform" lower="0.0" upper="10000.0">
                 </distr>
             </prior>
 
