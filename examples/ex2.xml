@@ -672,13 +672,11 @@ name="alignment">
             <log idref="posterior"/>
             <log idref="prior"/>
             <log idref="birthRate.t:sequences"/>
-            <log id="TimTamLogger.t:sequences" spec="timtam.TimTamLogger" timtam="@TimTam.t:sequences" />
         </logger>
         <logger id="screenlog" spec="Logger" logEvery="1000">
             <log idref="posterior"/>
             <log idref="prior"/>
             <log idref="birthRate.t:sequences"/>
-            <log idref="TimTamLogger.t:sequences"/>
         </logger>
         <operatorschedule id="OperatorSchedule" spec="OperatorSchedule"/>
     </run>

@@ -138,11 +138,6 @@
                        parameter="@TTHistorySizes.t:$(n)"
                        weight="3.0" />
 
-                     <log
-                       id="TimTamLogger.t:$(n)"
-                       spec="timtam.TimTamLogger"
-                       timtam="@TimTamTimeSeries.t:$(n)" />
-
             ]]>
 
 
@@ -165,8 +160,6 @@
             <connect srcID='TTPropTimeSeriesScaler.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTamTimeSeries.t:$(n)) and TTPropTS.t:$(n)/estimate=true and TimTamTimeSeries.t:$(n)/parameterisation=timeSeriesR0'/>
             <connect srcID='TTPropTimeSeriesWalk.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTamTimeSeries.t:$(n)) and TTPropTS.t:$(n)/estimate=true and TimTamTimeSeries.t:$(n)/parameterisation=timeSeriesR0'/>
             <connect srcID='TTHistorySizesWalk.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTamTimeSeries.t:$(n)) and TTHistorySizes.t:$(n)/estimate=true and TimTamTimeSeries.t:$(n)/parameterisation=timeSeriesR0'/>
-
-            <connect srcID='TimTamLogger.t:$(n)' targetID='tracelog' inputName='log' if='inposterior(TimTamTimeSeries.t:$(n))' />
 
             <!-- This connection is specified outside of the plate because otherwise it does not seem to work. -->
             <connect srcID='TTHistorySizes.t:$(n)' targetID='state' inputName='stateNode' if='inposterior(TimTamTimeSeries.t:$(n)) and TTHistorySizes.t:$(n)/estimate=true' />

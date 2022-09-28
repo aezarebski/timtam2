@@ -116,11 +116,6 @@
                        parameter="@TTHistorySizes.t:$(n)"
                        weight="3.0" />
 
-                     <log
-                       id="TimTamLogger.t:$(n)"
-                       spec="timtam.TimTamLogger"
-                       timtam="@TimTam.t:$(n)" />
-
             ]]>
 
 
@@ -140,8 +135,6 @@
             <connect srcID='TTNuProbScaler.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTam.t:$(n)) and TTNuProb.t:$(n)/estimate=true'/>
             <connect srcID='TTNuProbWalk.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTam.t:$(n)) and TTNuProb.t:$(n)/estimate=true'/>
             <connect srcID='TTHistorySizesWalk.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTam.t:$(n)) and TTHistorySizes.t:$(n)/estimate=true'/>
-
-            <connect srcID='TimTamLogger.t:$(n)' targetID='tracelog' inputName='log' if='inposterior(TimTam.t:$(n))' />
 
             <plate var='p' range='TTBirthRate,TTSamplingRate,TTNuProb,TTHistorySizes'>
                 <connect srcID='$(p).t:$(n)' targetID='state' inputName='stateNode' if='inposterior(TimTam.t:$(n)) and $(p).t:$(n)/estimate=true' />
