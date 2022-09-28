@@ -18,7 +18,7 @@
   <property name="doc" location="doc"/>
   <property name="examples" location="examples"/>
   <property name="scripts" location="scripts"/>
-  <property name="templates" location="templates"/>
+  <property name="fxtemplates" location="fxtemplates"/>
   <!-- BEAST branch and version to build against
        (only different for version tags because of
        a Github peculiarity) -->
@@ -52,8 +52,8 @@
       </fail>
     <!-- Read package name and version from xml file -->
     <xmlproperty file="version.xml" prefix="fromVersionFile"/>
-    <property name="projName" value="${fromVersionFile.addon(name)}"/>
-    <property name="projVersion" value="${fromVersionFile.addon(version)}"/>
+    <property name="projName" value="${fromVersionFile.package(name)}"/>
+    <property name="projVersion" value="${fromVersionFile.package(version)}"/>
     <mkdir dir="${build}"/>
     <mkdir dir="${build-lib}"/>
     <mkdir dir="${dist}"/>
@@ -156,7 +156,7 @@
     <mkdir dir="${pack}"/>
     <mkdir dir="${pack}/examples"/>
     <mkdir dir="${pack}/scripts"/>
-    <mkdir dir="${pack}/templates"/>
+    <mkdir dir="${pack}/fxtemplates"/>
     <mkdir dir="${pack}/lib"/>
     <mkdir dir="${pack}/doc"/>
     <jar jarfile="${pack}/${fullName}.src.jar" basedir="${src}"/>
@@ -181,9 +181,9 @@
     <copy todir="${pack}/scripts">
       <fileset dir="${scripts}" includes="**/*"/>
     </copy>
-    <mkdir dir="${templates}"/>
-    <copy todir="${pack}/templates">
-      <fileset dir="${templates}" includes="*.xml"/>
+    <mkdir dir="${fxtemplates}"/>
+    <copy todir="${pack}/fxtemplates">
+      <fileset dir="${fxtemplates}" includes="*.xml"/>
     </copy>
     <mkdir dir="${doc}"/>
     <copy todir="${pack}/doc">
@@ -206,7 +206,7 @@
   </target>
   <target name="skeleton">
     <fail><condition><or><resourcecount when="gt" count="1"><fileset dir="${basedir}"/></resourcecount><resourcecount when="gt" count="1"><dirset dir="${basedir}"/></resourcecount></or></condition>
-  
+
           ** This directory contains files besides the build script. **
           You should run "ant skeleton" in a directory containing only the build script.
       </fail>
@@ -222,11 +222,11 @@
     <input addproperty="projVersion" defaultvalue="1.0.0">Enter package version</input>
     <input addproperty="beastVersionReq" defaultvalue="2.1.0">Enter minimum required BEAST 2 version</input>
     <echo>Assembling files and directory structure...</echo>
-    <echo file="version.xml">&lt;addon name="${projName}" version="${projVersion}"&gt;
+    <echo file="version.xml">&lt;package name="${projName}" version="${projVersion}"&gt;
           &lt;depends on="beast2" atleast="${beastVersionReq}"/&gt;
-  
+
           &lt;!-- Add other dependencies as necessary. --&gt;
-          &lt;/addon&gt;
+          &lt;/package&gt;
       </echo>
     <echo file="README.md" message="README for my package.${line.separator}"/>
     <condition property="licenseURL" value="https://www.gnu.org/licenses/gpl-3.0.txt">
@@ -246,7 +246,7 @@
     <mkdir dir="${test}"/>
     <mkdir dir="${lib}"/>
     <mkdir dir="${examples}"/>
-    <mkdir dir="${templates}"/>
+    <mkdir dir="${fxtemplates}"/>
     <mkdir dir="${doc}"/>
     <echo/>
     <echo>Done.</echo>
@@ -256,7 +256,7 @@
     <echo>${test} - your junit tests go here (You _are_ going to write, those, aren't you!)</echo>
     <echo>${doc} - your documentation goes here</echo>
     <echo>${examples} - your example XML scripts go here</echo>
-    <echo>${templates} - your BEAUti templates go here</echo>
+    <echo>${fxtemplates} - your BEAUti (fx)templates go here</echo>
     <echo/>
     <echo>To build your package, just type "ant" at the command line.</echo>
     <echo/>
