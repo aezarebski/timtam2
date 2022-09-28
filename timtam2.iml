@@ -9,6 +9,8 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="beast2" />
-    <orderEntry type="library" name="junit" level="project" />
+    <orderEntry type="library" name="lib" level="project" />
+    <orderEntry type="library" name="antlr-runtime-4.10.1" level="project" />
+    <orderEntry type="library" name="junit-platform-console-standalone-1.8.2" level="project" />
   </component>
 </module>
