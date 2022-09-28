@@ -99,7 +99,7 @@
                        spec="UpDownOperator"
                        scaleFactor="0.9"
                        weight="2.0">
-                       <up idref="r0.t:$(n)" />
+                       <up idref="TTR0.t:$(n)" />
                        <down idref="TTNetRemovalRate.t:$(n)" />
                      </operator>
 
