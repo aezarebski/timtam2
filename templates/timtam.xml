@@ -130,7 +130,7 @@
             <connect srcID='TTBirthRatePrior.t:$(n)' targetID='prior' inputName='distribution' if='inposterior(TimTam.t:$(n)) and TTBirthRate.t:$(n)/estimate=true'>prior on the birth rate parameter</connect>
             <connect srcID='TTSamplingRatePrior.t:$(n)' targetID='prior' inputName='distribution' if='inposterior(TimTam.t:$(n)) and TTSamplingRate.t:$(n)/estimate=true'>prior on sampling rate parameter</connect>
             <connect srcID='TTNuProbPrior.t:$(n)' targetID='prior' inputName='distribution' if='inposterior(TimTam.t:$(n)) and TTNuProb.t:$(n)/estimate=true'>prior on probability of being sampled in a scheduled unsequenced event</connect>
-            <connect srcID='TTHistorySizesPrior.t:$(n)' targetID='prior' inputName='distribution' if='TTHistorySizes.t:$(n)/estimate=true'>BE VERY CAREFUL WITH THIS! the prior on the prevalence at the history times</connect>
+            <connect srcID='TTHistorySizesPrior.t:$(n)' targetID='prior' inputName='distribution' if='inposterior(TimTam.t:$(n)) and TTHistorySizes.t:$(n)/estimate=true'>BE VERY CAREFUL WITH THIS! the prior on the prevalence at the history times</connect>
 
             <connect srcID='TTBirthRateScaler.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTam.t:$(n)) and TTBirthRate.t:$(n)/estimate=true'/>
             <connect srcID='TTBirthRateWalk.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTam.t:$(n)) and TTBirthRate.t:$(n)/estimate=true'/>
@@ -139,7 +139,7 @@
             <connect srcID='TTUpdownBS.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTam.t:$(n)) and TTBirthRate.t:$(n)/estimate=true and TTSamplingRate.t:$(n)/estimate=true'/>
             <connect srcID='TTNuProbScaler.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTam.t:$(n)) and TTNuProb.t:$(n)/estimate=true'/>
             <connect srcID='TTNuProbWalk.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTam.t:$(n)) and TTNuProb.t:$(n)/estimate=true'/>
-            <connect srcID='TTHistorySizesWalk.t:$(n)' targetID='mcmc' inputName='operator' if='TTHistorySizes.t:$(n)/estimate=true'/>
+            <connect srcID='TTHistorySizesWalk.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTam.t:$(n)) and TTHistorySizes.t:$(n)/estimate=true'/>
 
             <connect srcID='TimTamLogger.t:$(n)' targetID='tracelog' inputName='log' if='inposterior(TimTam.t:$(n))' />
 
