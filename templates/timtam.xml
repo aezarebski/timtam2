@@ -10,20 +10,20 @@
 
             <!-- Prior distribution -->
             <plugin spec='timtam.TimTam' id="TimTam.t:$(n)" tree="@Tree.t:$(n)" parameterisation="canonical">
-                <parameter name='mu' id='recoveryRate.t:$(n)' value='0.046' estimate='false'/>
-                <parameter name='lambda' id='birthRate.t:$(n)' value='0.75' estimate='true'/>
-                <parameter name='psi' id='samplingRate.t:$(n)' value='0.025' estimate='true'/>
-                <parameter name='nu' id='nuProb.t:$(n)' value='0.075' estimate='true'/>
-                <parameter name='originTime' id='originTime.t:$(n)' value='100.0' estimate='false'/>
-                <parameter name='disasterTimes' id='disasterTimes.t:$(n)' value='0.0' estimate='false'/>
-                <parameter name='disasterSizes' id='disasterSizes.t:$(n)' spec='parameter.IntegerParameter' value='0' estimate='false'/>
-                <parameter name='historyTimes' id='historyTimes.t:$(n)' value='0.0' estimate='false'/>
-                <parameter name='historySizes' id='historySizes.t:$(n)' spec='parameter.IntegerParameter' value='0' estimate='true'/>
+                <parameter name='mu' id='TTRecoveryRate.t:$(n)' value='0.046' estimate='false'/>
+                <parameter name='lambda' id='TTBirthRate.t:$(n)' value='0.75' estimate='true'/>
+                <parameter name='psi' id='TTSamplingRate.t:$(n)' value='0.025' estimate='true'/>
+                <parameter name='nu' id='TTNuProb.t:$(n)' value='0.075' estimate='true'/>
+                <parameter name='originTime' id='TTOriginTime.t:$(n)' value='100.0' estimate='false'/>
+                <parameter name='disasterTimes' id='TTDisasterTimes.t:$(n)' value='0.0' estimate='false'/>
+                <parameter name='disasterSizes' id='TTDisasterSizes.t:$(n)' spec='parameter.IntegerParameter' value='0' estimate='false'/>
+                <parameter name='historyTimes' id='TTHistoryTimes.t:$(n)' value='0.0' estimate='false'/>
+                <parameter name='historySizes' id='TTHistorySizes.t:$(n)' spec='parameter.IntegerParameter' value='0' estimate='true'/>
             </plugin>
 
             <prior
-                id="birthRatePrior.t:$(n)"
-                x="@birthRate.t:$(n)">
+                id="TTBirthRatePrior.t:$(n)"
+                x="@TTBirthRate.t:$(n)">
                 <distr spec="beast.math.distributions.LogNormalDistributionModel">
                     <parameter name="M" value="-2.0" estimate="false"/>
                     <parameter name="S" value="1.0" estimate="false"/>
@@ -31,8 +31,8 @@
             </prior>
 
             <prior
-                id="samplingRatePrior.t:$(n)"
-                x="@samplingRate.t:$(n)">
+                id="TTSamplingRatePrior.t:$(n)"
+                x="@TTSamplingRate.t:$(n)">
                 <distr spec="beast.math.distributions.LogNormalDistributionModel">
                     <parameter name="M" value="-3.0" estimate="false"/>
                     <parameter name="S" value="1.0" estimate="false"/>
@@ -40,8 +40,8 @@
             </prior>
 
             <prior
-                id="nuProbPrior.t:$(n)"
-                x="@nuProb.t:$(n)">
+                id="TTNuProbPrior.t:$(n)"
+                x="@TTNuProb.t:$(n)">
                 <distr spec="beast.math.distributions.Beta">
                     <parameter name="alpha" value="2.0" estimate="false"/>
                     <parameter name="beta" value="10.0" estimate="false"/>
@@ -49,8 +49,8 @@
             </prior>
 
             <prior
-                id="historySizesPrior.t:$(n)"
-                x="@historySizes.t:$(n)">
+                id="TTHistorySizesPrior.t:$(n)"
+                x="@TTHistorySizes.t:$(n)">
                 <distr spec="beast.math.distributions.Uniform" lower="0.0" upper="10000.0">
                 </distr>
             </prior>
@@ -58,62 +58,62 @@
 	          <!-- Parameter operators -->
 
 	                   <operator
-                       id='birthRateScaler.t:$(n)'
+                       id='TTBirthRateScaler.t:$(n)'
                        spec='ScaleOperator'
                        scaleFactor=".9"
                        weight="1.0"
-                       parameter="@birthRate.t:$(n)"/>
+                       parameter="@TTBirthRate.t:$(n)"/>
 
                      <operator
-                       id="birthRateWalk.t:$(n)"
+                       id="TTBirthRateWalk.t:$(n)"
                        spec="RealRandomWalkOperator"
                        windowSize="0.01"
-                       parameter="@birthRate.t:$(n)"
+                       parameter="@TTBirthRate.t:$(n)"
                        weight="1.0" />
 
 	                   <operator
-                       id='samplingRateScaler.t:$(n)'
+                       id='TTSamplingRateScaler.t:$(n)'
                        spec='ScaleOperator'
                        scaleFactor=".9"
                        weight="1.0"
-                       parameter="@samplingRate.t:$(n)"/>
+                       parameter="@TTSamplingRate.t:$(n)"/>
 
                      <operator
-                       id="samplingRateWalk.t:$(n)"
+                       id="TTSamplingRateWalk.t:$(n)"
                        spec="RealRandomWalkOperator"
                        windowSize="0.01"
-                       parameter="@samplingRate.t:$(n)"
+                       parameter="@TTSamplingRate.t:$(n)"
                        weight="1.0" />
 
                      <operator
-                       id="updownBS.t:$(n)"
+                       id="TTUpdownBS.t:$(n)"
                        spec="UpDownOperator"
                        scaleFactor="0.9"
                        weight="2.0">
-                       <up idref="birthRate.t:$(n)" />
-                       <down idref="samplingRate.t:$(n)" />
+                       <up idref="TTBirthRate.t:$(n)" />
+                       <down idref="TTSamplingRate.t:$(n)" />
                      </operator>
 
                      <operator
-                       id="nuProbScaler.t:$(n)"
+                       id="TTNuProbScaler.t:$(n)"
                        spec="ScaleOperator"
                        scaleFactor="0.9"
-                       parameter="@nuProb.t:$(n)"
+                       parameter="@TTNuProb.t:$(n)"
                        weight="1.0" />
 
                      <operator
-                       id="nuProbWalk.t:$(n)"
+                       id="TTNuProbWalk.t:$(n)"
                        spec="RealRandomWalkOperator"
                        windowSize="0.01"
-                       parameter="@nuProb.t:$(n)"
+                       parameter="@TTNuProb.t:$(n)"
                        weight="1.0" />
 
 
                      <operator
-                       id="historySizesWalk.t:$(n)"
+                       id="TTHistorySizesWalk.t:$(n)"
                        spec="IntRandomWalkOperator"
                        windowSize="20"
-                       parameter="@historySizes.t:$(n)"
+                       parameter="@TTHistorySizes.t:$(n)"
                        weight="3.0" />
 
                      <log
@@ -127,23 +127,23 @@
             <connect srcID='TimTam.t:$(n)' targetID='prior' inputName='distribution' if='inposterior(TimTam.t:$(n)) and inlikelihood(Tree.t:$(n)) and Tree.t:$(n)/estimate=true' />
             <connect srcID='RandomTree.t:$(n)' targetID='mcmc' inputName='init' if='inposterior(Tree.t:$(n))' />
 
-            <connect srcID='birthRatePrior.t:$(n)' targetID='prior' inputName='distribution' if='inposterior(TimTam.t:$(n)) and birthRate.t:$(n)/estimate=true'>prior on the birth rate parameter</connect>
-            <connect srcID='samplingRatePrior.t:$(n)' targetID='prior' inputName='distribution' if='inposterior(TimTam.t:$(n)) and samplingRate.t:$(n)/estimate=true'>prior on sampling rate parameter</connect>
-            <connect srcID='nuProbPrior.t:$(n)' targetID='prior' inputName='distribution' if='inposterior(TimTam.t:$(n)) and nuProb.t:$(n)/estimate=true'>prior on probability of being sampled in a scheduled unsequenced event</connect>
-            <connect srcID='historySizesPrior.t:$(n)' targetID='prior' inputName='distribution' if='historySizes.t:$(n)/estimate=true'>BE VERY CAREFUL! the prevalence at the history times</connect>
+            <connect srcID='TTBirthRatePrior.t:$(n)' targetID='prior' inputName='distribution' if='inposterior(TimTam.t:$(n)) and TTBirthRate.t:$(n)/estimate=true'>prior on the birth rate parameter</connect>
+            <connect srcID='TTSamplingRatePrior.t:$(n)' targetID='prior' inputName='distribution' if='inposterior(TimTam.t:$(n)) and TTSamplingRate.t:$(n)/estimate=true'>prior on sampling rate parameter</connect>
+            <connect srcID='TTNuProbPrior.t:$(n)' targetID='prior' inputName='distribution' if='inposterior(TimTam.t:$(n)) and TTNuProb.t:$(n)/estimate=true'>prior on probability of being sampled in a scheduled unsequenced event</connect>
+            <connect srcID='TTHistorySizesPrior.t:$(n)' targetID='prior' inputName='distribution' if='inposterior(TimTam.t:$(n)) and TTHistorySizes.t:$(n)/estimate=true'>BE VERY CAREFUL WITH THIS! the prior on the prevalence at the history times</connect>
 
-            <connect srcID='birthRateScaler.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTam.t:$(n)) and birthRate.t:$(n)/estimate=true'/>
-            <connect srcID='birthRateWalk.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTam.t:$(n)) and birthRate.t:$(n)/estimate=true'/>
-            <connect srcID='samplingRateScaler.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTam.t:$(n)) and samplingRate.t:$(n)/estimate=true'/>
-            <connect srcID='samplingRateWalk.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTam.t:$(n)) and samplingRate.t:$(n)/estimate=true'/>
-            <connect srcID='updownBS.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTam.t:$(n)) and birthRate.t:$(n)/estimate=true and samplingRate.t:$(n)/estimate=true'/>
-            <connect srcID='nuProbScaler.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTam.t:$(n)) and nuProb.t:$(n)/estimate=true'/>
-            <connect srcID='nuProbWalk.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTam.t:$(n)) and nuProb.t:$(n)/estimate=true'/>
-            <connect srcID='historySizesWalk.t:$(n)' targetID='mcmc' inputName='operator' if='historySizes.t:$(n)/estimate=true'/>
+            <connect srcID='TTBirthRateScaler.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTam.t:$(n)) and TTBirthRate.t:$(n)/estimate=true'/>
+            <connect srcID='TTBirthRateWalk.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTam.t:$(n)) and TTBirthRate.t:$(n)/estimate=true'/>
+            <connect srcID='TTSamplingRateScaler.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTam.t:$(n)) and TTSamplingRate.t:$(n)/estimate=true'/>
+            <connect srcID='TTSamplingRateWalk.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTam.t:$(n)) and TTSamplingRate.t:$(n)/estimate=true'/>
+            <connect srcID='TTUpdownBS.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTam.t:$(n)) and TTBirthRate.t:$(n)/estimate=true and TTSamplingRate.t:$(n)/estimate=true'/>
+            <connect srcID='TTNuProbScaler.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTam.t:$(n)) and TTNuProb.t:$(n)/estimate=true'/>
+            <connect srcID='TTNuProbWalk.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTam.t:$(n)) and TTNuProb.t:$(n)/estimate=true'/>
+            <connect srcID='TTHistorySizesWalk.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTam.t:$(n)) and TTHistorySizes.t:$(n)/estimate=true'/>
 
             <connect srcID='TimTamLogger.t:$(n)' targetID='tracelog' inputName='log' if='inposterior(TimTam.t:$(n))' />
 
-            <plate var='p' range='birthRate,samplingRate,nuProb,historySizes'>
+            <plate var='p' range='TTBirthRate,TTSamplingRate,TTNuProb,TTHistorySizes'>
                 <connect srcID='$(p).t:$(n)' targetID='state' inputName='stateNode' if='inposterior(TimTam.t:$(n)) and $(p).t:$(n)/estimate=true' />
                 <connect srcID='$(p).t:$(n)' targetID='tracelog' inputName='log' if='inposterior(TimTam.t:$(n)) and $(p).t:$(n)/estimate=true' />
             </plate>
