@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?><beast beautitemplate='Standard' beautistatus='' namespace="beast.core:beast.evolution.alignment:beast.evolution.tree.coalescent:beast.core.util:beast.evolution.nuc:beast.evolution.operators:beast.evolution.sitemodel:beast.evolution.substitutionmodel:beast.evolution.likelihood" required="" version="2.6">
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><beast beautitemplate='Standard' beautistatus='' namespace="beast.pkgmgmt:beast.base.core:beast.base.inference:beast.base.evolution.alignment:beast.base.evolution.tree.coalescent:beast.base.util:beast.base.math:beast.evolution.nuc:beast.base.evolution.operator:beast.base.inference.operator:beast.base.evolution.sitemodel:beast.base.evolution.substitutionmodel:beast.base.evolution.likelihood" required="" version="2.6">
 
     <data
 id="dummy-sequences"
@@ -249,21 +249,21 @@ name="alignment">
 
 
 
-<map name="Uniform" >beast.math.distributions.Uniform</map>
-<map name="Exponential" >beast.math.distributions.Exponential</map>
-<map name="LogNormal" >beast.math.distributions.LogNormalDistributionModel</map>
-<map name="Normal" >beast.math.distributions.Normal</map>
-<map name="Beta" >beast.math.distributions.Beta</map>
-<map name="Gamma" >beast.math.distributions.Gamma</map>
-<map name="LaplaceDistribution" >beast.math.distributions.LaplaceDistribution</map>
-<map name="prior" >beast.math.distributions.Prior</map>
-<map name="InverseGamma" >beast.math.distributions.InverseGamma</map>
-<map name="OneOnX" >beast.math.distributions.OneOnX</map>
+<map name="Uniform" >beast.base.inference.distribution.Uniform</map>
+<map name="Exponential" >beast.base.inference.distribution.Exponential</map>
+<map name="LogNormal" >beast.base.inference.distribution.LogNormalDistributionModel</map>
+<map name="Normal" >beast.base.inference.distribution.Normal</map>
+<map name="Beta" >beast.base.inference.distribution.Beta</map>
+<map name="Gamma" >beast.base.inference.distribution.Gamma</map>
+<map name="LaplaceDistribution" >beast.base.inference.distribution.LaplaceDistribution</map>
+<map name="prior" >beast.base.inference.distribution.Prior</map>
+<map name="InverseGamma" >beast.base.inference.distribution.InverseGamma</map>
+<map name="OneOnX" >beast.base.inference.distribution.OneOnX</map>
 
 <run id="mcmc" spec="MCMC" chainLength="1000000">
     <state id="state" spec="State" storeEvery="5000">
 
-        <tree spec='beast.util.TreeParser'
+        <tree spec='beast.base.evolution.tree.TreeParser'
               name="stateNode"
               id='Tree.t:dummy-sequences'
               IsLabelledNewick='true'
@@ -278,8 +278,8 @@ name="alignment">
         <parameter id="birthRate.t:dummy-sequences" spec="parameter.RealParameter" name="stateNode" dimension="5">0.3 0.3 0.2 0.2 0.1</parameter>
     </state>
 
-    <distribution id="posterior" spec="util.CompoundDistribution">
-        <distribution id="prior" spec="util.CompoundDistribution">
+    <distribution id="posterior" spec="beast.base.inference.CompoundDistribution">
+        <distribution id="prior" spec="beast.base.inference.CompoundDistribution">
             <distribution id="TimTam.t:dummy-sequences" spec="timtam.TimTam" historySizes="@historySizes.t:dummy-sequences" lambda="@birthRate.t:dummy-sequences" nu="@nuProb.t:dummy-sequences" psi="@samplingRate.t:dummy-sequences" tree="@Tree.t:dummy-sequences" conditionOnObservation="false">
                 <parameter id="recoveryRate.t:dummy-sequences" spec="parameter.RealParameter" estimate="false" name="mu">0.1</parameter>
                 <parameter id="originTime.t:dummy-sequences" spec="parameter.RealParameter" estimate="false" name="originTime">40.0</parameter>
