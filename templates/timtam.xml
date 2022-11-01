@@ -48,13 +48,6 @@
                 </distr>
             </prior>
 
-            <prior
-                id="TTHistorySizesPrior.t:$(n)"
-                x="@TTHistorySizes.t:$(n)">
-                <distr spec="beast.math.distributions.Uniform" lower="0.0" upper="10000.0">
-                </distr>
-            </prior>
-
 	          <!-- Parameter operators -->
 
 	                   <operator
@@ -130,7 +123,6 @@
             <connect srcID='TTBirthRatePrior.t:$(n)' targetID='prior' inputName='distribution' if='inposterior(TimTam.t:$(n)) and TTBirthRate.t:$(n)/estimate=true'>prior on the birth rate parameter</connect>
             <connect srcID='TTSamplingRatePrior.t:$(n)' targetID='prior' inputName='distribution' if='inposterior(TimTam.t:$(n)) and TTSamplingRate.t:$(n)/estimate=true'>prior on sampling rate parameter</connect>
             <connect srcID='TTNuProbPrior.t:$(n)' targetID='prior' inputName='distribution' if='inposterior(TimTam.t:$(n)) and TTNuProb.t:$(n)/estimate=true'>prior on probability of being sampled in a scheduled unsequenced event</connect>
-            <connect srcID='TTHistorySizesPrior.t:$(n)' targetID='prior' inputName='distribution' if='inposterior(TimTam.t:$(n)) and TTHistorySizes.t:$(n)/estimate=true'>BE VERY CAREFUL WITH THIS! the prior on the prevalence at the history times</connect>
 
             <connect srcID='TTBirthRateScaler.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTam.t:$(n)) and TTBirthRate.t:$(n)/estimate=true'/>
             <connect srcID='TTBirthRateWalk.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTam.t:$(n)) and TTBirthRate.t:$(n)/estimate=true'/>
