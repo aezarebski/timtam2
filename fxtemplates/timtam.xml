@@ -48,13 +48,6 @@
                 </distr>
             </prior>
 
-            <prior
-                id="TTHistorySizesPrior.t:$(n)"
-                x="@TTHistorySizes.t:$(n)">
-                <distr spec="beast.base.inference.distribution.Uniform" lower="0.0" upper="10000.0">
-                </distr>
-            </prior>
-
 	          <!-- Parameter operators -->
 
 	                   <operator

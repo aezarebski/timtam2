@@ -57,13 +57,6 @@
                 </distr>
             </prior>
 
-            <prior
-                id="TTHistorySizesPrior.t:$(n)"
-                x="@TTHistorySizes.t:$(n)">
-                <distr spec="beast.base.inference.distribution.Uniform" lower="0.0" upper="10000.0">
-                </distr>
-            </prior>
-
 	          <!-- Parameter operators -->
 
 	                   <operator
@@ -148,7 +141,6 @@
             <connect srcID='TTNetRemovalRatePrior.t:$(n)' targetID='prior' inputName='distribution' if='inposterior(TimTamTimeSeries.t:$(n)) and TTNetRemovalRate.t:$(n)/estimate=true and TimTamTimeSeries.t:$(n)/parameterisation=timeSeriesR0'>prior on the (approximate) net removal rate</connect>
             <connect srcID='TTPropPsiPrior.t:$(n)' targetID='prior' inputName='distribution' if='inposterior(TimTamTimeSeries.t:$(n)) and TTPropPsi.t:$(n)/estimate=true and TimTamTimeSeries.t:$(n)/parameterisation=timeSeriesR0'>prior on the proportion sequenced</connect>
             <connect srcID='TTPropTimeSeriesPrior.t:$(n)' targetID='prior' inputName='distribution' if='inposterior(TimTamTimeSeries.t:$(n)) and TTPropTS.t:$(n)/estimate=true and TimTamTimeSeries.t:$(n)/parameterisation=timeSeriesR0'>prior on the proportion in the time series</connect>
-            <connect srcID='TTHistorySizesPrior.t:$(n)' targetID='prior' inputName='distribution' if='inposterior(TimTamTimeSeries.t:$(n)) and TTHistorySizes.t:$(n)/estimate=true and TimTamTimeSeries.t:$(n)/parameterisation=timeSeriesR0'>BE VERY CAREFUL! the prevalence at the history times</connect>
 
             <connect srcID='TTR0Scaler.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTamTimeSeries.t:$(n)) and TTR0.t:$(n)/estimate=true and TimTamTimeSeries.t:$(n)/parameterisation=timeSeriesR0'/>
             <connect srcID='TTR0Walk.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTamTimeSeries.t:$(n)) and TTR0.t:$(n)/estimate=true and TimTamTimeSeries.t:$(n)/parameterisation=timeSeriesR0'/>
