@@ -1,6 +1,6 @@
 package timtam;
 
-import beast.math.GammaFunction;
+import beast.base.util.GammaFunction;
 
 /**
  * Useful numerical functions.
