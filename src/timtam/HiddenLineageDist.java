@@ -1,6 +1,6 @@
 package timtam;
 
-import beast.math.Binomial;
+import beast.base.util.Binomial;
 
 /**
  * <p>Representation of the number of hidden lineages used by {@link TimTam}.

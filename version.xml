@@ -1,3 +1,8 @@
-<addon name="timtam" version="0.3.1">
-  <depends on="beast2" atleast="2.6.7"/>
-</addon>
+<package name="timtam" version="0.4.0">
+	<depends on='BEAST.base' atleast='2.7.2'/>
+	<depends on='BEAST.app' atleast='2.7.2'/>
+
+  <service type="beast.base.core.BEASTInterface">
+    <provider classname="timtam.TimTam"/>
+  </service>
+</package>
