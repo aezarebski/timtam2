@@ -8,7 +8,10 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module" module-name="beast2" />
-    <orderEntry type="library" scope="TEST" name="junit-platform-console-standalone-1.8.2" level="project" />
+    <orderEntry type="library" exported="" name="b2-junit" level="application" />
+    <orderEntry type="library" exported="" name="b2-lib" level="application" />
+    <orderEntry type="library" exported="" name="b2fx-lib" level="application" />
+    <orderEntry type="module" module-name="beast2" exported="" />
+    <orderEntry type="module" module-name="BeastFX" exported="" />
   </component>
 </module>
