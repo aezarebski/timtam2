@@ -360,8 +360,8 @@
             <parameter id="clockRate.c:sample-sequences" spec="parameter.RealParameter" lower="0.0" name="stateNode">0.001</parameter>
             <!-- <stateNode id="TTHistorySizes.t:sample-sequences" spec="parameter.IntegerParameter">2000</stateNode> -->
             <parameter id="TTR0.t:sample-sequences" spec="parameter.RealParameter" lower="0.0" upper="2.0" name="stateNode" dimension="2">1.15 0.9</parameter>
-            <parameter id="TTPropPsi.t:sample-sequences" spec="parameter.RealParameter" lower="0.0" name="stateNode" upper="1.0">0.1 0.1</parameter>
-            <parameter id="TTPropTS.t:sample-sequences" spec="parameter.RealParameter" lower="0.0" name="stateNode" upper="1.0">0.0 0.0</parameter>
+            <parameter id="TTPropPsi.t:sample-sequences" spec="parameter.RealParameter" lower="0.0" name="stateNode" upper="1.0">0.1</parameter>
+            <parameter id="TTPropTS.t:sample-sequences" spec="parameter.RealParameter" lower="0.0" name="stateNode" upper="1.0">0.0</parameter>
         </state>
         <!-- The Random initial tree seems to work better than the UPGMA tree that is used in this comment. -->
         <init id='RandomTree.t:sample-sequences' spec='beast.base.evolution.tree.ClusterTree' initial="@Tree.t:sample-sequences" clusterType='upgma' taxa='@sample-sequences' />
@@ -374,13 +374,9 @@
             <distribution id="prior" spec="CompoundDistribution">
                 <!-- <distribution id="TimTamR0.t:sample-sequences" spec="timtam.TimTam" historySizes="@TTHistorySizes.t:sample-sequences" parameterisation="r0" propPsi="@TTPropPsi.t:sample-sequences" propTimeSeries="@TTPropTS.t:sample-sequences" r0="@TTR0.t:sample-sequences" tree="@Tree.t:sample-sequences"> -->
                 <distribution id="TimTamR0.t:sample-sequences" spec="timtam.TimTam" parameterisation="r0" propPsi="@TTPropPsi.t:sample-sequences" propOmega="@TTPropTS.t:sample-sequences" r0="@TTR0.t:sample-sequences" tree="@Tree.t:sample-sequences" conditionOnObservation="false">
-                    <sigma id="TTNetRemovalRate.t:sample-sequences" spec="parameter.RealParameter" estimate="false" lower="0.0">0.2 0.2</sigma>
+                    <sigma id="TTNetRemovalRate.t:sample-sequences" spec="parameter.RealParameter" estimate="false" lower="0.0">0.2</sigma>
                     <originTime id="TTOriginTime.t:sample-sequences" spec="parameter.RealParameter" estimate="false">100</originTime>
-                    <!-- <parameter id="TTHistoryTimes.t:sample-sequences" spec="parameter.RealParameter" estimate="false" name="historyTimes">0.0</parameter> -->
                     <parameter spec="parameter.RealParameter" estimate="false" name="r0ChangeTimes">50.0</parameter>
-                    <parameter spec="parameter.RealParameter" estimate="false" name="sigmaChangeTimes">-0.001</parameter>
-                    <parameter spec="parameter.RealParameter" estimate="false" name="propPsiChangeTimes">-0.0012</parameter>
-                    <parameter spec="parameter.RealParameter" estimate="false" name="propOmegaChangeTimes">-0.00123</parameter>
                 </distribution>
                 <prior id="TTPropPsiPrior.t:sample-sequences" name="distribution" x="@TTPropPsi.t:sample-sequences">
                     <Beta id="Beta.0" name="distr">
