@@ -1,0 +1,21 @@
+{
+  "epi_summary": {
+    "final_prevalence": [52],
+    "total_sequences": [395],
+    "total_occurrences": [0]
+  },
+  "params": {
+    "sigma": [0.2],
+    "r01": [1.174],
+    "r02": [0.8512],
+    "lambda1": [0.2348],
+    "lambda2": [0.1702],
+    "lambdaChangeTime": [50],
+    "mu": [0.1262],
+    "psi": [0.0738],
+    "omega": [0],
+    "seq_length": [1000],
+    "seq_rate": [0.001],
+    "duration": [100]
+  }
+}
