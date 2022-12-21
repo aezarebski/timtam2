@@ -559,46 +559,35 @@ public class TimTam extends TreeDistribution {
                 this.propOmegaChangeTimes = this.propOmegaChangeTimesInput.get().getValues();
                 numMuChanges += this.propOmegaChangeTimes.length;
                 numOmegaChanges += this.propOmegaChangeTimes.length;
+            } else {
+                this.propOmegaChangeTimes = new Double[]{};
             }
 
             if (numLambdaChanges == 0) {
                 this.lambdaChangeTimes = new Double[]{};
             } else {
-                this.lambdaChangeTimes = Numerics.concatenate(
-                    this.r0ChangeTimesInput.get().getValues(),
-                    this.sigmaChangeTimesInput.get().getValues()
-                    );
+                this.lambdaChangeTimes = Numerics.concatenate(this.r0ChangeTimes,this.sigmaChangeTimes);
             }
             Arrays.sort(this.lambdaChangeTimes);
 
             if (numMuChanges == 0) {
                 this.muChangeTimes = new Double[]{};
             } else {
-                this.muChangeTimes = Numerics.concatenate(
-                    this.sigmaChangeTimesInput.get().getValues(),
-                    this.propPsiChangeTimesInput.get().getValues(),
-                    this.propOmegaChangeTimesInput.get().getValues()
-                );
+                this.muChangeTimes = Numerics.concatenate(this.sigmaChangeTimes,this.propPsiChangeTimes,this.propOmegaChangeTimes);
             }
             Arrays.sort(this.muChangeTimes);
 
             if (numPsiChanges == 0) {
                 this.psiChangeTimes = new Double[]{};
             } else {
-                this.psiChangeTimes = Numerics.concatenate(
-                    this.sigmaChangeTimesInput.get().getValues(),
-                    this.propPsiChangeTimesInput.get().getValues()
-                );
+                this.psiChangeTimes = Numerics.concatenate(this.sigmaChangeTimes,this.propPsiChangeTimes);
             }
             Arrays.sort(this.psiChangeTimes);
 
             if (numOmegaChanges == 0) {
                 this.omegaChangeTimes = new Double[]{};
             } else {
-                this.omegaChangeTimes = Numerics.concatenate(
-                    this.sigmaChangeTimesInput.get().getValues(),
-                    this.propOmegaChangeTimesInput.get().getValues()
-                );
+                this.omegaChangeTimes = Numerics.concatenate(this.sigmaChangeTimes,this.propOmegaChangeTimes);
             }
             Arrays.sort(this.omegaChangeTimes);
 

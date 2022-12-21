@@ -640,7 +640,7 @@ name="alignment">
     <map name="prior" >beast.base.inference.distribution.Prior</map>
     <map name="InverseGamma" >beast.base.inference.distribution.InverseGamma</map>
     <map name="OneOnX" >beast.base.inference.distribution.OneOnX</map>
-    <run id="mcmc" spec="MCMC" chainLength="$(chainLength)">
+    <run id="mcmc" spec="MCMC" chainLength="$(chainLength=1000000)">
         <state id="state" spec="State" storeEvery="5000">
             <parameter id="birthRate.t:sequences" spec="parameter.RealParameter" name="stateNode" dimension="2">3.0</parameter>
         </state>
