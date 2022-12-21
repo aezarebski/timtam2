@@ -111,18 +111,18 @@
             <connect srcID='TimTamSeqOnly.t:$(n)' targetID='prior' inputName='distribution' if='inposterior(TimTamSeqOnly.t:$(n)) and inlikelihood(Tree.t:$(n)) and Tree.t:$(n)/estimate=true' />
             <connect srcID='RandomTree.t:$(n)' targetID='mcmc' inputName='init' if='inposterior(Tree.t:$(n))' />
 
-            <connect srcID='TTR0Prior.t:$(n)' targetID='prior' inputName='distribution' if='inposterior(TimTamSeqOnly.t:$(n)) and TTR0.t:$(n)/estimate=true and TimTamSeqOnly.t:$(n)/parameterisation=timeSeriesR0'>prior on R-naught</connect>
-            <connect srcID='TTNetRemovalRatePrior.t:$(n)' targetID='prior' inputName='distribution' if='inposterior(TimTamSeqOnly.t:$(n)) and TTNetRemovalRate.t:$(n)/estimate=true and TimTamSeqOnly.t:$(n)/parameterisation=timeSeriesR0'>prior on the (approximate) net removal rate</connect>
-            <connect srcID='TTPropPsiPrior.t:$(n)' targetID='prior' inputName='distribution' if='inposterior(TimTamSeqOnly.t:$(n)) and TTPropPsi.t:$(n)/estimate=true and TimTamSeqOnly.t:$(n)/parameterisation=timeSeriesR0'>prior on the proportion sequenced</connect>
+            <connect srcID='TTR0Prior.t:$(n)' targetID='prior' inputName='distribution' if='inposterior(TimTamSeqOnly.t:$(n)) and TTR0.t:$(n)/estimate=true and TimTamSeqOnly.t:$(n)/parameterisation=r0'>prior on R-naught</connect>
+            <connect srcID='TTNetRemovalRatePrior.t:$(n)' targetID='prior' inputName='distribution' if='inposterior(TimTamSeqOnly.t:$(n)) and TTNetRemovalRate.t:$(n)/estimate=true and TimTamSeqOnly.t:$(n)/parameterisation=r0'>prior on the (approximate) net removal rate</connect>
+            <connect srcID='TTPropPsiPrior.t:$(n)' targetID='prior' inputName='distribution' if='inposterior(TimTamSeqOnly.t:$(n)) and TTPropPsi.t:$(n)/estimate=true and TimTamSeqOnly.t:$(n)/parameterisation=r0'>prior on the proportion sequenced</connect>
 
-            <connect srcID='TTR0Scaler.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTamSeqOnly.t:$(n)) and TTR0.t:$(n)/estimate=true and TimTamSeqOnly.t:$(n)/parameterisation=timeSeriesR0'/>
-            <connect srcID='TTR0Walk.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTamSeqOnly.t:$(n)) and TTR0.t:$(n)/estimate=true and TimTamSeqOnly.t:$(n)/parameterisation=timeSeriesR0'/>
-            <connect srcID='TTNetRemovalRateScaler.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTamSeqOnly.t:$(n)) and TTNetRemovalRate.t:$(n)/estimate=true and TimTamSeqOnly.t:$(n)/parameterisation=timeSeriesR0'/>
-            <connect srcID='TTNetRemovalRateWalk.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTamSeqOnly.t:$(n)) and TTNetRemovalRate.t:$(n)/estimate=true and TimTamSeqOnly.t:$(n)/parameterisation=timeSeriesR0'/>
-            <connect srcID='TTUpdownBS.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTamSeqOnly.t:$(n)) and TTR0.t:$(n)/estimate=true and TTNetRemovalRate.t:$(n)/estimate=true and TimTamSeqOnly.t:$(n)/parameterisation=timeSeriesR0'/>
-            <connect srcID='TTPropPsiScaler.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTamSeqOnly.t:$(n)) and TTPropPsi.t:$(n)/estimate=true and TimTamSeqOnly.t:$(n)/parameterisation=timeSeriesR0'/>
-            <connect srcID='TTPropPsiWalk.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTamSeqOnly.t:$(n)) and TTPropPsi.t:$(n)/estimate=true and TimTamSeqOnly.t:$(n)/parameterisation=timeSeriesR0'/>
-            <connect srcID='TTHistorySizesWalk.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTamSeqOnly.t:$(n)) and TTHistorySizes.t:$(n)/estimate=true and TimTamSeqOnly.t:$(n)/parameterisation=timeSeriesR0'/>
+            <connect srcID='TTR0Scaler.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTamSeqOnly.t:$(n)) and TTR0.t:$(n)/estimate=true and TimTamSeqOnly.t:$(n)/parameterisation=r0'/>
+            <connect srcID='TTR0Walk.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTamSeqOnly.t:$(n)) and TTR0.t:$(n)/estimate=true and TimTamSeqOnly.t:$(n)/parameterisation=r0'/>
+            <connect srcID='TTNetRemovalRateScaler.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTamSeqOnly.t:$(n)) and TTNetRemovalRate.t:$(n)/estimate=true and TimTamSeqOnly.t:$(n)/parameterisation=r0'/>
+            <connect srcID='TTNetRemovalRateWalk.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTamSeqOnly.t:$(n)) and TTNetRemovalRate.t:$(n)/estimate=true and TimTamSeqOnly.t:$(n)/parameterisation=r0'/>
+            <connect srcID='TTUpdownBS.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTamSeqOnly.t:$(n)) and TTR0.t:$(n)/estimate=true and TTNetRemovalRate.t:$(n)/estimate=true and TimTamSeqOnly.t:$(n)/parameterisation=r0'/>
+            <connect srcID='TTPropPsiScaler.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTamSeqOnly.t:$(n)) and TTPropPsi.t:$(n)/estimate=true and TimTamSeqOnly.t:$(n)/parameterisation=r0'/>
+            <connect srcID='TTPropPsiWalk.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTamSeqOnly.t:$(n)) and TTPropPsi.t:$(n)/estimate=true and TimTamSeqOnly.t:$(n)/parameterisation=r0'/>
+            <connect srcID='TTHistorySizesWalk.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTamSeqOnly.t:$(n)) and TTHistorySizes.t:$(n)/estimate=true and TimTamSeqOnly.t:$(n)/parameterisation=r0'/>
 
             <!-- This connection is specified outside of the plate because otherwise it does not seem to work. -->
             <connect srcID='TTHistorySizes.t:$(n)' targetID='state' inputName='stateNode' if='inposterior(TimTamSeqOnly.t:$(n)) and TTHistorySizes.t:$(n)/estimate=true' />
