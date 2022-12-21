@@ -9,8 +9,8 @@
             <![CDATA[
 
             <!-- Prior distribution -->
-            <plugin spec='timtam.TimTam' id="TimTamSeqOnly.t:$(n)" tree="@Tree.t:$(n)" parameterisation="r0" r0ChangeTimes="@TTR0ChangeTimes.t:$(n)">
-                <parameter name='r0' id='TTR0.t:$(n)' dimension='2' value='1.850' estimate='true' lower='0.0'/>
+            <plugin spec='timtam.TimTam' id="TimTamSeqOnly.t:$(n)" tree="@Tree.t:$(n)" parameterisation="r0" r0ChangeTimes="@TTR0ChangeTimes.t:$(n)" conditionOnObservation="false">
+                <parameter name='r0' id='TTR0.t:$(n)' dimension='2' value='1.50 0.95' estimate='true' lower='0.0'/>
                 <parameter name='sigma' id='TTNetRemovalRate.t:$(n)' value='0.100' estimate='false' lower='0.0'/>
                 <parameter name='propPsi' id='TTPropPsi.t:$(n)' value='0.100' estimate='true' lower='0.0' upper='1.0'/>
                 <parameter name='originTime' id='TTOriginTime.t:$(n)' value='100.0' estimate='false'/>

@@ -432,21 +432,21 @@ name="alignment">
                 <taxonset idref="TaxonSet.boom-bust-sequences"/>
             </tree>
             <parameter id="clockRate.c:boom-bust-sequences" spec="parameter.RealParameter" lower="0.0" name="stateNode">0.001</parameter>
-            <!-- <stateNode id="TTHistorySizes.t:boom-bust-sequences" spec="parameter.IntegerParameter">0</stateNode> -->
-            <parameter id="TTR0.t:boom-bust-sequences" spec="parameter.RealParameter" lower="0.0" name="stateNode" dimension="2.0" upper="2.0" >1.85 1.00</parameter>
-            <parameter id="TTPropPsi.t:boom-bust-sequences" spec="parameter.RealParameter" lower="0.0" name="stateNode" upper="1.0">0.1</parameter>
+            <!-- <stateNode id="TTHistorySizes.t:boom-bust-sequences" spec="parameter.IntegerParameter">200</stateNode> -->
+            <parameter id="TTR0.t:boom-bust-sequences" spec="parameter.RealParameter" lower="0.0" name="stateNode" upper="1.75" dimension="2">1.40 0.85</parameter>
+            <parameter id="TTPropPsi.t:boom-bust-sequences" spec="parameter.RealParameter" lower="0.0" name="stateNode" upper="1.0">0.3</parameter>
         </state>
 
-        <init id='RandomTree.t:boom-bust-sequences' spec='beast.base.evolution.tree.ClusterTree' initial="@Tree.t:boom-bust-sequences" clusterType='upgma' taxa='@boom-bust-sequences' />
-        <!-- <init id="RandomTree.t:boom-bust-sequences" spec="RandomTree" estimate="false" initial="@Tree.t:boom-bust-sequences" taxa="@boom-bust-sequences"> -->
-        <!--     <populationModel id="ConstantPopulation0.t:boom-bust-sequences" spec="ConstantPopulation"> -->
-        <!--         <parameter id="randomPopSize.t:boom-bust-sequences" spec="parameter.RealParameter" name="popSize">1.0</parameter> -->
-        <!--     </populationModel> -->
-        <!-- </init> -->
+        <!-- <init id='RandomTree.t:boom-bust-sequences' spec='beast.base.evolution.tree.ClusterTree' initial="@Tree.t:boom-bust-sequences" clusterType='upgma' taxa='@boom-bust-sequences' /> -->
+        <init id="RandomTree.t:boom-bust-sequences" spec="RandomTree" estimate="false" initial="@Tree.t:boom-bust-sequences" taxa="@boom-bust-sequences">
+            <populationModel id="ConstantPopulation0.t:boom-bust-sequences" spec="ConstantPopulation">
+                <parameter id="randomPopSize.t:boom-bust-sequences" spec="parameter.RealParameter" name="popSize">1.0</parameter>
+            </populationModel>
+        </init>
         <distribution id="posterior" spec="CompoundDistribution">
             <distribution id="prior" spec="CompoundDistribution">
-                <!-- <distribution id="TimTamSeqOnly.t:boom-bust-sequences" spec="timtam.TimTam" historySizes="@TTHistorySizes.t:boom-bust-sequences" parameterisation="r0" propPsi="@TTPropPsi.t:boom-bust-sequences" r0="@TTR0.t:boom-bust-sequences" tree="@Tree.t:boom-bust-sequences"> -->
-                <distribution id="TimTamSeqOnly.t:boom-bust-sequences" spec="timtam.TimTam" parameterisation="r0" propPsi="@TTPropPsi.t:boom-bust-sequences" r0="@TTR0.t:boom-bust-sequences" tree="@Tree.t:boom-bust-sequences" conditionOnObservation="false">
+                <!-- <distribution id="TimTamSeqOnly.t:boom-bust-sequences" spec="timtam.TimTam" conditionOnObservation="false" historySizes="@TTHistorySizes.t:boom-bust-sequences" parameterisation="r0" propPsi="@TTPropPsi.t:boom-bust-sequences" r0="@TTR0.t:boom-bust-sequences" tree="@Tree.t:boom-bust-sequences"> -->
+                <distribution id="TimTamSeqOnly.t:boom-bust-sequences" spec="timtam.TimTam" conditionOnObservation="false" parameterisation="r0" propPsi="@TTPropPsi.t:boom-bust-sequences" r0="@TTR0.t:boom-bust-sequences" tree="@Tree.t:boom-bust-sequences">
                     <parameter id="TTR0ChangeTimes.t:boom-bust-sequences" spec="parameter.RealParameter" estimate="false" name="r0ChangeTimes">50.0</parameter>
                     <parameter id="TTNetRemovalRate.t:boom-bust-sequences" spec="parameter.RealParameter" estimate="false" lower="0.0" name="sigma">0.2</parameter>
                     <parameter id="TTOriginTime.t:boom-bust-sequences" spec="parameter.RealParameter" estimate="false" name="originTime">100.0</parameter>
