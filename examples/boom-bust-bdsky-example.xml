@@ -450,15 +450,15 @@ name="alignment">
                     <Uniform id="Uniform.0" name="distr" upper="Infinity"/>
                 </prior>
                 <prior id="reproductiveNumberPrior_BDSKY_Serial.t:boom-bust-sequences" name="distribution" x="@reproductiveNumber_BDSKY_Serial.t:boom-bust-sequences">
-                    <LogNormal id="LogNormalDistributionModel.1" name="distr">
-                        <parameter id="RealParameter.5" spec="parameter.RealParameter" estimate="false" name="M">0.0</parameter>
-                        <parameter id="RealParameter.6" spec="parameter.RealParameter" estimate="false" name="S">1.0</parameter>
-                    </LogNormal>
+                    <Normal id="Normal.0" name="distr">
+                        <parameter id="RealParameter.1" spec="parameter.RealParameter" estimate="false" name="mean">2.0</parameter>
+                        <parameter id="RealParameter.2" spec="parameter.RealParameter" estimate="false" name="sigma">2.0</parameter>
+                    </Normal>
                 </prior>
                 <prior id="samplingProportionPrior_BDSKY_Serial.t:boom-bust-sequences" name="distribution" x="@samplingProportion_BDSKY_Serial.t:boom-bust-sequences">
-                    <Beta id="Beta.1" name="distr">
-                        <parameter id="RealParameter.7" spec="parameter.RealParameter" estimate="false" name="alpha">2.0</parameter>
-                        <parameter id="RealParameter.8" spec="parameter.RealParameter" estimate="false" name="beta">2.0</parameter>
+                    <Beta id="Beta.0" name="distr">
+                        <parameter id="RealParameter.5" spec="parameter.RealParameter" estimate="false" name="alpha">2.0</parameter>
+                        <parameter id="RealParameter.6" spec="parameter.RealParameter" estimate="false" name="beta">2.0</parameter>
                     </Beta>
                 </prior>
             </distribution>
