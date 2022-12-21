@@ -1,0 +1,169 @@
+<beast version='2.0' namespace='beast.app.beauti:beast.pkgmgmt:beast.base.core:beast.base.inference:beast.base.evolution.branchratemodel:beast.base.evolution.speciation:beast.base.evolution.tree.coalescent:beast.base.util:beast.base.math:beast.evolution.nuc:beast.base.evolution.operator:beast.base.inference.operator:beast.base.evolution.sitemodel:beast.base.evolution.substitutionmodel:beast.base.evolution.likelihood:beast.evolution:beast.base.math.distributions'>
+
+    <mergewith point='misc' fragment="@TreeOperators"/>
+
+    <mergewith point='treePriorTemplates'>
+
+        <subtemplate id='TimTam Time Series Model' class='timtam.TimTam' mainid='TimTamTimeSeries.t:$(n)'>
+
+            <![CDATA[
+
+            <!-- Prior distribution -->
+            <plugin spec='timtam.TimTam' id="TimTamTimeSeries.t:$(n)" tree="@Tree.t:$(n)" parameterisation="timeSeriesR0">
+                <parameter name='r0' id='TTR0.t:$(n)' value='1.850' estimate='true' lower='0.0'/>
+                <parameter name='sigma' id='TTNetRemovalRate.t:$(n)' value='0.100' estimate='false' lower='0.0'/>
+                <parameter name='propPsi' id='TTPropPsi.t:$(n)' value='0.100' estimate='true' lower='0.0' upper='1.0'/>
+                <parameter name='propTimeSeries' id='TTPropTS.t:$(n)' value='0.400' estimate='true' lower='0.0' upper='1.0'/>
+                <parameter name='originTime' id='TTOriginTime.t:$(n)' value='100.0' estimate='false'/>
+                <parameter name='disasterTimes' id='TTDisasterTimes.t:$(n)' value='2.0 1.0 0.0' estimate='false'/>
+                <parameter name='disasterSizes' id='TTDisasterSizes.t:$(n)' spec='parameter.IntegerParameter' value='1 1 2' estimate='false'/>
+                <parameter name='historyTimes' id='TTHistoryTimes.t:$(n)' value='0.0' estimate='false'/>
+                <parameter name='historySizes' id='TTHistorySizes.t:$(n)' spec='parameter.IntegerParameter' value='0' estimate='true'/>
+            </plugin>
+
+            <prior
+                id="TTR0Prior.t:$(n)"
+                x="@TTR0.t:$(n)">
+                <distr spec="beast.base.inference.distribution.Normal">
+                    <parameter name="mean" value="2.0" estimate="false"/>
+                    <parameter name="sigma" value="2.0" estimate="false"/>
+                </distr>
+            </prior>
+
+            <prior
+                id="TTNetRemovalRatePrior.t:$(n)"
+                x="@TTNetRemovalRate.t:$(n)">
+                <distr spec="beast.base.inference.distribution.LogNormalDistributionModel">
+                    <parameter name="M" value="-1.0" estimate="false"/>
+                    <parameter name="S" value="1.0" estimate="false"/>
+                </distr>
+            </prior>
+
+            <prior
+                id="TTPropPsiPrior.t:$(n)"
+                x="@TTPropPsi.t:$(n)">
+                <distr spec="beast.base.inference.distribution.Beta">
+                    <parameter name="alpha" value="2.0" estimate="false"/>
+                    <parameter name="beta" value="2.0" estimate="false"/>
+                </distr>
+            </prior>
+
+            <prior
+                id="TTPropTimeSeriesPrior.t:$(n)"
+                x="@TTPropTS.t:$(n)">
+                <distr spec="beast.base.inference.distribution.Beta">
+                    <parameter name="alpha" value="2.0" estimate="false"/>
+                    <parameter name="beta" value="2.0" estimate="false"/>
+                </distr>
+            </prior>
+
+	          <!-- Parameter operators -->
+
+	                   <operator
+                       id='TTR0Scaler.t:$(n)'
+                       spec='ScaleOperator'
+                       scaleFactor=".9"
+                       weight="1.0"
+                       parameter="@TTR0.t:$(n)"/>
+
+                     <operator
+                       id="TTR0Walk.t:$(n)"
+                       spec="RealRandomWalkOperator"
+                       windowSize="0.01"
+                       parameter="@TTR0.t:$(n)"
+                       weight="1.0" />
+
+	                   <operator
+                       id='TTNetRemovalRateScaler.t:$(n)'
+                       spec='ScaleOperator'
+                       scaleFactor=".9"
+                       weight="1.0"
+                       parameter="@TTNetRemovalRate.t:$(n)"/>
+
+                     <operator
+                       id="TTNetRemovalRateWalk.t:$(n)"
+                       spec="RealRandomWalkOperator"
+                       windowSize="0.01"
+                       parameter="@TTNetRemovalRate.t:$(n)"
+                       weight="1.0" />
+
+                     <operator
+                       id="TTUpdownBS.t:$(n)"
+                       spec="UpDownOperator"
+                       scaleFactor="0.9"
+                       weight="2.0">
+                       <up idref="TTR0.t:$(n)" />
+                       <down idref="TTNetRemovalRate.t:$(n)" />
+                     </operator>
+
+                     <operator
+                       id="TTPropPsiScaler.t:$(n)"
+                       spec="ScaleOperator"
+                       scaleFactor="0.9"
+                       parameter="@TTPropPsi.t:$(n)"
+                       weight="1.0" />
+
+                     <operator
+                       id="TTPropPsiWalk.t:$(n)"
+                       spec="RealRandomWalkOperator"
+                       windowSize="0.01"
+                       parameter="@TTPropPsi.t:$(n)"
+                       weight="1.0" />
+
+                     <operator
+                       id="TTPropTimeSeriesScaler.t:$(n)"
+                       spec="ScaleOperator"
+                       scaleFactor="0.9"
+                       parameter="@TTPropTS.t:$(n)"
+                       weight="1.0" />
+
+                     <operator
+                       id="TTPropTimeSeriesWalk.t:$(n)"
+                       spec="RealRandomWalkOperator"
+                       windowSize="0.01"
+                       parameter="@TTPropTS.t:$(n)"
+                       weight="1.0" />
+
+                     <operator
+                       id="TTHistorySizesWalk.t:$(n)"
+                       spec="IntRandomWalkOperator"
+                       windowSize="20"
+                       parameter="@TTHistorySizes.t:$(n)"
+                       weight="3.0" />
+
+            ]]>
+
+
+            <connect srcID='TimTamTimeSeries.t:$(n)' targetID='prior' inputName='distribution' if='inposterior(TimTamTimeSeries.t:$(n)) and inlikelihood(Tree.t:$(n)) and Tree.t:$(n)/estimate=true' />
+            <connect srcID='RandomTree.t:$(n)' targetID='mcmc' inputName='init' if='inposterior(Tree.t:$(n))' />
+
+            <connect srcID='TTR0Prior.t:$(n)' targetID='prior' inputName='distribution' if='inposterior(TimTamTimeSeries.t:$(n)) and TTR0.t:$(n)/estimate=true and TimTamTimeSeries.t:$(n)/parameterisation=timeSeriesR0'>prior on R-naught</connect>
+            <connect srcID='TTNetRemovalRatePrior.t:$(n)' targetID='prior' inputName='distribution' if='inposterior(TimTamTimeSeries.t:$(n)) and TTNetRemovalRate.t:$(n)/estimate=true and TimTamTimeSeries.t:$(n)/parameterisation=timeSeriesR0'>prior on the (approximate) net removal rate</connect>
+            <connect srcID='TTPropPsiPrior.t:$(n)' targetID='prior' inputName='distribution' if='inposterior(TimTamTimeSeries.t:$(n)) and TTPropPsi.t:$(n)/estimate=true and TimTamTimeSeries.t:$(n)/parameterisation=timeSeriesR0'>prior on the proportion sequenced</connect>
+            <connect srcID='TTPropTimeSeriesPrior.t:$(n)' targetID='prior' inputName='distribution' if='inposterior(TimTamTimeSeries.t:$(n)) and TTPropTS.t:$(n)/estimate=true and TimTamTimeSeries.t:$(n)/parameterisation=timeSeriesR0'>prior on the proportion in the time series</connect>
+
+            <connect srcID='TTR0Scaler.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTamTimeSeries.t:$(n)) and TTR0.t:$(n)/estimate=true and TimTamTimeSeries.t:$(n)/parameterisation=timeSeriesR0'/>
+            <connect srcID='TTR0Walk.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTamTimeSeries.t:$(n)) and TTR0.t:$(n)/estimate=true and TimTamTimeSeries.t:$(n)/parameterisation=timeSeriesR0'/>
+            <connect srcID='TTNetRemovalRateScaler.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTamTimeSeries.t:$(n)) and TTNetRemovalRate.t:$(n)/estimate=true and TimTamTimeSeries.t:$(n)/parameterisation=timeSeriesR0'/>
+            <connect srcID='TTNetRemovalRateWalk.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTamTimeSeries.t:$(n)) and TTNetRemovalRate.t:$(n)/estimate=true and TimTamTimeSeries.t:$(n)/parameterisation=timeSeriesR0'/>
+            <connect srcID='TTUpdownBS.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTamTimeSeries.t:$(n)) and TTR0.t:$(n)/estimate=true and TTNetRemovalRate.t:$(n)/estimate=true and TimTamTimeSeries.t:$(n)/parameterisation=timeSeriesR0'/>
+            <connect srcID='TTPropPsiScaler.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTamTimeSeries.t:$(n)) and TTPropPsi.t:$(n)/estimate=true and TimTamTimeSeries.t:$(n)/parameterisation=timeSeriesR0'/>
+            <connect srcID='TTPropPsiWalk.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTamTimeSeries.t:$(n)) and TTPropPsi.t:$(n)/estimate=true and TimTamTimeSeries.t:$(n)/parameterisation=timeSeriesR0'/>
+            <connect srcID='TTPropTimeSeriesScaler.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTamTimeSeries.t:$(n)) and TTPropTS.t:$(n)/estimate=true and TimTamTimeSeries.t:$(n)/parameterisation=timeSeriesR0'/>
+            <connect srcID='TTPropTimeSeriesWalk.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTamTimeSeries.t:$(n)) and TTPropTS.t:$(n)/estimate=true and TimTamTimeSeries.t:$(n)/parameterisation=timeSeriesR0'/>
+            <connect srcID='TTHistorySizesWalk.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(TimTamTimeSeries.t:$(n)) and TTHistorySizes.t:$(n)/estimate=true and TimTamTimeSeries.t:$(n)/parameterisation=timeSeriesR0'/>
+
+            <!-- This connection is specified outside of the plate because otherwise it does not seem to work. -->
+            <connect srcID='TTHistorySizes.t:$(n)' targetID='state' inputName='stateNode' if='inposterior(TimTamTimeSeries.t:$(n)) and TTHistorySizes.t:$(n)/estimate=true' />
+            <connect srcID='TTHistorySizes.t:$(n)' targetID='tracelog' inputName='log' if='inposterior(TimTamTimeSeries.t:$(n)) and TTHistorySizes.t:$(n)/estimate=true' />
+
+            <plate var='p' range='TTR0,TTNetRemovalRate,TTPropPsi,TTPropTS'>
+                <connect srcID='$(p).t:$(n)' targetID='state' inputName='stateNode' if='inposterior(TimTamTimeSeries.t:$(n)) and $(p).t:$(n)/estimate=true' />
+                <connect srcID='$(p).t:$(n)' targetID='tracelog' inputName='log' if='inposterior(TimTamTimeSeries.t:$(n)) and $(p).t:$(n)/estimate=true' />
+            </plate>
+
+			      <plate fragment="TreeOperators" var="m" range="TimTamTimeSeries"/>
+        </subtemplate>
+    </mergewith>
+
+</beast>
