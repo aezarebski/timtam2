@@ -40,28 +40,13 @@ plot_sequence_times(seq_times_fwd_abs)
 
 ## Add an indication of the relative zero time.
 
-fwd_abs_zero <- max(seq_times_fwd_abs)
-abline(v = fwd_abs_zero, lty = "dashed")
-text(
-  x = fwd_abs_zero, y = 2,
-  label = sprintf("Last sequence:\n\t\t\t%.3f (forward absolute)\n\t\t\t%.3f (backwards relative)", fwd_abs_zero, 0) # nolint
-)
+plot_last_sequence_indicator(seq_times_fwd_abs)
 
 ## Draw the time series of cases
 
-points(x = fwd_abs_zero - disaster_times_bwd_rel, y = rep(-0.5, length(fwd_abs_zero - disaster_times_bwd_rel)), col = "darkred")
-
-bwd_rel_mask <- round(seq(from = 1, to = length(disaster_times_bwd_rel), length = 5))
-bwd_rel_times <- disaster_times_bwd_rel[bwd_rel_mask]
-text(
-  x = fwd_abs_zero - bwd_rel_times, y = -0.8,
-  labels = as.character(round(bwd_rel_times, digits = 3)),
-  col = "darkred"
-)
-text(x = median(fwd_abs_zero - bwd_rel_times), y = -1.0,
-     labels = "Time series times (backwards relative)",
-     col = "darkred")
+plot_time_series_times(seq_times_fwd_abs, disaster_times_bwd_rel)
 
 ## Draw the times of any changes to R0
 
-plot_time_blocks(fwd_abs_zero - r0_change_times_bwd_rel, c(1.0, 1.2, 1.4, 1.6), "R0 change times", col = "purple")
+plot_time_blocks(seq_times_fwd_abs, r0_change_times_bwd_rel,
+                 label_str = "R0 change times", col = "purple")

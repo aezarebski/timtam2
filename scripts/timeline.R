@@ -10,7 +10,55 @@ library(xml2)
 #' - plot_time_blocks
 #' - plot_background_bars
 #' - plot_sequence_times
+#' - plot_last_sequence_indicator
+#' - plot_time_series_times
 #'
+
+#' Plot the time series observation times
+#'
+#' @param fwd_abs_seq_times the forwards absolute times of sequences.
+#' @param bwd_rel_disaster_times the backwards relative times of the time series.
+#' @param vert_vals the vertical position of the elements of the plot.
+#' @param num_time_labels the number of times to label.
+#'
+plot_time_series_times <- function(fwd_abs_seq_times,
+                                   bwd_rel_disaster_times,
+                                   vert_vals = c(-0.5, -0.8, -1.0),
+                                   num_time_labels = 5) {
+  fwd_abs_zero <- max(fwd_abs_seq_times)
+  points(x = fwd_abs_zero - bwd_rel_disaster_times,
+         y = rep(vert_vals[1], length(fwd_abs_zero - bwd_rel_disaster_times)),
+         col = "darkred")
+
+  bwd_rel_mask <- round(seq(from = 1,
+                            to = length(bwd_rel_disaster_times),
+                            length = num_time_labels))
+  bwd_rel_times <- bwd_rel_disaster_times[bwd_rel_mask]
+
+  text(
+    x = fwd_abs_zero - bwd_rel_times, y = vert_vals[2],
+    labels = as.character(round(bwd_rel_times, digits = 3)),
+    col = "darkred"
+  )
+  text(
+    x = median(fwd_abs_zero - bwd_rel_times), y = vert_vals[3],
+    labels = "Time series times (backwards relative)",
+    col = "darkred"
+  )
+}
+
+#' Plot an indicator of the last sequence time.
+#'
+#' @param fwd_abs_seq_times the forwards absolute times of sequences.
+#'
+plot_last_sequence_indicator <- function(fwd_abs_seq_times) {
+  fwd_abs_zero <- max(fwd_abs_seq_times)
+  abline(v = fwd_abs_zero, lty = "dashed")
+  text(
+    x = fwd_abs_zero, y = 2,
+    label = sprintf("Last sequence:\n\t\t\t%.3f (forward absolute)\n\t\t\t%.3f (backwards relative)", fwd_abs_zero, 0) # nolint
+  )
+}
 
 #' Plot the sequence times
 #'
@@ -69,31 +117,43 @@ plot_background_bars <- function(fwd_abs_xlims, ylims, offset) {
   }
 }
 
-plot_time_blocks <- function(fwd_abs_times, ys, label_str, ...) {
-  ts <- fwd_abs_times
+#' Plot the times at which a parameter value changes as blocks.
+#'
+#' @param fwd_abs_seq_times the forwards absolute times of sequences.
+#' @param bwd_rel_change_times the backwards relative change times.
+#' @param vert_vals the vertical position of the elements of the plot.
+#' @param label_str the name of the parameter.
+#' @param ... extra graphics parameters such as colour.
+#'
+plot_time_blocks <- function(fwd_abs_seq_times,
+                             bwd_rel_change_times,
+                             vert_vals = c(1.0, 1.2, 1.4, 1.6),
+                             label_str, ...) {
+  fwd_abs_zero <- max(fwd_abs_seq_times)
+  ts <- fwd_abs_zero - bwd_rel_change_times
   if (length(ts) == 0) {
     stop("bad times given to time_blocks")
   } else if (length(ts) == 1) {
-    rect(-10^10, ys[1], ts[1], ys[2], ...)
-    rect(ts[1], ys[2], 10^10, ys[3], ...)
+    rect(-10^10, vert_vals[1], ts[1], vert_vals[2], ...)
+    rect(ts[1], vert_vals[2], 10^10, vert_vals[3], ...)
   } else {
-    rect(-10^10, ys[1], ts[1], ys[2], ...)
+    rect(-10^10, vert_vals[1], ts[1], vert_vals[2], ...)
     tmp <- TRUE
     for (ix in 1:(length(ts) - 1)) {
       if (tmp) {
-        rect(ts[ix], ys[2], ts[ix + 1], ys[3], ...)
+        rect(ts[ix], vert_vals[2], ts[ix + 1], vert_vals[3], ...)
       } else {
-        rect(ts[ix], ys[1], ts[ix + 1], ys[2], ...)
+        rect(ts[ix], vert_vals[1], ts[ix + 1], vert_vals[2], ...)
       }
       tmp <- !tmp
     }
     if (tmp) {
-      rect(ts[ix + 1], ys[2], 10^10, ys[3], ...)
+      rect(ts[ix + 1], vert_vals[2], 10^10, vert_vals[3], ...)
     } else {
-      rect(ts[ix + 1], ys[1], 10^10, ys[2], ...)
+      rect(ts[ix + 1], vert_vals[1], 10^10, vert_vals[2], ...)
     }
   }
-  text(x = median(ts), y = ys[4], label = label_str, ...)
+  text(x = median(ts), y = vert_vals[4], label = label_str, ...)
 }
 
 tt_read_xml <- function(file) {
