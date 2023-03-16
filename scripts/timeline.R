@@ -6,6 +6,9 @@ library(xml2)
 #' - tt_get_disaster_times
 #' - tt_get_sequence_times
 #' - tt_get_r0_change_times
+#' - tt_get_sigma_change_times
+#' - tt_get_prop_time_series_change_times
+#' - tt_get_prop_sequenced_change_times
 #'
 #' - plot_time_blocks
 #' - plot_background_bars
@@ -17,7 +20,8 @@ library(xml2)
 #' Plot the time series observation times
 #'
 #' @param fwd_abs_seq_times the forwards absolute times of sequences.
-#' @param bwd_rel_disaster_times the backwards relative times of the time series.
+#' @param bwd_rel_disaster_times the backwards relative times of the time
+#'   series.
 #' @param vert_vals the vertical position of the elements of the plot.
 #' @param num_time_labels the number of times to label.
 #'
@@ -50,12 +54,13 @@ plot_time_series_times <- function(fwd_abs_seq_times,
 #' Plot an indicator of the last sequence time.
 #'
 #' @param fwd_abs_seq_times the forwards absolute times of sequences.
+#' @param vert_val the vertical position of the label.
 #'
-plot_last_sequence_indicator <- function(fwd_abs_seq_times) {
+plot_last_sequence_indicator <- function(fwd_abs_seq_times, vert_val = 2) {
   fwd_abs_zero <- max(fwd_abs_seq_times)
   abline(v = fwd_abs_zero, lty = "dashed")
   text(
-    x = fwd_abs_zero, y = 2,
+    x = fwd_abs_zero, y = vert_val,
     label = sprintf("Last sequence:\n\t\t\t%.3f (forward absolute)\n\t\t\t%.3f (backwards relative)", fwd_abs_zero, 0) # nolint
   )
 }
@@ -178,17 +183,38 @@ tt_get_origin_time <- function(tt) {
   as.numeric(xml_text(dts_node))
 }
 
-tt_get_r0_change_times <- function(tt) {
-  r0_ch_node <-
+.tt_get_times <- function(tt, param_name_str) {
+  xpath_str <-
+    sprintf(
+      "//distribution[@spec=\'timtam.TimTam\']/parameter[@name='%s\']",
+      param_name_str
+    )
+  tmp_node <-
     xml_find_first(
       x = tt,
-      xpath = "//distribution[@spec=\'timtam.TimTam\']/parameter[@name='r0ChangeTimes\']" # nolint
+      xpath = xpath_str
     )
   ## These times are backwards relative.
-  as.numeric(unlist(strsplit(x = xml_text(r0_ch_node), split = " ")))
+  as.numeric(unlist(strsplit(x = xml_text(tmp_node), split = " ")))
 }
 
-tt_get_sequence_times <- function(tt, make_bwd_rel=FALSE) {
+tt_get_r0_change_times <- function(tt) {
+  .tt_get_times(tt, "r0ChangeTimes")
+}
+
+tt_get_sigma_change_times <- function(tt) {
+  .tt_get_times(tt, "sigmaChangeTimes")
+}
+
+tt_get_prop_time_series_change_times <- function(tt) { # nolint
+  .tt_get_times(tt, "propTimeSeriesChangeTimes")
+}
+
+tt_get_prop_sequenced_change_times <- function(tt) { # nolint
+  .tt_get_times(tt, "propPsiChangeTimes")
+}
+
+tt_get_sequence_times <- function(tt, make_bwd_rel = FALSE) {
   trt_node <-
     xml_find_first(
       x = tt,
@@ -198,7 +224,8 @@ tt_get_sequence_times <- function(tt, make_bwd_rel=FALSE) {
   fwd_abs_seq_times <- as.numeric(
     sapply(
       strsplit(
-        x = unlist(strsplit(x = xml_attr(x = trt_node, attr = "value"), split = ",")),
+        x = unlist(strsplit(x = xml_attr(x = trt_node, attr = "value"),
+                            split = ",")),
         split = "="
       ),
       function(s) {
