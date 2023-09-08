@@ -14,11 +14,11 @@ public class TestIntervalTerminator {
     public void testOrdering() {
 
         IntervalTerminator it1 =
-                new IntervalTerminator("birth", 1.0, OptionalInt.empty());
+                new IntervalTerminator("birth", 1.0);
         IntervalTerminator it2 =
-                new IntervalTerminator("birth", 0.5, OptionalInt.empty());
+                new IntervalTerminator("birth", 0.5);
         IntervalTerminator it3 =
-                new IntervalTerminator("birth", 0.25, OptionalInt.empty());
+                new IntervalTerminator("birth", 0.25);
 
         IntervalTerminator[] intTerms = {it3, it1, it2};
         Arrays.sort(intTerms);
@@ -31,6 +31,6 @@ public class TestIntervalTerminator {
     @Test(expected = RuntimeException.class)
     public void testGuardAgainstNonsense() {
         IntervalTerminator it =
-                new IntervalTerminator("occurrence", 1.0, OptionalInt.of(2));
+                new IntervalTerminator("occurrence", 1.0, 2);
     }
 }

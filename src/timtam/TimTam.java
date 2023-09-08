@@ -889,16 +889,14 @@ public class TimTam extends TreeDistribution {
         for (Double paramChangeTime : this.paramChangeTimes) {
             this.intervalTerminators[iTx].setTypeTimeAndCount(
                     "paramValueChange",
-                    paramChangeTime,
-                    OptionalInt.empty());
+                    paramChangeTime);
             iTx++;
         }
 
         for (Double occurrenceTime : this.occurrenceTimes) {
             this.intervalTerminators[iTx].setTypeTimeAndCount(
                     "occurrence",
-                    occurrenceTime,
-                    OptionalInt.empty());
+                    occurrenceTime);
             iTx++;
         }
 
@@ -906,7 +904,8 @@ public class TimTam extends TreeDistribution {
             this.intervalTerminators[iTx].setTypeTimeAndCount(
                     "catastrophe",
                     this.catastropheTimes[ix],
-                    OptionalInt.of(this.catastropheSizes[ix]));
+                    this.catastropheSizes[ix]
+            );
             iTx++;
         }
 
@@ -914,7 +913,8 @@ public class TimTam extends TreeDistribution {
             this.intervalTerminators[iTx].setTypeTimeAndCount(
                     "disaster",
                     this.disasterTimes[ix],
-                    OptionalInt.of(this.disasterSizes[ix]));
+                    this.disasterSizes[ix]
+            );
             iTx++;
         }
 
@@ -924,8 +924,7 @@ public class TimTam extends TreeDistribution {
             if (isUnscheduledTreeNode(node)) {
                 this.intervalTerminators[iTx].setTypeTimeAndCount(
                         node.isLeaf() ? "sample" : "birth",
-                        node.getHeight(),
-                        OptionalInt.empty());
+                        node.getHeight());
                 iTx++;
             }
         }
@@ -937,7 +936,8 @@ public class TimTam extends TreeDistribution {
             this.intervalTerminators[iTx].setTypeTimeAndCount(
                     "historyEstimate",
                     this.historyTimes[ix],
-                    OptionalInt.of(this.historySizes[ix]));
+                    this.historySizes[ix]
+            );
             iTx++;
         }
 
