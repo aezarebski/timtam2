@@ -138,14 +138,13 @@ public class TimTam extends TreeDistribution {
                     (IntegerParameter) null);
 
     public Input<RealParameter> historyTimesInput =
-            new Input<>("historyTimes",
+	new Input<>("historyTimes",
                     "The times at which the historical number of hidden lineages is to be estimated for." +
-                            "This should be entered as backwards time relative to the final time in the tree which is treated as the present (time zero)." +
-                            "The default variable for this is null indicating that no scheduled unsequenced samples were attempted.",
+		    "This should be entered as backwards time relative to the final time in the tree which is treated as the present (time zero).",
                     (RealParameter) null);
     public Input<IntegerParameter> historySizesInput =
-            new Input<>("historySizes",
-                    "A parameter describing the number of hidden lineages at the corresponding historical time.",
+	new Input<>("historySizes",
+                    "A parameter describing the number of hidden lineages at the corresponding historical time (see historyTimes parameter).",
                     (IntegerParameter) null);
 
     public Input<Boolean> conditionOnObservationInput =

@@ -1,5 +1,6 @@
 package timtam;
 
+import beast.base.inference.parameter.IntegerParameter;
 import beast.base.inference.parameter.RealParameter;
 import beast.base.evolution.operator.ScaleOperator;
 import beast.base.evolution.tree.Tree;
@@ -91,6 +92,62 @@ public class TestTimTam {
             tt.initAndValidate();
             assertTrue(kindaEqual.test(llhdValues[ix] - 2, tt.calculateLogP()));
         }
+    }
+
+    /**
+     * <p>This test is similar the same as {@link TestTimTam#testLikelihoodCalculationSimple} except that it
+     * includes usage of the {@link TimTam#historyTimesInput} to check
+     * this is behaving as expected.</p>
+     */
+    @Test
+    public void testLikelihoodCalculationSimpleWithHistory() {
+        TimTam tt =  new TimTam();
+        Tree tree = new TreeParser("((3 : 1.5, 4 : 0.5) : 1 , (1 : 2, 2 : 1) : 3);",false);
+        tt.setInputValue("tree", tree);
+        tt.setInputValue("originTime", new RealParameter("10.0"));
+        double becomeUninfectiousRate = 1.5;
+        double samplingProportion = 0.3;
+        tt.setInputValue("mu",new RealParameter(Double.toString(becomeUninfectiousRate * (1 - samplingProportion))));
+        tt.setInputValue("psi",new RealParameter(Double.toString(becomeUninfectiousRate * samplingProportion)));
+
+        double[] r0Values = {1.01,1.4,1.5,1.6,1.7,1.8,1.9,2.0,3.0,4.0,10.0};
+
+        tt.setInputValue("lambdaChangeTimes", null);
+        String lambdaString;
+
+	int numSizes = 100;
+	int[] historySizes = new int[numSizes];
+	for (int i = 0; i < historySizes.length; i++) {
+	    historySizes[i] = i + 1;
+	}
+	double[] partialLlhdValues = new double[numSizes];
+	double tmpLlhd;
+	for (int ix = 0; ix < r0Values.length; ix++) {
+            tt.setInputValue("historyTimes", null);
+            tt.setInputValue("historySizes", null);
+            lambdaString = Double.toString(r0Values[ix] * becomeUninfectiousRate);
+            tt.setInputValue("lambda", new RealParameter(lambdaString));
+            tt.initAndValidate();
+            tmpLlhd = tt.calculateLogP();
+
+	    // Loop over the possible history sizes to see that
+	    // marginalising over them gives the same result.
+            tt.setInputValue("historyTimes", new RealParameter("1.0"));
+            for (int jx = 0; jx < historySizes.length; jx++) {
+                tt.setInputValue("historySizes", new IntegerParameter(Integer.toString(historySizes[jx])));
+                tt.initAndValidate();
+                partialLlhdValues[jx] = tt.calculateLogP();
+            }
+            System.out.println("lambda = " + lambdaString);
+	    System.out.println(tmpLlhd);
+            System.out.println(Numerics.logSumExp(partialLlhdValues));
+            assertTrue(kindaEqual.test(tmpLlhd, Numerics.logSumExp(partialLlhdValues)));
+
+	    tt.setInputValue("historySizes", new IntegerParameter("-1"));
+	    tt.initAndValidate();
+	    System.out.println("Now testing negative history size...");
+	    assertTrue(tt.calculateLogP() == Double.NEGATIVE_INFINITY);
+	}
     }
 
     /**
