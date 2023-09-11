@@ -69,21 +69,21 @@ public class TestTimTam {
     @Test
     public void testLikelihoodCalculationSimple() {
 
-        TimTam tt =  new TimTam();
+        TimTam tt = new TimTam();
 
-        Tree tree = new TreeParser("((3 : 1.5, 4 : 0.5) : 1 , (1 : 2, 2 : 1) : 3);",false);
+        Tree tree = new TreeParser("((3 : 1.5, 4 : 0.5) : 1 , (1 : 2, 2 : 1) : 3);", false);
         tt.setInputValue("tree", tree);
         tt.setInputValue("originTime", new RealParameter("10.0"));
 
         double becomeUninfectiousRate = 1.5;
         double samplingProportion = 0.3;
-        double[] r0Values = {1.5,1.6,1.7,1.8,1.9,2.0,3.0,4.0};
+        double[] r0Values = {1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 3.0, 4.0};
         double[] llhdValues = {
-                -26.105360,-27.399127,-28.766920,-30.199269,
-                -31.688042,-33.226251,-50.334795,-68.998552};
+                -26.105360, -27.399127, -28.766920, -30.199269,
+                -31.688042, -33.226251, -50.334795, -68.998552};
 
-        tt.setInputValue("mu",new RealParameter(Double.toString(becomeUninfectiousRate * (1 - samplingProportion))));
-        tt.setInputValue("psi",new RealParameter(Double.toString(becomeUninfectiousRate * samplingProportion)));
+        tt.setInputValue("mu", new RealParameter(Double.toString(becomeUninfectiousRate * (1 - samplingProportion))));
+        tt.setInputValue("psi", new RealParameter(Double.toString(becomeUninfectiousRate * samplingProportion)));
 
         tt.setInputValue("lambdaChangeTimes", null);
         String lambdaString;
@@ -102,28 +102,28 @@ public class TestTimTam {
      */
     @Test
     public void testLikelihoodCalculationSimpleWithHistory() {
-        TimTam tt =  new TimTam();
-        Tree tree = new TreeParser("((3 : 1.5, 4 : 0.5) : 1 , (1 : 2, 2 : 1) : 3);",false);
+        TimTam tt = new TimTam();
+        Tree tree = new TreeParser("((3 : 1.5, 4 : 0.5) : 1 , (1 : 2, 2 : 1) : 3);", false);
         tt.setInputValue("tree", tree);
         tt.setInputValue("originTime", new RealParameter("10.0"));
         double becomeUninfectiousRate = 1.5;
         double samplingProportion = 0.3;
-        tt.setInputValue("mu",new RealParameter(Double.toString(becomeUninfectiousRate * (1 - samplingProportion))));
-        tt.setInputValue("psi",new RealParameter(Double.toString(becomeUninfectiousRate * samplingProportion)));
+        tt.setInputValue("mu", new RealParameter(Double.toString(becomeUninfectiousRate * (1 - samplingProportion))));
+        tt.setInputValue("psi", new RealParameter(Double.toString(becomeUninfectiousRate * samplingProportion)));
 
-        double[] r0Values = {1.01,1.4,1.5,1.6,1.7,1.8,1.9,2.0,3.0,4.0,10.0};
+        double[] r0Values = {1.01, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 3.0, 4.0, 10.0};
 
         tt.setInputValue("lambdaChangeTimes", null);
         String lambdaString;
 
-	int numSizes = 100;
-	int[] historySizes = new int[numSizes];
-	for (int i = 0; i < historySizes.length; i++) {
-	    historySizes[i] = i + 1;
-	}
-	double[] partialLlhdValues = new double[numSizes];
-	double tmpLlhd;
-	for (int ix = 0; ix < r0Values.length; ix++) {
+        int numSizes = 100;
+        int[] historySizes = new int[numSizes];
+        for (int i = 0; i < historySizes.length; i++) {
+            historySizes[i] = i + 1;
+        }
+        double[] partialLlhdValues = new double[numSizes];
+        double tmpLlhd;
+        for (int ix = 0; ix < r0Values.length; ix++) {
             tt.setInputValue("historyTimes", null);
             tt.setInputValue("historySizes", null);
             lambdaString = Double.toString(r0Values[ix] * becomeUninfectiousRate);
@@ -131,8 +131,8 @@ public class TestTimTam {
             tt.initAndValidate();
             tmpLlhd = tt.calculateLogP();
 
-	    // Loop over the possible history sizes to see that
-	    // marginalising over them gives the same result.
+            // Loop over the possible history sizes to see that
+            // marginalising over them gives the same result.
             tt.setInputValue("historyTimes", new RealParameter("1.0"));
             for (int jx = 0; jx < historySizes.length; jx++) {
                 tt.setInputValue("historySizes", new IntegerParameter(Integer.toString(historySizes[jx])));
@@ -146,13 +146,13 @@ public class TestTimTam {
             }
             assertTrue(kindaEqual.test(tmpLlhd, Numerics.logSumExp(partialLlhdValues)));
 
-	    tt.setInputValue("historySizes", new IntegerParameter("-1"));
-	    tt.initAndValidate();
-	    if (verboseTesting) {
-		System.out.println("Now testing negative history size...");
-	    }
-	    assertTrue(tt.calculateLogP() == Double.NEGATIVE_INFINITY);
-	}
+            tt.setInputValue("historySizes", new IntegerParameter("-1"));
+            tt.initAndValidate();
+            if (verboseTesting) {
+                System.out.println("Now testing negative history size...");
+            }
+            assertTrue(tt.calculateLogP() == Double.NEGATIVE_INFINITY);
+        }
     }
 
     /**
@@ -176,19 +176,19 @@ public class TestTimTam {
 
         double eps = 0.4;
 
-        TimTam tt =  new TimTam();
+        TimTam tt = new TimTam();
 
-        Tree tree = new TreeParser("((3 : 1.5, 4 : 0.5) : 1 , (1 : 2, 2 : 1) : 3);",false);
+        Tree tree = new TreeParser("((3 : 1.5, 4 : 0.5) : 1 , (1 : 2, 2 : 1) : 3);", false);
         tt.setInputValue("tree", tree);
         tt.setInputValue("originTime", asRealParam("10.0"));
 
         double netBecomeUninfectiousRate = 1.5;
         double propSeq = 0.3;
         double propOcc = 0.0;
-        double[] r0Values = {1.5,1.6,1.7,1.8,1.9,2.0,3.0,4.0};
+        double[] r0Values = {1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 3.0, 4.0};
         double[] llhdValues = {
-            -26.105360,-27.399127,-28.766920,-30.199269,
-            -31.688042,-33.226251,-50.334795,-68.998552};
+                -26.105360, -27.399127, -28.766920, -30.199269,
+                -31.688042, -33.226251, -50.334795, -68.998552};
         double[] canonicalParamValues = new double[llhdValues.length];
 
         for (int ix = 0; ix < r0Values.length; ix++) {
@@ -209,18 +209,18 @@ public class TestTimTam {
         for (int ix = 0; ix < r0Values.length; ix++) {
             // basic reproduction number
             tt.setInputValue("r0",
-                new RealParameter(Double.toString(r0Values[ix])));
+                    new RealParameter(Double.toString(r0Values[ix])));
             // net removal rate
             tt.setInputValue("sigma",
-                new RealParameter(Double.toString(netBecomeUninfectiousRate)));
+                    new RealParameter(Double.toString(netBecomeUninfectiousRate)));
             // proportion observed and sequenced
             tt.setInputValue("propPsi",
-                new RealParameter(Double.toString(propSeq)));
+                    new RealParameter(Double.toString(propSeq)));
             // proportion observed and not sequenced
             tt.setInputValue("propOmega",
-                new RealParameter(Double.toString(propOcc)));
+                    new RealParameter(Double.toString(propOcc)));
             tt.setInputValue("parameterisation",
-                "r0");
+                    "r0");
             tt.initAndValidate();
             assertEquals(llhdValues[ix] - 2, tt.calculateLogP(), eps);
             assertEquals(canonicalParamValues[ix], tt.calculateLogP(), 1e-8);
@@ -235,8 +235,8 @@ public class TestTimTam {
     @Test
     public void testOriginLessThanHeightIsImpossible() {
 
-        TimTam tt =  new TimTam();
-        Tree tree = new TreeParser("((3 : 1.5, 4 : 0.5) : 1 , (1 : 2, 2 : 1) : 3);",false);
+        TimTam tt = new TimTam();
+        Tree tree = new TreeParser("((3 : 1.5, 4 : 0.5) : 1 , (1 : 2, 2 : 1) : 3);", false);
 
         tt.setInputValue("tree", tree);
         RealParameter oT = new RealParameter("10.0");
@@ -269,16 +269,17 @@ public class TestTimTam {
         assertTrue(tt.calculateLogP() == Double.NEGATIVE_INFINITY);
     }
 
-    /** This is pretty much the same as {@link #testLikelihoodCalculationSimple()} but
+    /**
+     * This is pretty much the same as {@link #testLikelihoodCalculationSimple()} but
      * it uses a variable birth rate. The resulting log-likelihood should sit somewhere
      * between the likelihoods of the two extremes used.
      */
     @Test
     public void testLikelihoodCalculationVariableBirthRate() {
 
-        TimTam tt =  new TimTam();
+        TimTam tt = new TimTam();
 
-        Tree tree = new TreeParser("((3 : 1.5, 4 : 0.5) : 1 , (1 : 2, 2 : 1) : 3);",false);
+        Tree tree = new TreeParser("((3 : 1.5, 4 : 0.5) : 1 , (1 : 2, 2 : 1) : 3);", false);
         tt.setInputValue("tree", tree);
         tt.setInputValue("originTime", new RealParameter("10.0"));
         tt.setInputValue("conditionOnObservation", false);
@@ -286,8 +287,8 @@ public class TestTimTam {
         double becomeUninfectiousRate = 1.5;
         double samplingProportion = 0.3;
 
-        tt.setInputValue("mu",new RealParameter(Double.toString(becomeUninfectiousRate * (1 - samplingProportion))));
-        tt.setInputValue("psi",new RealParameter(Double.toString(becomeUninfectiousRate * samplingProportion)));
+        tt.setInputValue("mu", new RealParameter(Double.toString(becomeUninfectiousRate * (1 - samplingProportion))));
+        tt.setInputValue("psi", new RealParameter(Double.toString(becomeUninfectiousRate * samplingProportion)));
 
         // We can check that when using a variable rate it interpolates between the extremes used.
         String lambdaString1p8 = Double.toString(1.8 * becomeUninfectiousRate);
@@ -307,7 +308,8 @@ public class TestTimTam {
         assertTrue(tmpWithVarying > tmpWith1p9);
     }
 
-    /** This is pretty much the same as {@link #testLikelihoodCalculationSimple()} but
+    /**
+     * This is pretty much the same as {@link #testLikelihoodCalculationSimple()} but
      * it uses a variable death rate. The resulting log-likelihood should sit somewhere
      * between the likelihoods of the two extremes used. This is a little more complicated than
      * {@link #testLikelihoodCalculationVariableBirthRate()} because the becoming
@@ -316,40 +318,40 @@ public class TestTimTam {
     @Test
     public void testLikelihoodCalculationVariableDeathRate() {
 
-        TimTam tt =  new TimTam();
+        TimTam tt = new TimTam();
 
-        Tree tree = new TreeParser("((3 : 1.5, 4 : 0.5) : 1 , (1 : 2, 2 : 1) : 3);",false);
+        Tree tree = new TreeParser("((3 : 1.5, 4 : 0.5) : 1 , (1 : 2, 2 : 1) : 3);", false);
         tt.setInputValue("tree", tree);
         tt.setInputValue("originTime", new RealParameter("10.0"));
         tt.setInputValue("conditionOnObservation", false);
-        tt.setInputValue("psi",new RealParameter("0.5"));
-        tt.setInputValue("lambda",new RealParameter("2.5"));
+        tt.setInputValue("psi", new RealParameter("0.5"));
+        tt.setInputValue("lambda", new RealParameter("2.5"));
 
         double lnPWith1p5, lnPWith1p6, lnPWithVarying;
 
-        tt.setInputValue("mu",new RealParameter("1.5"));
+        tt.setInputValue("mu", new RealParameter("1.5"));
         tt.initAndValidate();
         lnPWith1p5 = tt.calculateLogP();
 
-        tt.setInputValue("mu",new RealParameter("1.6"));
+        tt.setInputValue("mu", new RealParameter("1.6"));
         tt.initAndValidate();
         lnPWith1p6 = tt.calculateLogP();
 
-        tt.setInputValue("mu",new RealParameter("1.5 1.6"));
-        tt.setInputValue("muChangeTimes",new RealParameter("3.0"));
+        tt.setInputValue("mu", new RealParameter("1.5 1.6"));
+        tt.setInputValue("muChangeTimes", new RealParameter("3.0"));
         tt.initAndValidate();
         lnPWithVarying = tt.calculateLogP();
 
         assertTrue((
                 (lnPWith1p5 < lnPWithVarying & lnPWithVarying < lnPWith1p6) |
-                (lnPWith1p5 > lnPWithVarying & lnPWithVarying > lnPWith1p6)
+                        (lnPWith1p5 > lnPWithVarying & lnPWithVarying > lnPWith1p6)
         ));
     }
 
     @Test
     public void testLikelihood() {
 
-        Tree tree = new TreeParser("(((1:3,2:1):1,3:4):2,4:6);",false);
+        Tree tree = new TreeParser("(((1:3,2:1):1,3:4):2,4:6);", false);
 
         RealParameter catastropheTimes = new RealParameter();
         catastropheTimes.initByName("value", "0.0");
@@ -379,7 +381,7 @@ public class TestTimTam {
         assertTrue(approxEqual.test(Math.log((fx - fxh) / h), fxDash));
 
         assertTrue(
-                roughlyEqual.test(-47.0,tt.calculateLogP()));
+                roughlyEqual.test(-47.0, tt.calculateLogP()));
 
         double lnMean0 = tt.getTimTamNegBinom().getLnMean();
         tt.setInputValue("lambda", "3.0");
@@ -415,8 +417,8 @@ public class TestTimTam {
     @Test
     public void testVariableRhoProb() {
         String newickString =
-            "(((1:2.0,2:1.0):2.0,3:4.0):2.0,((4:2.0,5:3.0):2.0,6:4.0):1.0);";
-        Tree tree = new TreeParser(newickString,false);
+                "(((1:2.0,2:1.0):2.0,3:4.0):2.0,((4:2.0,5:3.0):2.0,6:4.0):1.0);";
+        Tree tree = new TreeParser(newickString, false);
         TimTam tt = new TimTam();
         tt.setInputValue("lambda", "2.0");
         tt.setInputValue("mu", "1.0");
@@ -459,7 +461,7 @@ public class TestTimTam {
     public void testVariableNuProb() {
         String newickString =
                 "((1:3.0,2:1.0):3.0,3:1.0);";
-        Tree tree = new TreeParser(newickString,false);
+        Tree tree = new TreeParser(newickString, false);
         TimTam tt = new TimTam();
         tt.setInputValue("lambda", "2.0");
         tt.setInputValue("mu", "1.0");
@@ -503,7 +505,7 @@ public class TestTimTam {
     @Test(expected = RuntimeException.class)
     public void testTMRCABeforeOriginThrowsException() {
 
-        Tree tree = new TreeParser("((1:6.0,2:4.0):2.0,3:4.0);",false);
+        Tree tree = new TreeParser("((1:6.0,2:4.0):2.0,3:4.0);", false);
         TimTam tt = new TimTam();
         tt.setInputValue("lambda", "3.0");
         tt.setInputValue("mu", "1.0");
@@ -517,7 +519,7 @@ public class TestTimTam {
     @Test(expected = RuntimeException.class)
     public void testInvalidDimensionThrowsExceptionA() {
 
-        Tree tree = new TreeParser("((1:6.0,2:4.0):2.0,3:4.0);",false);
+        Tree tree = new TreeParser("((1:6.0,2:4.0):2.0,3:4.0);", false);
         TimTam tt = new TimTam();
         tt.setInputValue("lambda", "3.0 4.0 5.0");
         tt.setInputValue("lambdaChangeTimes", "1.0");
@@ -532,7 +534,7 @@ public class TestTimTam {
     @Test(expected = RuntimeException.class)
     public void testInvalidDimensionThrowsExceptionB() {
 
-        Tree tree = new TreeParser("((1:6.0,2:4.0):2.0,3:4.0);",false);
+        Tree tree = new TreeParser("((1:6.0,2:4.0):2.0,3:4.0);", false);
         TimTam tt = new TimTam();
         tt.setInputValue("lambda", "3.0");
         tt.setInputValue("lambdaChangeTimes", "1.0");
@@ -560,7 +562,7 @@ public class TestTimTam {
         assertTrue(tt.disasterTimesAreUniform());
 
         tt.setInputValue("disasterTimes",
-            Double.toString(7.0 + 0.1 * tt.timeEpsilon) + " 4.0 1.0");
+                Double.toString(7.0 + 0.1 * tt.timeEpsilon) + " 4.0 1.0");
         assertTrue(tt.disasterTimesAreUniform());
 
         tt.setInputValue("disasterTimes", "7.01 4.0 1.0");
