@@ -238,11 +238,12 @@ public class HiddenLineageDist {
     }
 
     /**
-     * <p>Set this object to represent a degenerate distribution with a point
-     * mass at the given integer value.</p>
+     * <p>Set this object to represent a degenerate distribution with
+     * a point mass at the given integer value.</p>
      *
-     * <p>In the case where the given value is zero, no error will be thrown,
-     * but the log-mean will be set to negative infinity.</p>
+     * <p>In the case where the given value is negative, no error will
+     * be thrown, but the log-mean will be set to negative
+     * infinity.</p>
      *
      * @param x the location of the point mass
      */
