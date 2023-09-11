@@ -148,9 +148,9 @@ public class TestTimTam {
 
 	    tt.setInputValue("historySizes", new IntegerParameter("-1"));
 	    tt.initAndValidate();
-        if (verboseTesting) {
-            System.out.println("Now testing negative history size...");
-        }
+	    if (verboseTesting) {
+		System.out.println("Now testing negative history size...");
+	    }
 	    assertTrue(tt.calculateLogP() == Double.NEGATIVE_INFINITY);
 	}
     }
