@@ -13,6 +13,7 @@ import static org.junit.Assert.*;
 
 public class TestTimTam {
 
+    private final boolean verboseTesting = false;
     private final BiPredicate<Double, Double> approxEqual = (x, y) -> Math.abs(x - y) < 1e-5;
     private final BiPredicate<Double, Double> roughlyEqual = (x, y) -> Math.abs(x - y) < 1e-1;
     // check if within 5% of the second value.
@@ -138,14 +139,18 @@ public class TestTimTam {
                 tt.initAndValidate();
                 partialLlhdValues[jx] = tt.calculateLogP();
             }
-            System.out.println("lambda = " + lambdaString);
-	    System.out.println(tmpLlhd);
-            System.out.println(Numerics.logSumExp(partialLlhdValues));
+            if (verboseTesting) {
+                System.out.println("lambda = " + lambdaString);
+                System.out.println(tmpLlhd);
+                System.out.println(Numerics.logSumExp(partialLlhdValues));
+            }
             assertTrue(kindaEqual.test(tmpLlhd, Numerics.logSumExp(partialLlhdValues)));
 
 	    tt.setInputValue("historySizes", new IntegerParameter("-1"));
 	    tt.initAndValidate();
-	    System.out.println("Now testing negative history size...");
+        if (verboseTesting) {
+            System.out.println("Now testing negative history size...");
+        }
 	    assertTrue(tt.calculateLogP() == Double.NEGATIVE_INFINITY);
 	}
     }

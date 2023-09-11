@@ -238,20 +238,22 @@ public class HiddenLineageDist {
     }
 
     /**
-     * Set this object to represent a degenerate distribution with a point mass
-     * at the given integer value.
+     * <p>Set this object to represent a degenerate distribution with a point
+     * mass at the given integer value.</p>
+     *
+     * <p>In the case where the given value is zero, no error will be thrown,
+     * but the log-mean will be set to negative infinity.</p>
      *
      * @param x the location of the point mass
      */
     public void setIsDegenerate(int x) {
+        this.isZero = x == 0;
         if (x > 0) {
             this.lnMean = Math.log(x);
-            this.isZero = false;
         } else if (x == 0) {
             this.lnMean = Double.NEGATIVE_INFINITY;
-            this.isZero = true;
         } else {
-            throw new RuntimeException("setIsDegenerate expects a non-negative integer but got " + x);
+            this.lnMean = Double.NaN;
         }
         this.lnVariance = Double.NEGATIVE_INFINITY;
         this.lnP = Double.NaN;

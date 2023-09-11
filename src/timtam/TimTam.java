@@ -782,13 +782,19 @@ public class TimTam extends TreeDistribution {
      * necessary, unless there are uncertain tip dates on the tree in which case
      * this would all break.</p>
      */
-    private void updateHistoryChecks() {
+    private boolean updateHistoryChecks() {
+        boolean hasNegativeSize = false;
         if (this.numHistoryChecks > 0) {
             for (int ix = 0; ix < this.numHistoryChecks; ix++) {
-                this.historySizes[ix] = this.historySizesInput.get().getNativeValue(ix);
-                this.historyTimes[ix] = this.historyTimesInput.get().getArrayValue(ix);
+                if (this.historySizesInput.get().getNativeValue(ix) >= 0) {
+                    this.historySizes[ix] = this.historySizesInput.get().getNativeValue(ix);
+                    this.historyTimes[ix] = this.historyTimesInput.get().getArrayValue(ix);
+                } else {
+                    hasNegativeSize = true;
+                }
             }
         }
+        return hasNegativeSize;
     }
 
     /**
@@ -843,7 +849,14 @@ public class TimTam extends TreeDistribution {
         }
 
         this.nb.setIsDegenerate(0);
-        updateHistoryChecks();
+
+        // If any of the history sizes are negative, then the log-likelihood is
+        // negative infinity. In this case we can avoid the rest of the
+        // calculation and return this early to save time.
+        if (updateHistoryChecks()) {
+            return Double.NEGATIVE_INFINITY;
+        }
+
         updateIntervalTerminators();
         updateLTTArray();
         updateRateAndProbParams();
