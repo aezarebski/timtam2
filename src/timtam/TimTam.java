@@ -138,14 +138,13 @@ public class TimTam extends TreeDistribution {
                     (IntegerParameter) null);
 
     public Input<RealParameter> historyTimesInput =
-            new Input<>("historyTimes",
+	new Input<>("historyTimes",
                     "The times at which the historical number of hidden lineages is to be estimated for." +
-                            "This should be entered as backwards time relative to the final time in the tree which is treated as the present (time zero)." +
-                            "The default variable for this is null indicating that no scheduled unsequenced samples were attempted.",
+		    "This should be entered as backwards time relative to the final time in the tree which is treated as the present (time zero).",
                     (RealParameter) null);
     public Input<IntegerParameter> historySizesInput =
-            new Input<>("historySizes",
-                    "A parameter describing the number of hidden lineages at the corresponding historical time.",
+	new Input<>("historySizes",
+                    "A parameter describing the number of hidden lineages at the corresponding historical time (see historyTimes parameter).",
                     (IntegerParameter) null);
 
     public Input<Boolean> conditionOnObservationInput =
@@ -783,13 +782,19 @@ public class TimTam extends TreeDistribution {
      * necessary, unless there are uncertain tip dates on the tree in which case
      * this would all break.</p>
      */
-    private void updateHistoryChecks() {
+    private boolean updateHistoryChecks() {
+        boolean hasNegativeSize = false;
         if (this.numHistoryChecks > 0) {
             for (int ix = 0; ix < this.numHistoryChecks; ix++) {
-                this.historySizes[ix] = this.historySizesInput.get().getNativeValue(ix);
-                this.historyTimes[ix] = this.historyTimesInput.get().getArrayValue(ix);
+                if (this.historySizesInput.get().getNativeValue(ix) >= 0) {
+                    this.historySizes[ix] = this.historySizesInput.get().getNativeValue(ix);
+                    this.historyTimes[ix] = this.historyTimesInput.get().getArrayValue(ix);
+                } else {
+                    hasNegativeSize = true;
+                }
             }
         }
+        return hasNegativeSize;
     }
 
     /**
@@ -844,7 +849,14 @@ public class TimTam extends TreeDistribution {
         }
 
         this.nb.setIsDegenerate(0);
-        updateHistoryChecks();
+
+        // If any of the history sizes are negative, then the log-likelihood is
+        // negative infinity. In this case we can avoid the rest of the
+        // calculation and return this early to save time.
+        if (updateHistoryChecks()) {
+            return Double.NEGATIVE_INFINITY;
+        }
+
         updateIntervalTerminators();
         updateLTTArray();
         updateRateAndProbParams();
@@ -889,16 +901,14 @@ public class TimTam extends TreeDistribution {
         for (Double paramChangeTime : this.paramChangeTimes) {
             this.intervalTerminators[iTx].setTypeTimeAndCount(
                     "paramValueChange",
-                    paramChangeTime,
-                    OptionalInt.empty());
+                    paramChangeTime);
             iTx++;
         }
 
         for (Double occurrenceTime : this.occurrenceTimes) {
             this.intervalTerminators[iTx].setTypeTimeAndCount(
                     "occurrence",
-                    occurrenceTime,
-                    OptionalInt.empty());
+                    occurrenceTime);
             iTx++;
         }
 
@@ -906,7 +916,8 @@ public class TimTam extends TreeDistribution {
             this.intervalTerminators[iTx].setTypeTimeAndCount(
                     "catastrophe",
                     this.catastropheTimes[ix],
-                    OptionalInt.of(this.catastropheSizes[ix]));
+                    this.catastropheSizes[ix]
+            );
             iTx++;
         }
 
@@ -914,7 +925,8 @@ public class TimTam extends TreeDistribution {
             this.intervalTerminators[iTx].setTypeTimeAndCount(
                     "disaster",
                     this.disasterTimes[ix],
-                    OptionalInt.of(this.disasterSizes[ix]));
+                    this.disasterSizes[ix]
+            );
             iTx++;
         }
 
@@ -924,8 +936,7 @@ public class TimTam extends TreeDistribution {
             if (isUnscheduledTreeNode(node)) {
                 this.intervalTerminators[iTx].setTypeTimeAndCount(
                         node.isLeaf() ? "sample" : "birth",
-                        node.getHeight(),
-                        OptionalInt.empty());
+                        node.getHeight());
                 iTx++;
             }
         }
@@ -937,7 +948,8 @@ public class TimTam extends TreeDistribution {
             this.intervalTerminators[iTx].setTypeTimeAndCount(
                     "historyEstimate",
                     this.historyTimes[ix],
-                    OptionalInt.of(this.historySizes[ix]));
+                    this.historySizes[ix]
+            );
             iTx++;
         }
 

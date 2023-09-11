@@ -32,7 +32,7 @@ public class IntervalTerminator implements Comparable<IntervalTerminator> {
      * <b>NOTE:</b> If there is no count given to this constructor will set it to a dummy value of -1.
      *
      */
-    public IntervalTerminator(String type, Double bwdTime, OptionalInt count) {
+    public IntervalTerminator(String type, Double bwdTime, int count) {
         if (validTerminatorNames.contains(type)) {
             this.type = type;
             this.bwdTime = bwdTime;
@@ -40,22 +40,27 @@ public class IntervalTerminator implements Comparable<IntervalTerminator> {
                     Objects.equals(type, "catastrophe") |
                     Objects.equals(type, "disaster") |
                     Objects.equals(type, "historyEstimate");
-            if (count.isPresent() & this.shouldHaveCount) {
-                this.count = count.getAsInt();
-            } else if ((!count.isPresent()) & (!this.shouldHaveCount)) {
-                this.count = -1;
+            if (this.shouldHaveCount) {
+                this.count = count;
             } else {
-                throw new RuntimeException(
-                        "count attribute cannot be set to "+ count + " in TimTamIntervalTerminator if type is " + type
-                );
+                throw new RuntimeException("when calling IntervalTerminator constructor, count must not be provided if type is " + type);
             }
         } else {
             throw new IllegalArgumentException("Unexpected interval terminator type: " + type);
         }
     }
 
+    public IntervalTerminator(String type, Double bwdTime) {
+        if (validTerminatorNames.contains(type)) {
+            this.type = type;
+            this.bwdTime = bwdTime;
+        } else {
+            throw new IllegalArgumentException("Unexpected interval terminator type: " + type);
+        }
+
+    }
     public String getType() {
-        return type;
+        return this.type;
     }
 
     public int getCount() {
@@ -75,11 +80,35 @@ public class IntervalTerminator implements Comparable<IntervalTerminator> {
      *
      * @param type a string indicating the reason the interval ended. This must be one of the values in {@link IntervalTerminator#validTerminatorNames}.
      * @param bwdTime the time the interval ended measured backwards from the time of the last sequenced observation.
+     *
+     * <b>NOTE:</b> If there is no count given to this constructor will set it to a dummy value of -1.
+     */
+    public void setTypeTimeAndCount(String type, Double bwdTime) {
+        if (validTerminatorNames.contains(type)) {
+            this.type = type;
+            this.bwdTime = bwdTime;
+            this.shouldHaveCount =
+                    Objects.equals(type, "catastrophe") |
+                            Objects.equals(type, "disaster") |
+                            Objects.equals(type, "historyEstimate");
+            if (this.shouldHaveCount) {
+                throw new RuntimeException("when calling setTypeTimeAndCount in TimTamIntervalTerminator, count must be provided if type is " + type);
+            }
+        } else {
+            throw new IllegalArgumentException("Unexpected interval terminator type: " + type);
+        }
+    }
+
+    /**
+     * Update the data associated with this object.
+     *
+     * @param type a string indicating the reason the interval ended. This must be one of the values in {@link IntervalTerminator#validTerminatorNames}.
+     * @param bwdTime the time the interval ended measured backwards from the time of the last sequenced observation.
      * @param count the size of the event (typically the number of lineages involved in the event).
      *
      * <b>NOTE:</b> If there is no count given to this constructor will set it to a dummy value of -1.
      */
-    public void setTypeTimeAndCount(String type, Double bwdTime, OptionalInt count) {
+    public void setTypeTimeAndCount(String type, Double bwdTime, int count) {
         if (validTerminatorNames.contains(type)) {
             this.type = type;
             this.bwdTime = bwdTime;
@@ -87,15 +116,8 @@ public class IntervalTerminator implements Comparable<IntervalTerminator> {
                     Objects.equals(type, "catastrophe") |
                     Objects.equals(type, "disaster") |
                     Objects.equals(type, "historyEstimate");
-            if (count.isPresent() & this.shouldHaveCount) {
-                this.count = count.getAsInt();
-                if (this.count < 0) {
-                    throw new RuntimeException("count cannot be "+ count + " in TimTamIntervalTerminator if type is " + type);
-                }
-            } else if ((!count.isPresent()) & (!this.shouldHaveCount)) {
-                this.count = -1;
-            } else {
-                throw new RuntimeException("count cannot be "+ count + " in TimTamIntervalTerminator if type is " + type);
+            if (this.shouldHaveCount) {
+                this.count = count;
             }
         } else {
             throw new IllegalArgumentException("Unexpected interval terminator type: " + type);
